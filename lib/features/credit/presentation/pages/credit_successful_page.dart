@@ -2,6 +2,7 @@ import 'package:coffix_app/core/constants/colors.dart';
 import 'package:coffix_app/core/constants/sizes.dart';
 import 'package:coffix_app/core/theme/typography.dart';
 import 'package:coffix_app/features/auth/logic/auth_cubit.dart';
+import 'package:coffix_app/features/credit/presentation/pages/credit_page.dart';
 import 'package:coffix_app/features/home/presentation/pages/home_page.dart';
 import 'package:coffix_app/presentation/atoms/app_button.dart';
 import 'package:coffix_app/presentation/molecules/app_back_header.dart';
@@ -75,7 +76,12 @@ class CreditSuccessfulView extends StatelessWidget {
               ),
               const Spacer(),
               AppButton.primary(
-                onPressed: () => context.goNamed(HomePage.route),
+                onPressed: () {
+                  context.goNamed(CreditPage.route);
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    if (context.mounted) context.goNamed(HomePage.route);
+                  });
+                },
                 label: 'Back to home',
               ),
               const SizedBox(height: AppSizes.lg),

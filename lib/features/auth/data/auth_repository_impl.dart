@@ -254,7 +254,7 @@ class AuthRepositoryImpl implements AuthRepository {
       throw Exception('No token found');
     }
     final response = await http.post(
-      Uri.parse('${ApiEndpoints.baseUrl}/v1/otp/send'),
+      Uri.parse('${ApiEndpoints.v1}/otp/send'),
       headers: {'Authorization': 'Bearer $token'},
       body: {'email': email},
     );
@@ -270,7 +270,7 @@ class AuthRepositoryImpl implements AuthRepository {
       throw Exception('No token found');
     }
     final response = await http.post(
-      Uri.parse('${ApiEndpoints.baseUrl}/v1/otp/verify'),
+      Uri.parse('${ApiEndpoints.v1}/otp/verify'),
       headers: {'Authorization': 'Bearer $token'},
       body: {'otp': otp},
     );

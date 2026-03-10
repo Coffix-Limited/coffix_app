@@ -77,7 +77,7 @@ abstract class ApiClient {
       final cancelToken = cancelKey != null ? _getCancelToken(cancelKey) : null;
 
       final response = await _dio.get<T>(
-        "${baseUrl ?? ApiEndpoints.baseUrl}$path",
+        "${baseUrl ?? ApiEndpoints.v1}$path",
         queryParameters: queryParameters,
         options: options ?? this.options(token),
         cancelToken: cancelToken,
@@ -115,7 +115,7 @@ abstract class ApiClient {
       log("token: $token");
 
       final response = await _dio.post<T>(
-        "${baseUrl ?? ApiEndpoints.baseUrl}$path",
+        "${baseUrl ?? ApiEndpoints.v1}$path",
         data: isJson ? jsonEncode(data) : data,
         queryParameters: queryParameters,
         options: options ?? this.options(token),
@@ -150,7 +150,7 @@ abstract class ApiClient {
       final token = secretKey ?? await _authRepository.getFirebaseToken();
 
       final response = await _dio.put<T>(
-        "${baseUrl ?? ApiEndpoints.baseUrl}$path",
+        "${baseUrl ?? ApiEndpoints.v1}$path",
         data: isJson ? jsonEncode(data) : data,
         queryParameters: queryParameters,
         options: options ?? this.options(token),
@@ -178,7 +178,7 @@ abstract class ApiClient {
       final token = secretKey ?? await _authRepository.getFirebaseToken();
 
       final response = await _dio.delete<T>(
-        "${baseUrl ?? ApiEndpoints.baseUrl}$path",
+        "${baseUrl ?? ApiEndpoints.v1}$path",
         data: data,
         queryParameters: queryParameters,
         options: options ?? this.options(token),
@@ -206,7 +206,7 @@ abstract class ApiClient {
       final token = secretKey ?? await _authRepository.getFirebaseToken();
 
       final response = await _dio.patch<T>(
-        "${baseUrl ?? ApiEndpoints.baseUrl}$path",
+        "${baseUrl ?? ApiEndpoints.v1}$path",
         data: data,
         queryParameters: queryParameters,
         options: options ?? this.options(token),

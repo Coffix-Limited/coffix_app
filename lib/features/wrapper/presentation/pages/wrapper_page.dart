@@ -11,12 +11,10 @@ import 'package:coffix_app/features/products/logic/product_cubit.dart';
 import 'package:coffix_app/features/stores/logic/store_cubit.dart';
 import 'package:coffix_app/presentation/atoms/app_icon.dart';
 import 'package:coffix_app/presentation/atoms/app_loading.dart';
-import 'package:coffix_app/presentation/atoms/app_snackbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
-import 'package:http/http.dart';
 
 class WrapperPage extends StatelessWidget {
   static String route = 'wrapper_route';

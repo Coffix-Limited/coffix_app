@@ -28,7 +28,7 @@ class PaymentRepositoryImpl extends ApiClient implements PaymentRepository {
     if (token == null) throw Exception('No token found');
 
     final response = await http.post(
-      Uri.parse('${ApiEndpoints.baseUrl}/v1/credit/topup'),
+      Uri.parse('${ApiEndpoints.v1}/credit/topup'),
       body: jsonEncode({'amount': amount}),
       headers: {
         'Authorization': 'Bearer $token',
