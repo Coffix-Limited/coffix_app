@@ -5,6 +5,7 @@ import 'package:coffix_app/core/errors/auth_exceptions.dart';
 import 'package:coffix_app/core/exceptions/auth_exceptions.dart';
 import 'package:coffix_app/data/repositories/auth_repository.dart';
 import 'package:coffix_app/data/repositories/store_repository.dart';
+import 'package:coffix_app/features/auth/data/model/user.dart';
 import 'package:coffix_app/features/auth/data/model/user_with_store.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
@@ -31,9 +32,10 @@ class AuthCubit extends Cubit<AuthState> {
     _userSubscription?.cancel();
     _userSubscription = FirebaseAuth.instance.authStateChanges().listen((user) {
       if (user != null) {
-        if (user.emailVerified == false) {
-          emit(AuthState.emailNotVerified());
-        }
+        getUserWithStore();
+      } else {
+        emit(AuthState.unauthenticated());
+        _userWithStoreSubscription?.cancel();
       }
     });
   }
@@ -146,6 +148,7 @@ class AuthCubit extends Cubit<AuthState> {
           emit(AuthState.emailNotVerified());
           return;
         }
+        emit(AuthState.authenticated(userWithStore: user!));
         // emit(
         //   user != null
         //       ? AuthState.authenticated(userWithStore: user)

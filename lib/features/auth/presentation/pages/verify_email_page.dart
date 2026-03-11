@@ -131,7 +131,7 @@ class _VerifyEmailViewState extends State<VerifyEmailView> {
             );
           },
           builder: (context, state) {
-            if (state.maybeWhen(loading: () => true, orElse: () => false)) {
+            if (state.maybeWhen(verifying: () => true, orElse: () => false)) {
               return const Center(child: AppLoading());
             }
             final canResend = _remainingSeconds == 0;

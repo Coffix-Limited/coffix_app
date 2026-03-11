@@ -14,7 +14,7 @@ class OtpCubit extends Cubit<OtpState> {
 
   Future<void> sendEmailVerification() async {
     final email = FirebaseAuth.instance.currentUser?.email ?? '';
-    emit(OtpState.loading());
+    emit(OtpState.sending());
     try {
       await _authRepository.sendEmailVerification(email: email);
       emit(OtpState.otpSent(email: email));
@@ -24,7 +24,7 @@ class OtpCubit extends Cubit<OtpState> {
   }
 
   Future<void> verifyOtp({required String otp}) async {
-    emit(OtpState.loading());
+    emit(OtpState.verifying());
     try {
       await _authRepository.verifyOtp(otp: otp);
       emit(OtpState.verified());

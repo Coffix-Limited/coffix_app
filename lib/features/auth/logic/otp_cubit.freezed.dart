@@ -55,14 +55,15 @@ extension OtpStatePatterns on OtpState {
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( _Initial value)?  initial,TResult Function( _Loading value)?  loading,TResult Function( _Error value)?  error,TResult Function( _OtpSent value)?  otpSent,TResult Function( _Verified value)?  verified,required TResult orElse(),}){
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( _Initial value)?  initial,TResult Function( _Sending value)?  sending,TResult Function( _Error value)?  error,TResult Function( _OtpSent value)?  otpSent,TResult Function( _Verifying value)?  verifying,TResult Function( _Verified value)?  verified,required TResult orElse(),}){
 final _that = this;
 switch (_that) {
 case _Initial() when initial != null:
-return initial(_that);case _Loading() when loading != null:
-return loading(_that);case _Error() when error != null:
+return initial(_that);case _Sending() when sending != null:
+return sending(_that);case _Error() when error != null:
 return error(_that);case _OtpSent() when otpSent != null:
-return otpSent(_that);case _Verified() when verified != null:
+return otpSent(_that);case _Verifying() when verifying != null:
+return verifying(_that);case _Verified() when verified != null:
 return verified(_that);case _:
   return orElse();
 
@@ -81,14 +82,15 @@ return verified(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( _Initial value)  initial,required TResult Function( _Loading value)  loading,required TResult Function( _Error value)  error,required TResult Function( _OtpSent value)  otpSent,required TResult Function( _Verified value)  verified,}){
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( _Initial value)  initial,required TResult Function( _Sending value)  sending,required TResult Function( _Error value)  error,required TResult Function( _OtpSent value)  otpSent,required TResult Function( _Verifying value)  verifying,required TResult Function( _Verified value)  verified,}){
 final _that = this;
 switch (_that) {
 case _Initial():
-return initial(_that);case _Loading():
-return loading(_that);case _Error():
+return initial(_that);case _Sending():
+return sending(_that);case _Error():
 return error(_that);case _OtpSent():
-return otpSent(_that);case _Verified():
+return otpSent(_that);case _Verifying():
+return verifying(_that);case _Verified():
 return verified(_that);case _:
   throw StateError('Unexpected subclass');
 
@@ -106,14 +108,15 @@ return verified(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( _Initial value)?  initial,TResult? Function( _Loading value)?  loading,TResult? Function( _Error value)?  error,TResult? Function( _OtpSent value)?  otpSent,TResult? Function( _Verified value)?  verified,}){
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( _Initial value)?  initial,TResult? Function( _Sending value)?  sending,TResult? Function( _Error value)?  error,TResult? Function( _OtpSent value)?  otpSent,TResult? Function( _Verifying value)?  verifying,TResult? Function( _Verified value)?  verified,}){
 final _that = this;
 switch (_that) {
 case _Initial() when initial != null:
-return initial(_that);case _Loading() when loading != null:
-return loading(_that);case _Error() when error != null:
+return initial(_that);case _Sending() when sending != null:
+return sending(_that);case _Error() when error != null:
 return error(_that);case _OtpSent() when otpSent != null:
-return otpSent(_that);case _Verified() when verified != null:
+return otpSent(_that);case _Verifying() when verifying != null:
+return verifying(_that);case _Verified() when verified != null:
 return verified(_that);case _:
   return null;
 
@@ -131,13 +134,14 @@ return verified(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  initial,TResult Function()?  loading,TResult Function( String message)?  error,TResult Function( String email)?  otpSent,TResult Function()?  verified,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  initial,TResult Function()?  sending,TResult Function( String message)?  error,TResult Function( String email)?  otpSent,TResult Function()?  verifying,TResult Function()?  verified,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Initial() when initial != null:
-return initial();case _Loading() when loading != null:
-return loading();case _Error() when error != null:
+return initial();case _Sending() when sending != null:
+return sending();case _Error() when error != null:
 return error(_that.message);case _OtpSent() when otpSent != null:
-return otpSent(_that.email);case _Verified() when verified != null:
+return otpSent(_that.email);case _Verifying() when verifying != null:
+return verifying();case _Verified() when verified != null:
 return verified();case _:
   return orElse();
 
@@ -156,13 +160,14 @@ return verified();case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  initial,required TResult Function()  loading,required TResult Function( String message)  error,required TResult Function( String email)  otpSent,required TResult Function()  verified,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  initial,required TResult Function()  sending,required TResult Function( String message)  error,required TResult Function( String email)  otpSent,required TResult Function()  verifying,required TResult Function()  verified,}) {final _that = this;
 switch (_that) {
 case _Initial():
-return initial();case _Loading():
-return loading();case _Error():
+return initial();case _Sending():
+return sending();case _Error():
 return error(_that.message);case _OtpSent():
-return otpSent(_that.email);case _Verified():
+return otpSent(_that.email);case _Verifying():
+return verifying();case _Verified():
 return verified();case _:
   throw StateError('Unexpected subclass');
 
@@ -180,13 +185,14 @@ return verified();case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  initial,TResult? Function()?  loading,TResult? Function( String message)?  error,TResult? Function( String email)?  otpSent,TResult? Function()?  verified,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  initial,TResult? Function()?  sending,TResult? Function( String message)?  error,TResult? Function( String email)?  otpSent,TResult? Function()?  verifying,TResult? Function()?  verified,}) {final _that = this;
 switch (_that) {
 case _Initial() when initial != null:
-return initial();case _Loading() when loading != null:
-return loading();case _Error() when error != null:
+return initial();case _Sending() when sending != null:
+return sending();case _Error() when error != null:
 return error(_that.message);case _OtpSent() when otpSent != null:
-return otpSent(_that.email);case _Verified() when verified != null:
+return otpSent(_that.email);case _Verifying() when verifying != null:
+return verifying();case _Verified() when verified != null:
 return verified();case _:
   return null;
 
@@ -230,8 +236,8 @@ String toString() {
 /// @nodoc
 
 
-class _Loading implements OtpState {
-  const _Loading();
+class _Sending implements OtpState {
+  const _Sending();
   
 
 
@@ -241,7 +247,7 @@ class _Loading implements OtpState {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Loading);
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Sending);
 }
 
 
@@ -250,7 +256,7 @@ int get hashCode => runtimeType.hashCode;
 
 @override
 String toString() {
-  return 'OtpState.loading()';
+  return 'OtpState.sending()';
 }
 
 
@@ -390,6 +396,38 @@ as String,
 
 
 }
+
+/// @nodoc
+
+
+class _Verifying implements OtpState {
+  const _Verifying();
+  
+
+
+
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Verifying);
+}
+
+
+@override
+int get hashCode => runtimeType.hashCode;
+
+@override
+String toString() {
+  return 'OtpState.verifying()';
+}
+
+
+}
+
+
+
 
 /// @nodoc
 

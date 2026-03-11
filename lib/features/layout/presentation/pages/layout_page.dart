@@ -136,7 +136,10 @@ class _LayoutViewState extends State<LayoutView> {
             child: BottomNavigationBar(
               currentIndex: widget.shell.currentIndex,
               onTap: (index) {
-                widget.shell.goBranch(index);
+                context.watch<AuthCubit>().state.maybeWhen(
+                  orElse: () => null,
+                  authenticated: (user) => widget.shell.goBranch(index),
+                );
               },
               type: BottomNavigationBarType.fixed,
               backgroundColor: Colors.transparent,

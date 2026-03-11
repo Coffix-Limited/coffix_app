@@ -3,6 +3,7 @@ import 'package:coffix_app/core/constants/sizes.dart';
 import 'package:coffix_app/core/theme/typography.dart';
 import 'package:coffix_app/features/auth/logic/auth_cubit.dart';
 import 'package:coffix_app/features/auth/logic/otp_cubit.dart';
+import 'package:coffix_app/features/profile/presentation/pages/personal_info_page.dart';
 import 'package:coffix_app/presentation/atoms/app_button.dart';
 import 'package:coffix_app/presentation/atoms/app_notification.dart';
 import 'package:coffix_app/presentation/atoms/app_snackbar.dart';
@@ -10,6 +11,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:pinput/pinput.dart';
 
 class EmailVerificationForm extends StatefulWidget {
@@ -55,12 +57,9 @@ class _EmailVerificationFormState extends State<EmailVerificationForm> {
             'OTP sent to $email. Please check your email.',
           ),
           error: (message) => AppNotification.error(context, message),
-          // verified: () => context.goNamed(
-          //   PersonalInfoPage.route,
-          //   extra: {"canBack": false},
-          // )
+          verified: () =>
+              context.goNamed(PersonalInfoPage.route, extra: {"canBack": true}),
         );
-        // TODO: implement listener
       },
       builder: (context, state) {
         return Padding(
@@ -103,14 +102,14 @@ class _EmailVerificationFormState extends State<EmailVerificationForm> {
                     disabled:
                         _pin.length != 6 ||
                         state.maybeWhen(
-                          loading: () => true,
+                          verifying: () => true,
                           orElse: () => false,
                         ),
                     onPressed: () {
                       context.read<OtpCubit>().verifyOtp(otp: _pin);
                     },
                     label: state.maybeWhen(
-                      loading: () => 'Verifying...',
+                      verifying: () => 'Verifying...',
                       orElse: () => "Next",
                     ),
                   ),
