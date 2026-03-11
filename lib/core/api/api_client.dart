@@ -8,14 +8,14 @@ import 'package:coffix_app/core/api/model/api_response.dart';
 import 'package:coffix_app/core/di/service_locator.dart';
 import 'package:coffix_app/data/repositories/auth_repository.dart';
 import 'package:dio/dio.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 // import 'package:go_gym/client/model/api_interceptors.dart';
 
 abstract class ApiClient {
   final Dio _dio;
   final Map<String, CancelToken> _cancelTokens = {};
   // final SharedPreferencesStorage _storage;
-  final AuthRepository _authRepository = getIt<AuthRepository>();
-
+  final FirebaseAuth _auth = FirebaseAuth.instance;
   ApiClient({
     required Dio dio,
     // required SharedPreferencesStorage storage,
@@ -72,7 +72,7 @@ abstract class ApiClient {
     String? cancelKey,
   }) async {
     try {
-      final token = secretKey ?? await _authRepository.getFirebaseToken();
+      final token = secretKey ?? await _auth.currentUser?.getIdToken();
 
       final cancelToken = cancelKey != null ? _getCancelToken(cancelKey) : null;
 
@@ -110,7 +110,7 @@ abstract class ApiClient {
     String? cancelKey,
   }) async {
     try {
-      final token = secretKey ?? await _authRepository.getFirebaseToken();
+      final token = secretKey ?? await _auth.currentUser?.getIdToken();
 
       log("token: $token");
 
@@ -147,7 +147,7 @@ abstract class ApiClient {
     bool isJson = true,
   }) async {
     try {
-      final token = secretKey ?? await _authRepository.getFirebaseToken();
+      final token = secretKey ?? await _auth.currentUser?.getIdToken();
 
       final response = await _dio.put<T>(
         "${baseUrl ?? ApiEndpoints.v1}$path",
@@ -175,7 +175,7 @@ abstract class ApiClient {
     String? secretKey,
   }) async {
     try {
-      final token = secretKey ?? await _authRepository.getFirebaseToken();
+      final token = secretKey ?? await _auth.currentUser?.getIdToken();
 
       final response = await _dio.delete<T>(
         "${baseUrl ?? ApiEndpoints.v1}$path",
@@ -203,7 +203,7 @@ abstract class ApiClient {
     String? secretKey,
   }) async {
     try {
-      final token = secretKey ?? await _authRepository.getFirebaseToken();
+      final token = secretKey ?? await _auth.currentUser?.getIdToken();
 
       final response = await _dio.patch<T>(
         "${baseUrl ?? ApiEndpoints.v1}$path",

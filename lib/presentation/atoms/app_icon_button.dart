@@ -53,6 +53,9 @@ class AppIconButton extends StatelessWidget {
   /// Border radius. If null, no border radius is applied.
   final BorderRadius? borderRadius;
 
+  /// Background color. If null, no background color is applied.
+  final Color? backgroundColor;
+
   /// Creates an AppIconButton from IconData.
   const AppIconButton.withIconData(
     IconData icon, {
@@ -63,6 +66,7 @@ class AppIconButton extends StatelessWidget {
     this.disabled = false,
     this.borderColor,
     this.borderRadius,
+    this.backgroundColor,
   }) : _iconData = icon,
        _svgPath = null;
 
@@ -76,6 +80,7 @@ class AppIconButton extends StatelessWidget {
     this.disabled = false,
     this.borderColor,
     this.borderRadius,
+    this.backgroundColor,
   }) : _iconData = null,
        _svgPath = svgPath;
 
@@ -118,6 +123,7 @@ class AppIconButton extends StatelessWidget {
         decoration: BoxDecoration(
           border: Border.all(color: borderColor ?? AppColors.borderColor),
           borderRadius: borderRadius ?? BorderRadius.circular(AppSizes.md),
+          color: backgroundColor,
         ),
         child: content,
       ),

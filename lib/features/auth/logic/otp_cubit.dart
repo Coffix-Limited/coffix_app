@@ -1,5 +1,6 @@
 import 'package:bloc/bloc.dart';
 import 'package:coffix_app/data/repositories/auth_repository.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'otp_state.dart';
@@ -11,7 +12,8 @@ class OtpCubit extends Cubit<OtpState> {
     : _authRepository = authRepository,
       super(OtpState.initial());
 
-  Future<void> sendEmailVerification({required String email}) async {
+  Future<void> sendEmailVerification() async {
+    final email = FirebaseAuth.instance.currentUser?.email ?? '';
     emit(OtpState.loading());
     try {
       await _authRepository.sendEmailVerification(email: email);

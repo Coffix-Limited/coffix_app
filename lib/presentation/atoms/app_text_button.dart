@@ -39,6 +39,7 @@ class AppTextButton extends StatelessWidget {
   final String? trailingIconPath;
   final double? iconSize;
   final double? iconGap;
+  final bool? showUnderline;
 
   const AppTextButton({
     super.key,
@@ -51,6 +52,7 @@ class AppTextButton extends StatelessWidget {
     this.trailingIconPath,
     this.iconSize = AppSizes.iconSizeXxs,
     this.iconGap,
+    this.showUnderline = false,
   });
 
   const AppTextButton.withTrailingIcon({
@@ -64,6 +66,7 @@ class AppTextButton extends StatelessWidget {
     this.textStyle,
     this.iconSize = AppSizes.iconSizeXxs,
     this.iconGap = AppSizes.xs,
+    this.showUnderline = false,
   });
 
   @override
@@ -71,7 +74,10 @@ class AppTextButton extends StatelessWidget {
     final isDisabled = disabled || onPressed == null;
     final finalTextColor = textColor ?? AppColors.black;
     final hasTrailingIcon = trailingIconPath != null;
-    final defaultStyle = Theme.of(context).textTheme.bodyLarge;
+    final defaultStyle = Theme.of(context).textTheme.bodyLarge?.copyWith(
+      decoration: showUnderline == true ? TextDecoration.underline : null,
+      decorationColor: textColor ?? AppColors.black,
+    );
     final finalStyle = textStyle ?? defaultStyle;
 
     Widget content;

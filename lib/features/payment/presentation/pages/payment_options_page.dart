@@ -12,6 +12,7 @@ import 'package:coffix_app/features/payment/presentation/widgets/payment_option.
 import 'package:coffix_app/presentation/atoms/app_button.dart';
 import 'package:coffix_app/presentation/atoms/app_card.dart';
 import 'package:coffix_app/presentation/atoms/app_loading.dart';
+import 'package:coffix_app/presentation/atoms/app_notification.dart';
 import 'package:coffix_app/presentation/atoms/app_snackbar.dart';
 import 'package:coffix_app/presentation/molecules/app_back_header.dart';
 import 'package:flutter/material.dart';
@@ -73,7 +74,7 @@ class _PaymentOptionsPageViewState extends State<PaymentOptionsPageView> {
                   );
                 },
                 error: (message) {
-                  AppSnackbar.showError(context, message);
+                  AppNotification.error(context, message);
                 },
               );
             },

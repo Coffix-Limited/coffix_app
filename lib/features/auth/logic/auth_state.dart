@@ -16,6 +16,9 @@ class AuthState with _$AuthState {
     required AppUserWithStore userWithStore,
   }) = _Authenticated;
 
+  // User has account
+  const factory AuthState.hasAccount({required bool hasAccount}) = _HasAccount;
+
   // User is not authenticated (logged out or no valid tokens).
   const factory AuthState.unauthenticated() = _Unauthenticated;
 

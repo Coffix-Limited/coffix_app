@@ -12,6 +12,7 @@ import 'package:coffix_app/presentation/atoms/app_button.dart';
 import 'package:coffix_app/presentation/atoms/app_field.dart';
 import 'package:coffix_app/presentation/atoms/app_icon_button.dart';
 import 'package:coffix_app/presentation/atoms/app_loading.dart';
+import 'package:coffix_app/presentation/atoms/app_notification.dart';
 import 'package:coffix_app/presentation/atoms/app_snackbar.dart';
 import 'package:coffix_app/presentation/atoms/app_text_button.dart';
 import 'package:flutter/gestures.dart';
@@ -67,7 +68,7 @@ class _LoginViewState extends State<LoginView> {
               listener: (context, state) {
                 state.whenOrNull(
                   authenticated: (_) => context.goNamed(WrapperPage.route),
-                  error: (message) => AppSnackbar.showError(context, message),
+                  error: (message) => AppNotification.error(context, message),
                 );
               },
               builder: (context, state) {

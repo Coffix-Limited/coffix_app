@@ -26,7 +26,9 @@ class AppField<T> extends StatefulWidget {
   final BoxConstraints? suffixIconConstraints;
   final int maxLines;
   final String? label;
+  final bool filled;
 
+  
   const AppField({
     super.key,
     required this.hintText,
@@ -47,6 +49,7 @@ class AppField<T> extends StatefulWidget {
     this.suffixIconConstraints,
     this.maxLines = 1,
     this.label,
+    this.filled = true,
   });
 
   @override
@@ -108,23 +111,24 @@ class _AppFieldState<T> extends State<AppField<T>> {
           autofocus: widget.autofocus,
           style: theme.textTheme.bodyMedium?.copyWith(),
           decoration: InputDecoration(
-            fillColor: widget.readOnly ? AppColors.softGrey : null,
-            filled: widget.readOnly,
+            fillColor: widget.readOnly ? AppColors.softGrey : Colors.white,
+            filled: widget.filled,
+            contentPadding: EdgeInsets.symmetric(horizontal: AppSizes.lg),
             hintText: widget.hintText,
             hintStyle: AppTypography.bodyXS.copyWith(
               color: AppColors.lightGrey,
             ),
             border: widget.readOnly
                 ? OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(AppSizes.sm),
+                    borderRadius: BorderRadius.circular(AppSizes.lg),
                     borderSide: BorderSide.none,
                   )
                 : OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(AppSizes.sm),
+                    borderRadius: BorderRadius.circular(AppSizes.lg),
                     borderSide: BorderSide(color: AppColors.lightGrey),
                   ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppSizes.sm),
+              borderRadius: BorderRadius.circular(AppSizes.lg),
               borderSide: BorderSide(color: AppColors.lightGrey),
             ),
             prefixIcon: widget.prefixIcon,

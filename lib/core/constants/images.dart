@@ -4,6 +4,8 @@ class AppImages {
   static const String cart = "assets/icons/cart.svg";
   static const String credit = "assets/icons/credit.svg";
   static const String home = "assets/icons/home.svg";
+  static const String homeFilled = "assets/icons/home-filled.svg";
+
   static const String location = "assets/icons/location.svg";
   static const String logo = "assets/icons/logo.svg";
   static const String menu = "assets/icons/menu.svg";

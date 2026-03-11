@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:coffix_app/core/constants/colors.dart';
 import 'package:coffix_app/core/constants/images.dart';
 import 'package:coffix_app/core/constants/sizes.dart';
@@ -11,6 +13,7 @@ import 'package:coffix_app/features/products/logic/product_cubit.dart';
 import 'package:coffix_app/features/stores/logic/store_cubit.dart';
 import 'package:coffix_app/presentation/atoms/app_icon.dart';
 import 'package:coffix_app/presentation/atoms/app_loading.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
@@ -42,6 +45,14 @@ class WrapperView extends StatefulWidget {
 }
 
 class _WrapperViewState extends State<WrapperView> {
+  StreamSubscription<User?>? _authSubscription;
+
+  @override
+  void dispose() {
+    _authSubscription?.cancel();
+    super.dispose();
+  }
+
   @override
   void initState() {
     super.initState();
@@ -50,53 +61,29 @@ class _WrapperViewState extends State<WrapperView> {
 
   void initWrapper() async {
     context.read<AppCubit>().getGlobal();
-    context.read<AuthCubit>().getUserWithStore();
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<AuthCubit, AuthState>(
-      listener: (context, state) {
-        state.whenOrNull(
-          authenticated: (user) {
-            context.read<StoreCubit>().getStores();
-            context.read<ProductCubit>().getProducts();
-            if (user.user.emailVerified != true) {
-              context.goNamed(
-                VerifyEmailPage.route,
-                extra: {'email': user.user.email},
-              );
-            } else if (user.user.disabled == true) {
-              // AppSnackbar.showError(context, "Your account has been disabled");
-            } else {
-              context.goNamed(HomePage.route);
-            }
-          },
-        );
-      },
-      builder: (context, state) {
-        state.whenOrNull(loading: () => AppLoading());
-        return Scaffold(
-          appBar: AppBar(
-            backgroundColor: AppColors.black,
-            title: AppIcon.withSvgPath(AppImages.nameLogo, size: 180),
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: AppColors.black,
+        title: AppIcon.withSvgPath(AppImages.nameLogo, size: 180),
+      ),
+      backgroundColor: AppColors.black,
+      body: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            "Coffix App",
+            textAlign: TextAlign.center,
+            style: AppTypography.titleXL.copyWith(color: AppColors.white),
           ),
-          backgroundColor: AppColors.black,
-          body: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text(
-                "Coffix App",
-                textAlign: TextAlign.center,
-                style: AppTypography.titleXL.copyWith(color: AppColors.white),
-              ),
-              const SizedBox(height: AppSizes.xl),
-              SvgPicture.asset(AppImages.logo, width: 256, height: 256),
-            ],
-          ),
-        );
-      },
+          const SizedBox(height: AppSizes.xl),
+          SvgPicture.asset(AppImages.logo, width: 256, height: 256),
+        ],
+      ),
     );
   }
 }

@@ -9,6 +9,7 @@ import 'package:coffix_app/features/profile/presentation/widgets/confirm_account
 import 'package:coffix_app/presentation/atoms/app_card.dart';
 import 'package:coffix_app/presentation/atoms/app_clickable.dart';
 import 'package:coffix_app/presentation/atoms/app_loading.dart';
+import 'package:coffix_app/presentation/atoms/app_notification.dart';
 import 'package:coffix_app/presentation/atoms/app_snackbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -112,7 +113,7 @@ class AboutView extends StatelessWidget {
                         if (global?.specialUrl != null) {
                           launchUrl(Uri.parse(global?.specialUrl ?? ''));
                         } else {
-                          AppSnackbar.error('No special URL found');
+                          AppNotification.error(context, 'No special URL found');
                         }
                       },
                       child: Padding(

@@ -7,6 +7,7 @@ import 'package:coffix_app/features/auth/logic/otp_cubit.dart';
 import 'package:coffix_app/features/profile/presentation/pages/personal_info_page.dart';
 import 'package:coffix_app/presentation/atoms/app_button.dart';
 import 'package:coffix_app/presentation/atoms/app_loading.dart';
+import 'package:coffix_app/presentation/atoms/app_notification.dart';
 import 'package:coffix_app/presentation/atoms/app_snackbar.dart';
 import 'package:coffix_app/presentation/atoms/app_text_button.dart';
 import 'package:flutter/material.dart';
@@ -48,7 +49,7 @@ class _VerifyEmailViewState extends State<VerifyEmailView> {
   @override
   void initState() {
     super.initState();
-    context.read<OtpCubit>().sendEmailVerification(email: widget.email);
+    context.read<OtpCubit>().sendEmailVerification();
     _startTimer();
   }
 
@@ -87,7 +88,7 @@ class _VerifyEmailViewState extends State<VerifyEmailView> {
   }
 
   void _onResendOtp() {
-    context.read<OtpCubit>().sendEmailVerification(email: widget.email);
+    context.read<OtpCubit>().sendEmailVerification();
     _startTimer();
   }
 
@@ -118,11 +119,11 @@ class _VerifyEmailViewState extends State<VerifyEmailView> {
         child: BlocConsumer<OtpCubit, OtpState>(
           listener: (context, state) {
             state.whenOrNull(
-              otpSent: (email) => AppSnackbar.showInfo(
+              otpSent: (email) => AppNotification.show(
                 context,
                 'OTP sent to $email. Please check your email.',
               ),
-              error: (message) => AppSnackbar.showError(context, message),
+              error: (message) => AppNotification.error(context, message),
               verified: () => context.goNamed(
                 PersonalInfoPage.route,
                 extra: {"canBack": false},

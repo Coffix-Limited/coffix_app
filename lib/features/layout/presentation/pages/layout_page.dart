@@ -2,6 +2,7 @@ import 'package:coffix_app/core/constants/colors.dart';
 import 'package:coffix_app/core/constants/images.dart';
 import 'package:coffix_app/core/constants/sizes.dart';
 import 'package:coffix_app/core/di/service_locator.dart';
+import 'package:coffix_app/core/theme/typography.dart';
 import 'package:coffix_app/features/app/logic/app_cubit.dart';
 import 'package:coffix_app/features/auth/logic/auth_cubit.dart';
 import 'package:coffix_app/features/auth/presentation/pages/verify_email_page.dart';
@@ -16,11 +17,15 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 enum LayoutPageTab {
-  home(title: "Home", icon: AppImages.home, selectedIcon: AppImages.home),
+  home(
+    title: "Home",
+    icon: AppImages.homeFilled,
+    selectedIcon: AppImages.homeFilled,
+  ),
   coffixCredit(
     title: "Coffix Credit",
-    icon: AppImages.discount,
-    selectedIcon: AppImages.discount,
+    icon: AppImages.credit,
+    selectedIcon: AppImages.credit,
   ),
   menu(title: "Menu", icon: AppImages.coffee, selectedIcon: AppImages.coffee),
   stores(title: "Stores", icon: AppImages.shop, selectedIcon: AppImages.shop),
@@ -71,10 +76,10 @@ class _LayoutViewState extends State<LayoutView> {
   @override
   initState() {
     super.initState();
-    context.read<AppCubit>().getGlobal();
-    context.read<AuthCubit>().getUserWithStore();
-    context.read<StoreCubit>().getStores();
-    context.read<ProductCubit>().getProducts();
+    // context.read<AppCubit>().getGlobal();
+    // context.read<AuthCubit>().getUserWithStore();
+    // context.read<StoreCubit>().getStores();
+    // context.read<ProductCubit>().getProducts();
     // context.read<ModifierCubit>().getModifiers();
   }
 
@@ -94,105 +99,83 @@ class _LayoutViewState extends State<LayoutView> {
       '/stores',
       '/cart',
     ];
-    final isOnHomeBranchNested =
-        widget.shell.currentIndex == 0 && location != '/home';
-    final showBottomNav =
-        isEmailVerified &&
-        !isOnHomeBranchNested &&
-        topLevelTabPaths.contains(location);
+    // final isOnHomeBranchNested =
+    //     widget.shell.currentIndex == 0 && location != '/home';
+    // final showBottomNav =
+    //     isEmailVerified &&
+    //     !isOnHomeBranchNested &&
+    //     topLevelTabPaths.contains(location);
 
-    return BlocListener<AuthCubit, AuthState>(
-      listener: (context, state) {
-        state.whenOrNull(
-          authenticated: (user) {
-            if (user.user.emailVerified != true) {
-              context.goNamed(
-                VerifyEmailPage.route,
-                extra: {'email': user.user.email},
-              );
-            }
-          },
-          error: (message) => AppSnackbar.showError(context, message),
-        );
-      },
-      child: PopScope(
-        canPop: false,
-        onPopInvokedWithResult: (didPop, _) {
-          if (!didPop) {
-            // Get the current tab index
-            final currentIndex = widget.shell.currentIndex;
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) {
+          // Get the current tab index
+          final currentIndex = widget.shell.currentIndex;
 
-            // If we're not on the home tab (index 0), go back to home
-            if (currentIndex != 0) {
-              widget.shell.goBranch(0);
-            }
+          // If we're not on the home tab (index 0), go back to home
+          if (currentIndex != 0) {
+            widget.shell.goBranch(0);
           }
-        },
-        child: Scaffold(
-          body: widget.shell,
-          bottomNavigationBar: showBottomNav
-              ? Theme(
-                  data: ThemeData(
-                    splashColor: Colors.transparent,
-                    highlightColor: Colors.transparent,
-                    bottomAppBarTheme: const BottomAppBarThemeData(
-                      shadowColor: Colors.transparent,
-                    ),
-                    bottomNavigationBarTheme:
-                        const BottomNavigationBarThemeData(
-                          enableFeedback: false,
+        }
+      },
+      child: Scaffold(
+        body: widget.shell,
+        bottomNavigationBar: Theme(
+          data: ThemeData(
+            splashColor: Colors.transparent,
+            highlightColor: Colors.transparent,
+            bottomAppBarTheme: const BottomAppBarThemeData(
+              shadowColor: Colors.transparent,
+            ),
+            bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+              enableFeedback: false,
+            ),
+          ),
+          child: SizedBox(
+            child: BottomNavigationBar(
+              currentIndex: widget.shell.currentIndex,
+              onTap: (index) {
+                widget.shell.goBranch(index);
+              },
+              type: BottomNavigationBarType.fixed,
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              selectedLabelStyle: AppTypography.body2XS.copyWith(
+                color: AppColors.textBlackColor,
+              ),
+              unselectedLabelStyle: AppTypography.body2XS.copyWith(
+                color: AppColors.textBlackColor,
+              ),
+              items: LayoutPageTab.values.map((tab) {
+                final orderCount =
+                    context.watch<CartCubit>().state.cart?.items.length ?? 0;
+                return BottomNavigationBarItem(
+                  icon: tab == LayoutPageTab.order
+                      ? Badge.count(
+                          count: orderCount,
+                          child: AppIcon.withSvgPath(
+                            tab.icon,
+                            // color:
+                            //     widget.shell.currentIndex ==
+                            //         LayoutPageTab.values.indexOf(tab)
+                            //     ? AppColors.primary
+                            //     : AppColors.lightGrey,
+                          ),
+                        )
+                      : AppIcon.withSvgPath(
+                          tab.icon,
+                          // color:
+                          //     widget.shell.currentIndex ==
+                          //         LayoutPageTab.values.indexOf(tab)
+                          //     ? AppColors.primary
+                          //     : AppColors.lightGrey,
                         ),
-                  ),
-                  child: SizedBox(
-                    child: BottomNavigationBar(
-                      currentIndex: widget.shell.currentIndex,
-                      onTap: (index) {
-                        widget.shell.goBranch(index);
-                      },
-                      type: BottomNavigationBarType.fixed,
-                      backgroundColor: Colors.transparent,
-                      elevation: 0,
-                      fixedColor: AppColors.primary,
-                      selectedFontSize: 12,
-                      items: LayoutPageTab.values.map((tab) {
-                        final orderCount =
-                            context
-                                .watch<CartCubit>()
-                                .state
-                                .cart
-                                ?.items
-                                .length ??
-                            0;
-                        return BottomNavigationBarItem(
-                          icon: tab == LayoutPageTab.order
-                              ? Badge.count(
-                                  count: orderCount,
-                                  child: AppIcon.withSvgPath(
-                                    tab.icon,
-                                    size: AppSizes.iconSizeMedium,
-                                    color:
-                                        widget.shell.currentIndex ==
-                                            LayoutPageTab.values.indexOf(tab)
-                                        ? AppColors.primary
-                                        : AppColors.lightGrey,
-                                  ),
-                                )
-                              : AppIcon.withSvgPath(
-                                  tab.icon,
-                                  size: AppSizes.iconSizeMedium,
-                                  color:
-                                      widget.shell.currentIndex ==
-                                          LayoutPageTab.values.indexOf(tab)
-                                      ? AppColors.primary
-                                      : AppColors.lightGrey,
-                                ),
-                          label: tab.title,
-                        );
-                      }).toList(),
-                    ),
-                  ),
-                )
-              : const SizedBox.shrink(),
+                  label: tab.title,
+                );
+              }).toList(),
+            ),
+          ),
         ),
       ),
     );

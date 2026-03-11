@@ -4,6 +4,7 @@ import 'package:coffix_app/features/credit/logic/credit_cubit.dart';
 import 'package:coffix_app/features/credit/presentation/pages/credit_topup_payment_page.dart';
 import 'package:coffix_app/presentation/atoms/app_button.dart';
 import 'package:coffix_app/presentation/atoms/app_loading.dart';
+import 'package:coffix_app/presentation/atoms/app_notification.dart';
 import 'package:coffix_app/presentation/molecules/app_back_header.dart';
 import 'package:coffix_app/presentation/atoms/app_snackbar.dart';
 import 'package:flutter/material.dart';
@@ -56,7 +57,7 @@ class _CreditTopupViewState extends State<CreditTopupView> {
               );
             },
             error: (message) {
-              AppSnackbar.showError(context, 'Top up failed: $message');
+              AppNotification.error(context, 'Top up failed: $message');
             },
           );
         },
@@ -71,10 +72,7 @@ class _CreditTopupViewState extends State<CreditTopupView> {
                   children: [
                     AppBackHeader(title: "Top Up Coffix Credit"),
                     const SizedBox(height: AppSizes.xxl),
-                    Text(
-                      'Enter amount',
-                      style: theme.textTheme.titleMedium,
-                    ),
+                    Text('Enter amount', style: theme.textTheme.titleMedium),
                     const SizedBox(height: AppSizes.md),
                     TextFormField(
                       controller: _amountController,
