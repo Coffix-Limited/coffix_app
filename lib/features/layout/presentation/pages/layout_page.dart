@@ -19,17 +19,29 @@ import 'package:go_router/go_router.dart';
 enum LayoutPageTab {
   home(
     title: "Home",
-    icon: AppImages.homeFilled,
-    selectedIcon: AppImages.homeFilled,
+    icon: AppImages.homeGray,
+    selectedIcon: AppImages.homeBlack,
   ),
   coffixCredit(
     title: "Coffix Credit",
-    icon: AppImages.credit,
-    selectedIcon: AppImages.credit,
+    icon: AppImages.creditGray,
+    selectedIcon: AppImages.creditBlack,
   ),
-  menu(title: "Menu", icon: AppImages.coffee, selectedIcon: AppImages.coffee),
-  stores(title: "Stores", icon: AppImages.shop, selectedIcon: AppImages.shop),
-  order(title: "My Order", icon: AppImages.cart, selectedIcon: AppImages.cart);
+  menu(
+    title: "Menu",
+    icon: AppImages.menuGray,
+    selectedIcon: AppImages.menuBlack,
+  ),
+  stores(
+    title: "Stores",
+    icon: AppImages.storeGray,
+    selectedIcon: AppImages.storeBlack,
+  ),
+  order(
+    title: "My Order",
+    icon: AppImages.orderGray,
+    selectedIcon: AppImages.orderBlack,
+  );
 
   final String title;
   final String icon;
@@ -133,50 +145,58 @@ class _LayoutViewState extends State<LayoutView> {
             ),
           ),
           child: SizedBox(
-            child: BottomNavigationBar(
-              currentIndex: widget.shell.currentIndex,
-              onTap: (index) {
-                context.watch<AuthCubit>().state.maybeWhen(
-                  orElse: () => null,
-                  authenticated: (user) => widget.shell.goBranch(index),
+            child: BlocBuilder<AuthCubit, AuthState>(
+              builder: (context, state) {
+                return BottomNavigationBar(
+                  currentIndex: widget.shell.currentIndex,
+                  onTap: (index) {
+                    state.maybeWhen(
+                      authenticated: (user) => widget.shell.goBranch(index),
+                      orElse: () => null,
+                    );
+                  },
+                  type: BottomNavigationBarType.fixed,
+                  backgroundColor: Colors.transparent,
+                  elevation: 0,
+                  selectedLabelStyle: AppTypography.body2XS.copyWith(
+                    color: AppColors.textBlackColor,
+                  ),
+                  unselectedLabelStyle: AppTypography.body2XS.copyWith(
+                    color: AppColors.textBlackColor,
+                  ),
+                  items: LayoutPageTab.values.map((tab) {
+                    final orderCount =
+                        context.watch<CartCubit>().state.cart?.items.length ??
+                        0;
+                    return BottomNavigationBarItem(
+                      icon: tab == LayoutPageTab.order
+                          ? widget.shell.currentIndex ==
+                                    LayoutPageTab.values.indexOf(tab)
+                                ? Badge.count(
+                                    count: orderCount,
+                                    child: Image.asset(
+                                      tab.selectedIcon,
+                                      width: 24,
+                                      height: 24,
+                                    ),
+                                  )
+                                : Badge.count(
+                                    count: orderCount,
+                                    child: Image.asset(
+                                      tab.icon,
+                                      width: 24,
+                                      height: 24,
+                                    ),
+                                  )
+                          : widget.shell.currentIndex ==
+                                LayoutPageTab.values.indexOf(tab)
+                          ? Image.asset(tab.selectedIcon, width: 24, height: 24)
+                          : Image.asset(tab.icon, width: 24, height: 24),
+                      label: tab.title,
+                    );
+                  }).toList(),
                 );
               },
-              type: BottomNavigationBarType.fixed,
-              backgroundColor: Colors.transparent,
-              elevation: 0,
-              selectedLabelStyle: AppTypography.body2XS.copyWith(
-                color: AppColors.textBlackColor,
-              ),
-              unselectedLabelStyle: AppTypography.body2XS.copyWith(
-                color: AppColors.textBlackColor,
-              ),
-              items: LayoutPageTab.values.map((tab) {
-                final orderCount =
-                    context.watch<CartCubit>().state.cart?.items.length ?? 0;
-                return BottomNavigationBarItem(
-                  icon: tab == LayoutPageTab.order
-                      ? Badge.count(
-                          count: orderCount,
-                          child: AppIcon.withSvgPath(
-                            tab.icon,
-                            // color:
-                            //     widget.shell.currentIndex ==
-                            //         LayoutPageTab.values.indexOf(tab)
-                            //     ? AppColors.primary
-                            //     : AppColors.lightGrey,
-                          ),
-                        )
-                      : AppIcon.withSvgPath(
-                          tab.icon,
-                          // color:
-                          //     widget.shell.currentIndex ==
-                          //         LayoutPageTab.values.indexOf(tab)
-                          //     ? AppColors.primary
-                          //     : AppColors.lightGrey,
-                        ),
-                  label: tab.title,
-                );
-              }).toList(),
             ),
           ),
         ),
