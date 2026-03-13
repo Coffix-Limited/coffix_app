@@ -9,6 +9,7 @@ import 'package:coffix_app/features/credit/presentation/pages/credit_topup_payme
 import 'package:coffix_app/features/credit/presentation/widgets/info_card.dart';
 import 'package:coffix_app/features/credit/presentation/widgets/tier_card.dart';
 import 'package:coffix_app/presentation/atoms/app_button.dart';
+import 'package:coffix_app/presentation/atoms/app_loading.dart';
 import 'package:coffix_app/presentation/atoms/app_field.dart';
 import 'package:coffix_app/presentation/atoms/app_notification.dart';
 import 'package:coffix_app/presentation/molecules/app_back_header.dart';
@@ -44,15 +45,17 @@ class _CreditViewState extends State<CreditView> {
 
   double calculateTopUp(double amount) {
     double totalAmount = amount;
+
     if (amount < 50) {
-      return amount;
-    } else if (amount == 50 && amount <= 250) {
-      totalAmount += amount * 0.1;
-    } else if (amount == 250 && amount <= 500) {
+      return totalAmount;
+    } else if (amount <= 250) {
+      totalAmount += amount * 0.10;
+    } else if (amount <= 500) {
       totalAmount += amount * 0.15;
     } else {
-      totalAmount += amount * 0.2;
+      totalAmount += amount * 0.20;
     }
+
     return totalAmount;
   }
 
@@ -79,22 +82,19 @@ class _CreditViewState extends State<CreditView> {
               listener: (context, state) {
                 state.whenOrNull(
                   loaded: (paymentSessionUrl) {
-                    context.pushNamed(
-                      CreditTopupPaymentPage.route,
-                      extra: {'paymentSessionUrl': paymentSessionUrl},
-                    );
+                    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+                      context.pushNamed(
+                        CreditTopupPaymentPage.route,
+                        extra: {'paymentSessionUrl': paymentSessionUrl},
+                      );
+                    });
                   },
                 );
               },
               builder: (context, state) {
-                state.whenOrNull(
-                  loaded: (paymentSessionUrl) {
-                    context.pushNamed(
-                      CreditTopupPaymentPage.route,
-                      extra: {'paymentSessionUrl': paymentSessionUrl},
-                    );
-                  },
-                );
+                if (state.maybeWhen(loading: () => true, orElse: () => false)) {
+                  return const Center(child: AppLoading());
+                }
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -186,7 +186,7 @@ class _CreditViewState extends State<CreditView> {
                         if (_showTopUpField &
                             formKey.currentState!.validate()) {
                           context.read<CreditCubit>().topup(
-                            amount: calculateTopUp(double.parse(amount ?? '0')),
+                            amount: double.parse(amount),
                           );
                         } else {
                           setState(() {

@@ -5,6 +5,7 @@ import { WebhookService } from "./service";
 const router = express.Router();
 
 router.post("/", (request, response) => {
+  console.log("[WEBHOOK POST]", new Date().toISOString(), request.body);
   logger.info("Webhook received:", request.body);
   return response.status(200).json({ success: true });
 });
@@ -12,6 +13,7 @@ router.post("/", (request, response) => {
 // Test route to verify the webhook is working
 router.get("/", async (req, res) => {
   try {
+    console.log("[WEBHOOK GET]", new Date().toISOString(), req.query);
     logger.info("Webhook received", { query: req.query });
 
     const sessionId = req.query.sessionId as string | undefined;

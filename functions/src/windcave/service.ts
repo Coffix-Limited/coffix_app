@@ -50,9 +50,11 @@ export class WindcaveService {
   async createPaymentSession({
     amount,
     orderId,
+    customerEmail,
   }: {
     amount: number;
     orderId: string;
+    customerEmail: string;
   }) {
     const response = await fetch(`${this.windcaveApiUrl}/api/v1/sessions`, {
       method: "POST",
@@ -70,9 +72,9 @@ export class WindcaveService {
           declined: WINDCAVE_FAILED_URL,
           cancelled: WINDCAVE_CANCELLED_URL,
         },
-        notificationUrl: `${process.env.BASE_URL}/coffix-app-dev/us-central1/v1/webhook`,
+        notificationUrl: `${process.env.BASE_URL}/webhook`,
         customer: {
-          email: "pajunar0@gmail.com",
+          email: customerEmail,
         },
       }),
     });

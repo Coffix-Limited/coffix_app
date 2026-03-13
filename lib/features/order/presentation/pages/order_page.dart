@@ -41,6 +41,7 @@ class _OrderViewState extends State<OrderView> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Scaffold(
+      appBar: const AppBackHeader(title: 'Orders'),
       body: BlocBuilder<OrderCubit, OrderState>(
         builder: (context, state) {
           return state.when(
@@ -59,7 +60,6 @@ class _OrderViewState extends State<OrderView> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      const AppBackHeader(title: 'Orders'),
                       Expanded(
                         child: EmptyState(
                           title: 'No orders yet',

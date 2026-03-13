@@ -1,4 +1,4 @@
-import 'package:coffix_app/features/credit/presentation/pages/credit_successful_page.dart';
+import 'package:coffix_app/features/credit/presentation/pages/credit_page.dart';
 import 'package:coffix_app/features/profile/presentation/pages/profile_page.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -37,6 +37,7 @@ class _CreditTopupPaymentViewState extends State<CreditTopupPaymentView> {
       ..setNavigationDelegate(
         NavigationDelegate(
           onNavigationRequest: (request) {
+            print("Navigating to ${request.url}");
             final uri = Uri.parse(request.url);
             final isSuccess =
                 uri.scheme == 'https' &&
@@ -45,8 +46,11 @@ class _CreditTopupPaymentViewState extends State<CreditTopupPaymentView> {
                     uri.path.contains('/credit') &&
                         uri.path.contains('success'));
             if (isSuccess) {
+              context.pop();
               WidgetsBinding.instance.addPostFrameCallback((_) {
-                context.goNamed(ProfilePage.route);
+                if (context.mounted) {
+                  context.goNamed(ProfilePage.route);
+                }
               });
               return NavigationDecision.prevent;
             }

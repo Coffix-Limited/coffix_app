@@ -24,6 +24,7 @@ router.post(
     const windcaveService = new WindcaveService();
     const coffixCreditService = new CoffixCreditService();
     const customerId = request.user?.uid;
+    const customerEmail = request.user?.email;
 
     if (!customerId) {
       return response
@@ -105,6 +106,7 @@ router.post(
         await windcaveService.createPaymentSession({
           amount: totalAmount,
           orderId,
+          customerEmail: customerEmail ?? "",
         });
 
       await firebaseService.createNewTransaction({

@@ -10,6 +10,7 @@ import 'package:coffix_app/features/home/presentation/widgets/forgot_password.da
 import 'package:coffix_app/features/home/presentation/widgets/login_form.dart';
 import 'package:coffix_app/features/menu/presentation/pages/menu_page.dart';
 import 'package:coffix_app/features/modifier/logic/modifier_cubit.dart';
+import 'package:coffix_app/features/order/presentation/pages/order_page.dart';
 import 'package:coffix_app/features/products/logic/product_cubit.dart';
 import 'package:coffix_app/features/profile/presentation/pages/personal_info_page.dart';
 import 'package:coffix_app/features/profile/presentation/pages/profile_page.dart';
@@ -18,6 +19,7 @@ import 'package:coffix_app/presentation/atoms/app_button.dart';
 import 'package:coffix_app/presentation/atoms/app_icon.dart';
 import 'package:coffix_app/presentation/atoms/app_loading.dart';
 import 'package:coffix_app/presentation/atoms/app_notification.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
@@ -180,7 +182,9 @@ class _HomeViewState extends State<HomeView> {
                                         Expanded(
                                           child: AppButton.primary(
                                             onPressed: () async {
-                                              // context.pushNamed(OrderPage.route);
+                                              context.pushNamed(
+                                                OrderPage.route,
+                                              );
                                               // await FirebaseAuth.instance
                                               // .signOut();
                                             },

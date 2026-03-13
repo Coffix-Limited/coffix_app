@@ -13,10 +13,7 @@ export class InsufficientCreditError extends Error {
 
 export class CoffixCreditService {
   async getCreditAvailable(customerId: string): Promise<number> {
-    const snap = await firestore
-      .collection("customers")
-      .doc(customerId)
-      .get();
+    const snap = await firestore.collection("customers").doc(customerId).get();
     if (!snap.exists) return 0;
     return (snap.data()?.creditAvailable ?? 0) as number;
   }
@@ -43,6 +40,22 @@ export class CoffixCreditService {
     });
   }
 
+  private calculateTopUp(amount: number): number {
+    let totalAmount = amount;
+
+    if (amount < 50) {
+      return totalAmount;
+    } else if (amount <= 250) {
+      totalAmount += amount * 0.1;
+    } else if (amount <= 500) {
+      totalAmount += amount * 0.15;
+    } else {
+      totalAmount += amount * 0.2;
+    }
+
+    return totalAmount;
+  }
+
   async addCredit(customerId: string, amount: number): Promise<void> {
     const customerRef = firestore.collection("customers").doc(customerId);
 
@@ -52,7 +65,12 @@ export class CoffixCreditService {
         ? ((customerSnap.data()?.creditAvailable ?? 0) as number)
         : 0;
 
-      tx.set(customerRef, { creditAvailable: current + amount }, { merge: true });
+      const totalAmount = this.calculateTopUp(amount);
+      tx.set(
+        customerRef,
+        { creditAvailable: current + totalAmount },
+        { merge: true },
+      );
     });
   }
 }
