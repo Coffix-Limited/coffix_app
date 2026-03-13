@@ -1,9 +1,9 @@
 import 'package:coffix_app/core/constants/colors.dart';
+import 'package:coffix_app/core/constants/images.dart';
 import 'package:coffix_app/core/constants/sizes.dart';
 import 'package:coffix_app/core/di/service_locator.dart';
 import 'package:coffix_app/features/auth/logic/auth_cubit.dart';
 import 'package:coffix_app/features/credit/presentation/pages/credit_page.dart';
-import 'package:coffix_app/features/credit/presentation/pages/credit_topup_page.dart';
 import 'package:coffix_app/features/profile/presentation/pages/about_page.dart';
 import 'package:coffix_app/features/profile/presentation/pages/personal_info_page.dart';
 import 'package:coffix_app/features/profile/presentation/pages/qr_id_page.dart';
@@ -14,6 +14,7 @@ import 'package:coffix_app/features/transaction/presentation/pages/transaction_p
 import 'package:coffix_app/presentation/atoms/app_button.dart';
 import 'package:coffix_app/presentation/atoms/app_card.dart';
 import 'package:coffix_app/presentation/atoms/app_clickable.dart';
+import 'package:coffix_app/presentation/molecules/app_back_header.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -42,7 +43,7 @@ class ProfileView extends StatelessWidget {
       orElse: () => 0,
     );
     return Scaffold(
-      appBar: AppBar(title: Text("Profile", style: theme.textTheme.titleLarge)),
+      appBar: AppBackHeader(title: "My Account"),
       body: SingleChildScrollView(
         padding: AppSizes.defaultPadding,
         child: Column(
@@ -88,6 +89,7 @@ class ProfileView extends StatelessWidget {
               onTap: () {
                 context.pushNamed(PersonalInfoPage.route);
               },
+              icon: AppImages.profile,
             ),
             const SizedBox(height: AppSizes.sm),
 
@@ -102,27 +104,39 @@ class ProfileView extends StatelessWidget {
               onTap: () {
                 context.pushNamed(TransactionPage.route);
               },
+              icon: AppImages.transaction,
             ),
             ProfileTile(
               label: 'Share your balance',
               onTap: () {
                 context.pushNamed(ShareYourBalancePage.route);
               },
+              icon: AppImages.balance,
             ),
             ProfileTile(
               label: 'Specials',
               onTap: () {
                 context.pushNamed(SpecialUrlPage.route);
               },
+              icon: AppImages.special,
             ),
             ProfileTile(
               label: 'Coffix QR ID',
               onTap: () {
                 context.pushNamed(QrIdPage.route);
               },
+              icon: AppImages.id,
             ),
-            ProfileTile(label: 'Coffee on us', onTap: () {}),
-            ProfileTile(label: 'Coffee for home', onTap: () {}),
+            ProfileTile(
+              label: 'Coffee on us',
+              onTap: () {},
+              icon: AppImages.coffee,
+            ),
+            ProfileTile(
+              label: 'Coffee for home',
+              onTap: () {},
+              icon: AppImages.bag,
+            ),
             const SizedBox(height: AppSizes.sm),
 
             Text(
@@ -136,13 +150,14 @@ class ProfileView extends StatelessWidget {
               onTap: () {
                 context.pushNamed(AboutPage.route);
               },
+              icon: AppImages.info,
             ),
             ProfileTile(
               label: 'Logout',
               onTap: () {
                 context.read<AuthCubit>().signOut();
               },
-              textColor: AppColors.primary,
+              icon: AppImages.logout,
             ),
             const SizedBox(height: AppSizes.xxxl),
             Center(

@@ -1,6 +1,7 @@
 import 'package:coffix_app/core/constants/colors.dart';
 import 'package:coffix_app/core/constants/sizes.dart';
 import 'package:coffix_app/core/di/service_locator.dart';
+import 'package:coffix_app/core/extensions/price_extensions.dart';
 import 'package:coffix_app/core/theme/typography.dart';
 import 'package:coffix_app/features/cart/data/model/cart_item.dart';
 import 'package:coffix_app/features/cart/logic/cart_cubit.dart';
@@ -161,146 +162,136 @@ class _AddProductViewState extends State<AddProductView> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     const SizedBox(height: AppSizes.lg),
-                    AppCard(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppSizes.lg,
-                        vertical: AppSizes.md,
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          AppClickable(
-                            showSplash: false,
-                            onPressed: () {
-                              context.pushNamed(
-                                CustomizeProductPage.route,
-                                extra: {
-                                  'product': widget.product,
-                                  'storeId': widget.storeId,
-                                },
-                              );
-                            },
-                            borderRadius: BorderRadius.circular(AppSizes.md),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  Icons.settings,
-                                  color: AppColors.primary,
-                                  size: AppSizes.iconSizeLarge,
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        AppClickable(
+                          showSplash: false,
+                          onPressed: () {
+                            context.pushNamed(
+                              CustomizeProductPage.route,
+                              extra: {
+                                'product': widget.product,
+                                'storeId': widget.storeId,
+                              },
+                            );
+                          },
+                          borderRadius: BorderRadius.circular(AppSizes.md),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.settings,
+                                color: AppColors.primary,
+                                size: AppSizes.iconSizeLarge,
+                              ),
+                              const SizedBox(height: AppSizes.xs),
+                              Text(
+                                "Customise",
+                                style: theme.textTheme.bodyMedium?.copyWith(
+                                  fontWeight: FontWeight.w500,
                                 ),
-                                const SizedBox(height: AppSizes.xs),
-                                Text(
-                                  "Customise",
-                                  style: theme.textTheme.bodyMedium?.copyWith(
-                                    fontWeight: FontWeight.w500,
+                              ),
+                            ],
+                          ),
+                        ),
+                        Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Text(
+                              "Quantity",
+                              style: theme.textTheme.labelMedium?.copyWith(
+                                color: AppColors.lightGrey,
+                              ),
+                            ),
+                            const SizedBox(height: AppSizes.sm),
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                AppClickable(
+                                  disabled: quantity <= 1,
+                                  onPressed: () {
+                                    setState(() {
+                                      quantity -= 1;
+                                    });
+                                  },
+                                  borderRadius: BorderRadius.circular(
+                                    AppSizes.sm,
+                                  ),
+                                  child: Container(
+                                    padding: const EdgeInsets.all(AppSizes.sm),
+                                    decoration: BoxDecoration(
+                                      border: Border.all(
+                                        color: quantity <= 1
+                                            ? Colors.transparent
+                                            : AppColors.borderColor,
+                                      ),
+                                      borderRadius: BorderRadius.circular(
+                                        AppSizes.sm,
+                                      ),
+                                    ),
+                                    child: AppIcon.withIconData(
+                                      Icons.remove,
+                                      size: AppSizes.iconSizeSmall,
+                                      color: AppColors.black,
+                                    ),
+                                  ),
+                                ),
+                                Container(
+                                  constraints: const BoxConstraints(
+                                    minWidth: 40,
+                                  ),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: AppSizes.md,
+                                    vertical: AppSizes.sm,
+                                  ),
+                                  alignment: Alignment.center,
+                                  child: Text(
+                                    "$quantity",
+                                    style: theme.textTheme.titleMedium,
+                                  ),
+                                ),
+                                AppClickable(
+                                  onPressed: () {
+                                    setState(() {
+                                      quantity += 1;
+                                    });
+                                  },
+                                  borderRadius: BorderRadius.circular(
+                                    AppSizes.sm,
+                                  ),
+                                  child: Container(
+                                    padding: const EdgeInsets.all(AppSizes.sm),
+                                    decoration: BoxDecoration(
+                                      border: Border.all(
+                                        color: AppColors.borderColor,
+                                      ),
+                                      borderRadius: BorderRadius.circular(
+                                        AppSizes.sm,
+                                      ),
+                                    ),
+                                    child: AppIcon.withIconData(
+                                      Icons.add,
+                                      size: AppSizes.iconSizeSmall,
+                                      color: AppColors.black,
+                                    ),
                                   ),
                                 ),
                               ],
                             ),
-                          ),
-                          Column(
-                            mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Text(
-                                "Quantity",
-                                style: theme.textTheme.labelMedium?.copyWith(
-                                  color: AppColors.lightGrey,
-                                ),
-                              ),
-                              const SizedBox(height: AppSizes.sm),
-                              Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  AppClickable(
-                                    disabled: quantity <= 1,
-                                    onPressed: () {
-                                      setState(() {
-                                        quantity -= 1;
-                                      });
-                                    },
-                                    borderRadius: BorderRadius.circular(
-                                      AppSizes.sm,
-                                    ),
-                                    child: Container(
-                                      padding: const EdgeInsets.all(
-                                        AppSizes.sm,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        border: Border.all(
-                                          color: quantity <= 1
-                                              ? Colors.transparent
-                                              : AppColors.borderColor,
-                                        ),
-                                        borderRadius: BorderRadius.circular(
-                                          AppSizes.sm,
-                                        ),
-                                      ),
-                                      child: AppIcon.withIconData(
-                                        Icons.remove,
-                                        size: AppSizes.iconSizeSmall,
-                                        color: AppColors.black,
-                                      ),
-                                    ),
-                                  ),
-                                  Container(
-                                    constraints: const BoxConstraints(
-                                      minWidth: 40,
-                                    ),
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: AppSizes.md,
-                                      vertical: AppSizes.sm,
-                                    ),
-                                    alignment: Alignment.center,
-                                    child: Text(
-                                      "$quantity",
-                                      style: theme.textTheme.titleMedium,
-                                    ),
-                                  ),
-                                  AppClickable(
-                                    onPressed: () {
-                                      setState(() {
-                                        quantity += 1;
-                                      });
-                                    },
-                                    borderRadius: BorderRadius.circular(
-                                      AppSizes.sm,
-                                    ),
-                                    child: Container(
-                                      padding: const EdgeInsets.all(
-                                        AppSizes.sm,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        border: Border.all(
-                                          color: AppColors.borderColor,
-                                        ),
-                                        borderRadius: BorderRadius.circular(
-                                          AppSizes.sm,
-                                        ),
-                                      ),
-                                      child: AppIcon.withIconData(
-                                        Icons.add,
-                                        size: AppSizes.iconSizeSmall,
-                                        color: AppColors.black,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
+                          ],
+                        ),
+                      ],
                     ),
                     const SizedBox(height: AppSizes.xxl),
-                    Wrap(
-                      spacing: AppSizes.sm,
-                      children: productModifierState.modifiers
-                          .map((mod) => AppCard(child: Text(mod.label ?? '')))
-                          .toList(),
-                    ),
+                    // Wrap(
+                    //   spacing: AppSizes.sm,
+                    //   children: productModifierState.modifiers
+                    //       .map((mod) => AppCard(child: Text(mod.label ?? '')))
+                    //       .toList(),
+                    // ),
                   ],
                 ),
               ),
@@ -310,21 +301,14 @@ class _AddProductViewState extends State<AddProductView> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Row(
-                      children: [
-                        Text("Total:"),
-                        Expanded(
-                          child: Text(
-                            textAlign: TextAlign.right,
-                            widget.product.price != null
-                                ? '\$${calculateTotal().toStringAsFixed(2)}'
-                                : '\$0.00',
-                            style: AppTypography.bodyL.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ],
+                    Text.rich(
+                      textAlign: TextAlign.center,
+                      widget.product.price != null
+                          ? calculateTotal().toCurrencySuperscript()
+                          : 0.00.toCurrencySuperscript(),
+                      style: AppTypography.bodyL.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     const SizedBox(height: AppSizes.lg),
                     AppButton(

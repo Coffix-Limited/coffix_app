@@ -1,13 +1,10 @@
 import 'package:coffix_app/core/constants/colors.dart';
 import 'package:coffix_app/core/constants/sizes.dart';
 import 'package:coffix_app/core/theme/typography.dart';
-import 'package:coffix_app/features/auth/logic/auth_cubit.dart';
 import 'package:coffix_app/features/auth/logic/otp_cubit.dart';
 import 'package:coffix_app/features/profile/presentation/pages/personal_info_page.dart';
 import 'package:coffix_app/presentation/atoms/app_button.dart';
 import 'package:coffix_app/presentation/atoms/app_notification.dart';
-import 'package:coffix_app/presentation/atoms/app_snackbar.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -50,16 +47,17 @@ class _EmailVerificationFormState extends State<EmailVerificationForm> {
     );
 
     return BlocConsumer<OtpCubit, OtpState>(
+      listenWhen: (previous, current) => previous != current,
       listener: (context, state) {
-        state.whenOrNull(
-          otpSent: (email) => AppNotification.show(
-            context,
-            'OTP sent to $email. Please check your email.',
-          ),
-          error: (message) => AppNotification.error(context, message),
-          verified: () =>
-              context.goNamed(PersonalInfoPage.route, extra: {"canBack": true}),
-        );
+        // state.whenOrNull(
+        //   otpSent: (email) => AppNotification.show(
+        //     context,
+        //     'OTP sent to $email. Please check your email.',
+        //   ),
+        //   error: (message) => AppNotification.error(context, message),
+        //   verified: () =>
+        //       context.goNamed(PersonalInfoPage.route, extra: {"canBack": true}),
+        // );
       },
       builder: (context, state) {
         return Padding(

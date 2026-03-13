@@ -1,4 +1,5 @@
 import 'package:coffix_app/features/credit/presentation/pages/credit_successful_page.dart';
+import 'package:coffix_app/features/profile/presentation/pages/profile_page.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:webview_flutter/webview_flutter.dart';
@@ -6,10 +7,7 @@ import 'package:webview_flutter/webview_flutter.dart';
 class CreditTopupPaymentPage extends StatelessWidget {
   static String route = 'credit_topup_payment_route';
 
-  const CreditTopupPaymentPage({
-    super.key,
-    required this.paymentSessionUrl,
-  });
+  const CreditTopupPaymentPage({super.key, required this.paymentSessionUrl});
 
   final String paymentSessionUrl;
 
@@ -20,10 +18,7 @@ class CreditTopupPaymentPage extends StatelessWidget {
 }
 
 class CreditTopupPaymentView extends StatefulWidget {
-  const CreditTopupPaymentView({
-    super.key,
-    required this.paymentSessionUrl,
-  });
+  const CreditTopupPaymentView({super.key, required this.paymentSessionUrl});
 
   final String paymentSessionUrl;
 
@@ -43,13 +38,15 @@ class _CreditTopupPaymentViewState extends State<CreditTopupPaymentView> {
         NavigationDelegate(
           onNavigationRequest: (request) {
             final uri = Uri.parse(request.url);
-            final isSuccess = uri.scheme == 'https' &&
+            final isSuccess =
+                uri.scheme == 'https' &&
                 uri.host == 'www.coffix.co.nz' &&
                 (uri.path == '/payment/successful' ||
-                    uri.path.contains('/credit') && uri.path.contains('success'));
+                    uri.path.contains('/credit') &&
+                        uri.path.contains('success'));
             if (isSuccess) {
               WidgetsBinding.instance.addPostFrameCallback((_) {
-                context.goNamed(CreditSuccessfulPage.route);
+                context.goNamed(ProfilePage.route);
               });
               return NavigationDecision.prevent;
             }

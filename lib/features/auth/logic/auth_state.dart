@@ -27,4 +27,10 @@ class AuthState with _$AuthState {
 
   // Authentication failed with an error message.
   const factory AuthState.error({required String message}) = _Error;
+
+  // Forgot password
+  const factory AuthState.forgotPassword() = _ForgotPassword;
+
+  // Password reset email sent
+  const factory AuthState.passwordResetEmailSent() = _PasswordResetEmailSent;
 }

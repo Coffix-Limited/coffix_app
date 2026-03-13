@@ -8,7 +8,6 @@ import 'package:coffix_app/presentation/atoms/app_clickable.dart';
 import 'package:coffix_app/presentation/atoms/app_icon.dart';
 import 'package:coffix_app/presentation/atoms/app_notification.dart';
 import 'package:coffix_app/presentation/atoms/app_field.dart';
-import 'package:coffix_app/presentation/atoms/app_icon_button.dart';
 import 'package:coffix_app/presentation/molecules/app_back_header.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -39,8 +38,6 @@ class StoreList extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          AppBackHeader(title: "Stores", showBackButton: false),
-          const SizedBox(height: AppSizes.md),
           Row(
             children: [
               Expanded(
@@ -57,7 +54,11 @@ class StoreList extends StatelessWidget {
             physics: const NeverScrollableScrollPhysics(),
             itemBuilder: (context, index) {
               final store = stores[index];
-              final isOpen = store.isOpenAt(DateTime.now());
+              final dateRange = DateTimeRange(
+                start: DateTime.now(),
+                end: DateTime.now().add(const Duration(hours: 1)),
+              );
+              final isOpen = store.isOpenAt();
               return AppClickable(
                 showSplash: false,
                 onPressed: () {

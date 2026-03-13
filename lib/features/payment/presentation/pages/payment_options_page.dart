@@ -62,6 +62,7 @@ class _PaymentOptionsPageViewState extends State<PaymentOptionsPageView> {
         paymentMethod == PaymentMethod.coffixCredit && creditAvailable < total;
 
     return Scaffold(
+      appBar: AppBackHeader(title: "Payment Method"),
       body: Column(
         children: [
           BlocConsumer<PaymentCubit, PaymentState>(
@@ -91,7 +92,6 @@ class _PaymentOptionsPageViewState extends State<PaymentOptionsPageView> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            AppBackHeader(title: "Payment Method"),
                             AppCard(
                               padding: const EdgeInsets.symmetric(
                                 horizontal: AppSizes.lg,

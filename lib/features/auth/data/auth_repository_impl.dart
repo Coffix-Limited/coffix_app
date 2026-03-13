@@ -327,4 +327,9 @@ class AuthRepositoryImpl extends ApiClient implements AuthRepository {
     final response = await post('/auth/verify', data: {'email': email});
     return response.data["hasAccount"] as bool;
   }
+
+  @override
+  Future<void> sendPasswordResetEmail({required String email}) async {
+    await _auth.sendPasswordResetEmail(email: email);
+  }
 }

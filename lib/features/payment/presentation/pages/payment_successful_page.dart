@@ -36,12 +36,12 @@ class PaymentSuccessfulView extends StatelessWidget {
     final timeText = DateFormat.jm().format(pickupTime);
 
     return Scaffold(
+      appBar: AppBackHeader(title: "Order Confirmed", showBackButton: false),
       body: SafeArea(
         child: Padding(
           padding: AppSizes.defaultPadding,
           child: Column(
             children: [
-              AppBackHeader(title: "Order Confirmed", showBackButton: false),
               const Spacer(),
               Icon(
                 Icons.check_circle_rounded,

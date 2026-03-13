@@ -1,10 +1,11 @@
+import 'package:coffix_app/core/constants/colors.dart';
 import 'package:coffix_app/core/constants/sizes.dart';
 import 'package:coffix_app/presentation/atoms/app_clickable.dart';
 import 'package:coffix_app/presentation/atoms/app_location.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-class AppBackHeader extends StatefulWidget {
+class AppBackHeader extends StatefulWidget implements PreferredSizeWidget {
   final VoidCallback? onBack;
   final String title;
   final bool showLocation;
@@ -20,6 +21,9 @@ class AppBackHeader extends StatefulWidget {
 
   @override
   State<AppBackHeader> createState() => _AppBackHeaderState();
+
+  @override
+  Size get preferredSize => Size.fromHeight(showLocation ? 70 : 56);
 }
 
 class _AppBackHeaderState extends State<AppBackHeader> {
@@ -30,55 +34,63 @@ class _AppBackHeaderState extends State<AppBackHeader> {
 
     return SafeArea(
       top: false,
-      child: Padding(
-        padding: EdgeInsets.only(top: topPadding, bottom: AppSizes.sm),
-        child: Align(
-          alignment: Alignment.centerLeft,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-              vertical: AppSizes.sm,
-              horizontal: AppSizes.xs,
-            ),
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                // Back Button (Left aligned)
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      if (widget.showBackButton)
-                        AppClickable(
-                          showSplash: false,
-                          onPressed: () {
-                            if (widget.onBack != null) {
-                              widget.onBack!();
-                            } else {
-                              context.pop();
-                            }
-                          },
-                          child: Icon(Icons.arrow_back_ios),
-                        ),
-                    ],
-                  ),
+      child: Column(
+        children: [
+          Padding(
+            padding: EdgeInsets.only(top: topPadding),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  vertical: AppSizes.sm,
+                  horizontal: AppSizes.xs,
                 ),
-
-                Column(
+                child: Stack(
+                  alignment: Alignment.center,
                   children: [
-                    Center(
-                      child: Text(
-                        widget.title,
-                        style: theme.textTheme.titleLarge,
+                    // Back Button (Left aligned)
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (widget.showBackButton)
+                            Padding(
+                              padding: const EdgeInsets.only(left: 12.0),
+                              child: AppClickable(
+                                showSplash: false,
+                                onPressed: () {
+                                  if (widget.onBack != null) {
+                                    widget.onBack!();
+                                  } else {
+                                    context.pop();
+                                  }
+                                },
+                                child: Icon(Icons.arrow_back_ios),
+                              ),
+                            ),
+                        ],
                       ),
                     ),
-                    if (widget.showLocation) AppLocation(),
+
+                    Column(
+                      children: [
+                        Center(
+                          child: Text(
+                            widget.title,
+                            style: theme.textTheme.titleLarge,
+                          ),
+                        ),
+                      ],
+                    ),
                   ],
                 ),
-              ],
+              ),
             ),
           ),
-        ),
+          Divider(height: 1, color: AppColors.borderColor),
+          if (widget.showLocation) AppLocation(),
+        ],
       ),
     );
   }

@@ -144,10 +144,10 @@ class AuthCubit extends Cubit<AuthState> {
     _userWithStoreSubscription = stream.listen(
       (AppUserWithStore? user) {
         print("user: ${user?.user.emailVerified}");
-        if (user?.user.emailVerified == false) {
-          emit(AuthState.emailNotVerified());
-          return;
-        }
+        // if (user?.user.emailVerified != true) {
+        //   emit(AuthState.emailNotVerified());
+        //   return;
+        // }
         emit(AuthState.authenticated(userWithStore: user!));
         // emit(
         //   user != null
@@ -203,6 +203,21 @@ class AuthCubit extends Cubit<AuthState> {
       }
       getUser();
       // getUserWithStore();
+    } catch (e) {
+      emit(AuthState.error(message: e.toString()));
+    }
+  }
+
+  void forgotPassword() {
+    emit(AuthState.forgotPassword());
+  }
+
+  Future<void> forgotPasswordWithEmail({required String email}) async {
+    emit(AuthState.loading());
+    try {
+      await _authRepository.sendPasswordResetEmail(email: email);
+      emit(AuthState.passwordResetEmailSent());
+      emit(AuthState.unauthenticated());
     } catch (e) {
       emit(AuthState.error(message: e.toString()));
     }

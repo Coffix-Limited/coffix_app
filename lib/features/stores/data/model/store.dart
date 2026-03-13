@@ -32,9 +32,11 @@ class Store {
   Map<String, dynamic> toJson() => _$StoreToJson(this);
 
   // Simple open check
-  bool isOpenAt(DateTime dt) {
+  bool isOpenAt() {
+    final dt = DateTime.now();
     final key = _weekdayKey(dt.weekday);
     final hours = openingHours?[key];
+    print(hours?.toJson());
     if (hours == null || hours.isOpen == false) return false;
     return hours.contains(dt);
   }

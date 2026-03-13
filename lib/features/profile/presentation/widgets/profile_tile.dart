@@ -9,13 +9,14 @@ class ProfileTile extends StatelessWidget {
     super.key,
     required this.label,
     required this.onTap,
+    required this.icon,
     this.textColor,
   });
 
   final String label;
   final VoidCallback onTap;
   final Color? textColor;
-
+  final String icon;
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -27,11 +28,21 @@ class ProfileTile extends StatelessWidget {
         child: Row(
           children: [
             Expanded(
-              child: Text(
-                label,
-                style: theme.textTheme.bodyLarge?.copyWith(
-                  color: textColor ?? AppColors.black,
-                ),
+              child: Row(
+                children: [
+                  Image.asset(
+                    icon,
+                    width: AppSizes.iconSizeMedium,
+                    height: AppSizes.iconSizeMedium,
+                  ),
+                  SizedBox(width: AppSizes.sm),
+                  Text(
+                    label,
+                    style: theme.textTheme.bodyLarge?.copyWith(
+                      color: textColor ?? AppColors.black,
+                    ),
+                  ),
+                ],
               ),
             ),
             AppIcon.withIconData(

@@ -104,13 +104,8 @@ class _LayoutViewState extends State<LayoutView> {
     );
     final isEmailVerified = user?.emailVerified ?? false;
 
-    const topLevelTabPaths = [
-      '/home',
-      '/coffix-credit',
-      '/menu',
-      '/stores',
-      '/cart',
-    ];
+    const hideTabPages = ['/payment', '/credit-topup-payment'];
+    final isHidden = hideTabPages.contains(location);
     // final isOnHomeBranchNested =
     //     widget.shell.currentIndex == 0 && location != '/home';
     // final showBottomNav =
@@ -145,59 +140,71 @@ class _LayoutViewState extends State<LayoutView> {
             ),
           ),
           child: SizedBox(
-            child: BlocBuilder<AuthCubit, AuthState>(
-              builder: (context, state) {
-                return BottomNavigationBar(
-                  currentIndex: widget.shell.currentIndex,
-                  onTap: (index) {
-                    state.maybeWhen(
-                      authenticated: (user) => widget.shell.goBranch(index),
-                      orElse: () => null,
-                    );
-                  },
-                  type: BottomNavigationBarType.fixed,
-                  backgroundColor: Colors.transparent,
-                  elevation: 0,
-                  selectedLabelStyle: AppTypography.body2XS.copyWith(
-                    color: AppColors.textBlackColor,
-                  ),
-                  unselectedLabelStyle: AppTypography.body2XS.copyWith(
-                    color: AppColors.textBlackColor,
-                  ),
-                  items: LayoutPageTab.values.map((tab) {
-                    final orderCount =
-                        context.watch<CartCubit>().state.cart?.items.length ??
-                        0;
-                    return BottomNavigationBarItem(
-                      icon: tab == LayoutPageTab.order
-                          ? widget.shell.currentIndex ==
-                                    LayoutPageTab.values.indexOf(tab)
-                                ? Badge.count(
-                                    count: orderCount,
-                                    child: Image.asset(
-                                      tab.selectedIcon,
-                                      width: 24,
-                                      height: 24,
-                                    ),
+            child: isHidden
+                ? const SizedBox.shrink()
+                : BlocBuilder<AuthCubit, AuthState>(
+                    builder: (context, state) {
+                      return BottomNavigationBar(
+                        currentIndex: widget.shell.currentIndex,
+                        onTap: (index) {
+                          state.maybeWhen(
+                            authenticated: (user) =>
+                                widget.shell.goBranch(index),
+                            orElse: () => null,
+                          );
+                        },
+                        type: BottomNavigationBarType.fixed,
+                        backgroundColor: Colors.transparent,
+                        elevation: 0,
+                        selectedLabelStyle: AppTypography.body2XS.copyWith(
+                          color: AppColors.textBlackColor,
+                        ),
+                        unselectedLabelStyle: AppTypography.body2XS.copyWith(
+                          color: AppColors.textBlackColor,
+                        ),
+                        items: LayoutPageTab.values.map((tab) {
+                          final orderCount =
+                              context
+                                  .watch<CartCubit>()
+                                  .state
+                                  .cart
+                                  ?.items
+                                  .length ??
+                              0;
+                          return BottomNavigationBarItem(
+                            icon: tab == LayoutPageTab.order
+                                ? widget.shell.currentIndex ==
+                                          LayoutPageTab.values.indexOf(tab)
+                                      ? Badge.count(
+                                          count: orderCount,
+                                          child: Image.asset(
+                                            tab.selectedIcon,
+                                            width: 24,
+                                            height: 24,
+                                          ),
+                                        )
+                                      : Badge.count(
+                                          count: orderCount,
+                                          child: Image.asset(
+                                            tab.icon,
+                                            width: 24,
+                                            height: 24,
+                                          ),
+                                        )
+                                : widget.shell.currentIndex ==
+                                      LayoutPageTab.values.indexOf(tab)
+                                ? Image.asset(
+                                    tab.selectedIcon,
+                                    width: 24,
+                                    height: 24,
                                   )
-                                : Badge.count(
-                                    count: orderCount,
-                                    child: Image.asset(
-                                      tab.icon,
-                                      width: 24,
-                                      height: 24,
-                                    ),
-                                  )
-                          : widget.shell.currentIndex ==
-                                LayoutPageTab.values.indexOf(tab)
-                          ? Image.asset(tab.selectedIcon, width: 24, height: 24)
-                          : Image.asset(tab.icon, width: 24, height: 24),
-                      label: tab.title,
-                    );
-                  }).toList(),
-                );
-              },
-            ),
+                                : Image.asset(tab.icon, width: 24, height: 24),
+                            label: tab.title,
+                          );
+                        }).toList(),
+                      );
+                    },
+                  ),
           ),
         ),
       ),

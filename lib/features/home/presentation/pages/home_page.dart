@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:coffix_app/core/constants/colors.dart';
 import 'package:coffix_app/core/constants/images.dart';
 import 'package:coffix_app/core/constants/sizes.dart';
@@ -8,19 +6,18 @@ import 'package:coffix_app/features/auth/data/model/user_with_store.dart';
 import 'package:coffix_app/features/auth/logic/auth_cubit.dart';
 import 'package:coffix_app/features/auth/logic/otp_cubit.dart';
 import 'package:coffix_app/features/home/presentation/widgets/email_verification_form.dart';
-import 'package:coffix_app/features/home/presentation/widgets/home_action_buttons.dart';
+import 'package:coffix_app/features/home/presentation/widgets/forgot_password.dart';
 import 'package:coffix_app/features/home/presentation/widgets/login_form.dart';
 import 'package:coffix_app/features/menu/presentation/pages/menu_page.dart';
-import 'package:coffix_app/features/order/presentation/pages/order_page.dart';
+import 'package:coffix_app/features/modifier/logic/modifier_cubit.dart';
+import 'package:coffix_app/features/products/logic/product_cubit.dart';
+import 'package:coffix_app/features/profile/presentation/pages/personal_info_page.dart';
 import 'package:coffix_app/features/profile/presentation/pages/profile_page.dart';
 import 'package:coffix_app/features/stores/logic/store_cubit.dart';
 import 'package:coffix_app/presentation/atoms/app_button.dart';
 import 'package:coffix_app/presentation/atoms/app_icon.dart';
 import 'package:coffix_app/presentation/atoms/app_loading.dart';
-import 'package:coffix_app/presentation/atoms/app_location.dart';
 import 'package:coffix_app/presentation/atoms/app_notification.dart';
-import 'package:coffix_app/presentation/atoms/app_snackbar.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
@@ -38,6 +35,8 @@ class HomePage extends StatelessWidget {
         BlocProvider.value(value: getIt<AuthCubit>()),
         BlocProvider.value(value: getIt<OtpCubit>()),
         BlocProvider.value(value: getIt<StoreCubit>()),
+        BlocProvider.value(value: getIt<ProductCubit>()),
+        BlocProvider.value(value: getIt<ModifierCubit>()),
       ],
       child: const HomeView(),
     );
@@ -83,99 +82,127 @@ class _HomeViewState extends State<HomeView> {
           child: SingleChildScrollView(
             child: Padding(
               padding: AppSizes.defaultPadding,
-              child: BlocConsumer<AuthCubit, AuthState>(
-                listenWhen: (previous, current) => previous != current,
-                listener: (context, state) {
-                  state.whenOrNull(
-                    authenticated: (user) {
-                      context.read<StoreCubit>().getStores();
-                    },
-                    error: (message) => AppNotification.error(context, message),
+              child: BlocListener<OtpCubit, OtpState>(
+                listenWhen: (prev, curr) => curr.maybeWhen(
+                  verified: () => !prev.maybeWhen(
+                    verified: () => true,
+                    orElse: () => false,
+                  ),
+                  orElse: () => false,
+                ),
+                listener: (context, _) {
+                  context.goNamed(
+                    PersonalInfoPage.route,
+                    extra: {"canBack": true},
                   );
                 },
-                builder: (context, state) {
-                  final Widget mainContent = state.when(
-                    emailNotVerified: () => EmailVerificationForm(),
-                    hasAccount: (hasAccount) => LoginForm(formKey: formKey),
-                    otpSent: (email) => LoginForm(formKey: formKey),
-                    initial: () => AppLoading(),
-                    loading: () => const Center(child: AppLoading()),
-                    authenticated: (userWithStore) =>
-                        _HomeContent(user: userWithStore),
-                    unauthenticated: () => LoginForm(formKey: formKey),
-                    error: (message) => LoginForm(formKey: formKey),
-                  );
+                child: BlocConsumer<AuthCubit, AuthState>(
+                  listenWhen: (previous, current) => previous != current,
+                  listener: (context, state) {
+                    state.whenOrNull(
+                      authenticated: (user) {
+                        context.read<StoreCubit>().getStores();
+                        context.read<ProductCubit>().getProducts();
+                      },
+                      passwordResetEmailSent: () {
+                        AppNotification.show(
+                          context,
+                          'Password reset email sent. Please check your email.',
+                        );
+                      },
+                      unauthenticated: () => context.goNamed(HomePage.route),
+                      error: (message) =>
+                          AppNotification.error(context, message),
+                    );
+                  },
+                  builder: (context, state) {
+                    final Widget mainContent = state.when(
+                      emailNotVerified: () => EmailVerificationForm(),
+                      hasAccount: (hasAccount) => LoginForm(formKey: formKey),
+                      otpSent: (email) => LoginForm(formKey: formKey),
+                      forgotPassword: () => ForgotPassword(),
+                      passwordResetEmailSent: () => ForgotPassword(),
+                      initial: () => AppLoading(),
+                      loading: () => const Center(child: AppLoading()),
+                      authenticated: (userWithStore) =>
+                          userWithStore.user.emailVerified == true
+                          ? _HomeContent(user: userWithStore)
+                          : EmailVerificationForm(),
+                      unauthenticated: () => LoginForm(formKey: formKey),
+                      error: (message) => LoginForm(formKey: formKey),
+                    );
 
-                  return state == AuthState.loading()
-                      ? const Center(child: AppLoading())
-                      : Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            Stack(
-                              alignment: Alignment.center,
-                              children: [
-                                Opacity(
-                                  opacity: isAuthenticated ? 1 : 0.3,
-                                  child: SvgPicture.asset(
-                                    AppImages.nameLogo,
-                                    width: 124.0,
-                                    height: 64.0,
-                                  ),
-                                ),
-                                if (isAuthenticated)
-                                  Positioned(
-                                    right: 0,
-                                    child: IconButton(
-                                      onPressed: () {
-                                        context.goNamed(ProfilePage.route);
-                                      },
-                                      icon: Icon(Icons.person),
+                    return state == AuthState.loading()
+                        ? const Center(child: AppLoading())
+                        : Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              Stack(
+                                alignment: Alignment.center,
+                                children: [
+                                  Opacity(
+                                    opacity: isAuthenticated ? 1 : 0.3,
+                                    child: SvgPicture.asset(
+                                      AppImages.nameLogo,
+                                      width: 124.0,
+                                      height: 64.0,
                                     ),
                                   ),
-                              ],
-                            ),
-
-                            mainContent,
-                            SizedBox(height: AppSizes.xl),
-                            Opacity(
-                              opacity: isAuthenticated ? 1 : 0.6,
-                              child: Column(
-                                children: [
-                                  AppButton.primary(
-                                    onPressed: () {
-                                      context.goNamed(MenuPage.route);
-                                    },
-                                    label: "New Order",
-                                    disabled: true,
-                                  ),
-                                  const SizedBox(height: AppSizes.md),
-                                  Row(
-                                    children: [
-                                      Expanded(
-                                        child: AppButton.primary(
-                                          onPressed: () async {
-                                            // context.pushNamed(OrderPage.route);
-                                            // await FirebaseAuth.instance
-                                            // .signOut();
-                                          },
-                                          label: "ReOrder",
-                                        ),
+                                  if (isAuthenticated)
+                                    Positioned(
+                                      right: 0,
+                                      child: IconButton(
+                                        onPressed: () {
+                                          context.goNamed(ProfilePage.route);
+                                        },
+                                        icon: Icon(Icons.person),
                                       ),
-                                      const SizedBox(width: AppSizes.md),
-                                      Expanded(
-                                        child: AppButton.primary(
-                                          onPressed: () {},
-                                          label: "My Drafts",
-                                        ),
-                                      ),
-                                    ],
-                                  ),
+                                    ),
                                 ],
                               ),
-                            ),
-                          ],
-                        );
-                },
+
+                              mainContent,
+                              SizedBox(height: AppSizes.xl),
+                              Opacity(
+                                opacity: isAuthenticated ? 1 : 0.6,
+                                child: Column(
+                                  children: [
+                                    AppButton.primary(
+                                      onPressed: () {
+                                        context.goNamed(MenuPage.route);
+                                      },
+                                      label: "New Order",
+                                      disabled: true,
+                                    ),
+                                    const SizedBox(height: AppSizes.md),
+                                    Row(
+                                      children: [
+                                        Expanded(
+                                          child: AppButton.primary(
+                                            onPressed: () async {
+                                              // context.pushNamed(OrderPage.route);
+                                              // await FirebaseAuth.instance
+                                              // .signOut();
+                                            },
+                                            label: "ReOrder",
+                                          ),
+                                        ),
+                                        const SizedBox(width: AppSizes.md),
+                                        Expanded(
+                                          child: AppButton.primary(
+                                            onPressed: () {},
+                                            label: "My Drafts",
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          );
+                  },
+                ),
               ),
             ),
           ),

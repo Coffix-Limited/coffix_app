@@ -55,7 +55,7 @@ extension AuthStatePatterns on AuthState {
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( _Initial value)?  initial,TResult Function( _Loading value)?  loading,TResult Function( _EmailNotVerified value)?  emailNotVerified,TResult Function( _Authenticated value)?  authenticated,TResult Function( _HasAccount value)?  hasAccount,TResult Function( _Unauthenticated value)?  unauthenticated,TResult Function( _OtpSent value)?  otpSent,TResult Function( _Error value)?  error,required TResult orElse(),}){
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( _Initial value)?  initial,TResult Function( _Loading value)?  loading,TResult Function( _EmailNotVerified value)?  emailNotVerified,TResult Function( _Authenticated value)?  authenticated,TResult Function( _HasAccount value)?  hasAccount,TResult Function( _Unauthenticated value)?  unauthenticated,TResult Function( _OtpSent value)?  otpSent,TResult Function( _Error value)?  error,TResult Function( _ForgotPassword value)?  forgotPassword,TResult Function( _PasswordResetEmailSent value)?  passwordResetEmailSent,required TResult orElse(),}){
 final _that = this;
 switch (_that) {
 case _Initial() when initial != null:
@@ -66,7 +66,9 @@ return authenticated(_that);case _HasAccount() when hasAccount != null:
 return hasAccount(_that);case _Unauthenticated() when unauthenticated != null:
 return unauthenticated(_that);case _OtpSent() when otpSent != null:
 return otpSent(_that);case _Error() when error != null:
-return error(_that);case _:
+return error(_that);case _ForgotPassword() when forgotPassword != null:
+return forgotPassword(_that);case _PasswordResetEmailSent() when passwordResetEmailSent != null:
+return passwordResetEmailSent(_that);case _:
   return orElse();
 
 }
@@ -84,7 +86,7 @@ return error(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( _Initial value)  initial,required TResult Function( _Loading value)  loading,required TResult Function( _EmailNotVerified value)  emailNotVerified,required TResult Function( _Authenticated value)  authenticated,required TResult Function( _HasAccount value)  hasAccount,required TResult Function( _Unauthenticated value)  unauthenticated,required TResult Function( _OtpSent value)  otpSent,required TResult Function( _Error value)  error,}){
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( _Initial value)  initial,required TResult Function( _Loading value)  loading,required TResult Function( _EmailNotVerified value)  emailNotVerified,required TResult Function( _Authenticated value)  authenticated,required TResult Function( _HasAccount value)  hasAccount,required TResult Function( _Unauthenticated value)  unauthenticated,required TResult Function( _OtpSent value)  otpSent,required TResult Function( _Error value)  error,required TResult Function( _ForgotPassword value)  forgotPassword,required TResult Function( _PasswordResetEmailSent value)  passwordResetEmailSent,}){
 final _that = this;
 switch (_that) {
 case _Initial():
@@ -95,7 +97,9 @@ return authenticated(_that);case _HasAccount():
 return hasAccount(_that);case _Unauthenticated():
 return unauthenticated(_that);case _OtpSent():
 return otpSent(_that);case _Error():
-return error(_that);case _:
+return error(_that);case _ForgotPassword():
+return forgotPassword(_that);case _PasswordResetEmailSent():
+return passwordResetEmailSent(_that);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -112,7 +116,7 @@ return error(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( _Initial value)?  initial,TResult? Function( _Loading value)?  loading,TResult? Function( _EmailNotVerified value)?  emailNotVerified,TResult? Function( _Authenticated value)?  authenticated,TResult? Function( _HasAccount value)?  hasAccount,TResult? Function( _Unauthenticated value)?  unauthenticated,TResult? Function( _OtpSent value)?  otpSent,TResult? Function( _Error value)?  error,}){
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( _Initial value)?  initial,TResult? Function( _Loading value)?  loading,TResult? Function( _EmailNotVerified value)?  emailNotVerified,TResult? Function( _Authenticated value)?  authenticated,TResult? Function( _HasAccount value)?  hasAccount,TResult? Function( _Unauthenticated value)?  unauthenticated,TResult? Function( _OtpSent value)?  otpSent,TResult? Function( _Error value)?  error,TResult? Function( _ForgotPassword value)?  forgotPassword,TResult? Function( _PasswordResetEmailSent value)?  passwordResetEmailSent,}){
 final _that = this;
 switch (_that) {
 case _Initial() when initial != null:
@@ -123,7 +127,9 @@ return authenticated(_that);case _HasAccount() when hasAccount != null:
 return hasAccount(_that);case _Unauthenticated() when unauthenticated != null:
 return unauthenticated(_that);case _OtpSent() when otpSent != null:
 return otpSent(_that);case _Error() when error != null:
-return error(_that);case _:
+return error(_that);case _ForgotPassword() when forgotPassword != null:
+return forgotPassword(_that);case _PasswordResetEmailSent() when passwordResetEmailSent != null:
+return passwordResetEmailSent(_that);case _:
   return null;
 
 }
@@ -140,7 +146,7 @@ return error(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  initial,TResult Function()?  loading,TResult Function()?  emailNotVerified,TResult Function( AppUserWithStore userWithStore)?  authenticated,TResult Function( bool hasAccount)?  hasAccount,TResult Function()?  unauthenticated,TResult Function( String email)?  otpSent,TResult Function( String message)?  error,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  initial,TResult Function()?  loading,TResult Function()?  emailNotVerified,TResult Function( AppUserWithStore userWithStore)?  authenticated,TResult Function( bool hasAccount)?  hasAccount,TResult Function()?  unauthenticated,TResult Function( String email)?  otpSent,TResult Function( String message)?  error,TResult Function()?  forgotPassword,TResult Function()?  passwordResetEmailSent,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Initial() when initial != null:
 return initial();case _Loading() when loading != null:
@@ -150,7 +156,9 @@ return authenticated(_that.userWithStore);case _HasAccount() when hasAccount != 
 return hasAccount(_that.hasAccount);case _Unauthenticated() when unauthenticated != null:
 return unauthenticated();case _OtpSent() when otpSent != null:
 return otpSent(_that.email);case _Error() when error != null:
-return error(_that.message);case _:
+return error(_that.message);case _ForgotPassword() when forgotPassword != null:
+return forgotPassword();case _PasswordResetEmailSent() when passwordResetEmailSent != null:
+return passwordResetEmailSent();case _:
   return orElse();
 
 }
@@ -168,7 +176,7 @@ return error(_that.message);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  initial,required TResult Function()  loading,required TResult Function()  emailNotVerified,required TResult Function( AppUserWithStore userWithStore)  authenticated,required TResult Function( bool hasAccount)  hasAccount,required TResult Function()  unauthenticated,required TResult Function( String email)  otpSent,required TResult Function( String message)  error,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  initial,required TResult Function()  loading,required TResult Function()  emailNotVerified,required TResult Function( AppUserWithStore userWithStore)  authenticated,required TResult Function( bool hasAccount)  hasAccount,required TResult Function()  unauthenticated,required TResult Function( String email)  otpSent,required TResult Function( String message)  error,required TResult Function()  forgotPassword,required TResult Function()  passwordResetEmailSent,}) {final _that = this;
 switch (_that) {
 case _Initial():
 return initial();case _Loading():
@@ -178,7 +186,9 @@ return authenticated(_that.userWithStore);case _HasAccount():
 return hasAccount(_that.hasAccount);case _Unauthenticated():
 return unauthenticated();case _OtpSent():
 return otpSent(_that.email);case _Error():
-return error(_that.message);case _:
+return error(_that.message);case _ForgotPassword():
+return forgotPassword();case _PasswordResetEmailSent():
+return passwordResetEmailSent();case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -195,7 +205,7 @@ return error(_that.message);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  initial,TResult? Function()?  loading,TResult? Function()?  emailNotVerified,TResult? Function( AppUserWithStore userWithStore)?  authenticated,TResult? Function( bool hasAccount)?  hasAccount,TResult? Function()?  unauthenticated,TResult? Function( String email)?  otpSent,TResult? Function( String message)?  error,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  initial,TResult? Function()?  loading,TResult? Function()?  emailNotVerified,TResult? Function( AppUserWithStore userWithStore)?  authenticated,TResult? Function( bool hasAccount)?  hasAccount,TResult? Function()?  unauthenticated,TResult? Function( String email)?  otpSent,TResult? Function( String message)?  error,TResult? Function()?  forgotPassword,TResult? Function()?  passwordResetEmailSent,}) {final _that = this;
 switch (_that) {
 case _Initial() when initial != null:
 return initial();case _Loading() when loading != null:
@@ -205,7 +215,9 @@ return authenticated(_that.userWithStore);case _HasAccount() when hasAccount != 
 return hasAccount(_that.hasAccount);case _Unauthenticated() when unauthenticated != null:
 return unauthenticated();case _OtpSent() when otpSent != null:
 return otpSent(_that.email);case _Error() when error != null:
-return error(_that.message);case _:
+return error(_that.message);case _ForgotPassword() when forgotPassword != null:
+return forgotPassword();case _PasswordResetEmailSent() when passwordResetEmailSent != null:
+return passwordResetEmailSent();case _:
   return null;
 
 }
@@ -604,5 +616,69 @@ as String,
 
 
 }
+
+/// @nodoc
+
+
+class _ForgotPassword implements AuthState {
+  const _ForgotPassword();
+  
+
+
+
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ForgotPassword);
+}
+
+
+@override
+int get hashCode => runtimeType.hashCode;
+
+@override
+String toString() {
+  return 'AuthState.forgotPassword()';
+}
+
+
+}
+
+
+
+
+/// @nodoc
+
+
+class _PasswordResetEmailSent implements AuthState {
+  const _PasswordResetEmailSent();
+  
+
+
+
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _PasswordResetEmailSent);
+}
+
+
+@override
+int get hashCode => runtimeType.hashCode;
+
+@override
+String toString() {
+  return 'AuthState.passwordResetEmailSent()';
+}
+
+
+}
+
+
+
 
 // dart format on

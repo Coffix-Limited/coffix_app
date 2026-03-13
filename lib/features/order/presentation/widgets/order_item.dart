@@ -1,5 +1,6 @@
 import 'package:coffix_app/core/constants/colors.dart';
 import 'package:coffix_app/core/constants/sizes.dart';
+import 'package:coffix_app/core/extensions/price_extensions.dart';
 import 'package:coffix_app/core/theme/typography.dart';
 import 'package:coffix_app/features/cart/data/model/cart_item.dart';
 import 'package:coffix_app/presentation/atoms/app_card.dart';
@@ -16,7 +17,7 @@ class OrderItemRow extends StatelessWidget {
   });
 
   final CartItem cartItem;
-  final String price;
+  final double price;
   final VoidCallback onRemove;
   final VoidCallback onEdit;
 
@@ -45,28 +46,20 @@ class OrderItemRow extends StatelessWidget {
             children: [
               Text(
                 "${cartItem.productName} x${cartItem.quantity}",
-                style: theme.textTheme.titleSmall,
+                style: AppTypography.bodyM600,
               ),
-              Wrap(
-                spacing: AppSizes.sm,
-                runSpacing: AppSizes.sm,
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: cartItem.selectedByGroup.entries
                     .map(
-                      (entry) => Chip(
-                        padding: EdgeInsets.zero,
-
-                        label: Text(entry.value, style: AppTypography.label2XS),
+                      (entry) => Text(
+                        entry.value,
+                        style: AppTypography.body2XS.copyWith(
+                          color: AppColors.textBlackColor,
+                        ),
                       ),
                     )
                     .toList(),
-              ),
-              const SizedBox(height: AppSizes.xs),
-              Text(
-                price,
-                style: theme.textTheme.titleSmall?.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.primary,
-                ),
               ),
             ],
           ),
@@ -74,20 +67,31 @@ class OrderItemRow extends StatelessWidget {
         Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            AppIconButton.withIconData(
-              Icons.edit_outlined,
-              onPressed: onEdit,
-              size: AppSizes.iconSizeSmall,
-              color: AppColors.black,
-              borderColor: Colors.transparent,
-            ),
-            const SizedBox(width: AppSizes.xs),
-            AppIconButton.withIconData(
-              Icons.close,
-              onPressed: onRemove,
-              size: AppSizes.iconSizeSmall,
-              color: AppColors.black,
-              borderColor: Colors.transparent,
+            Column(
+              children: [
+                Text.rich(
+                  price.toCurrencySuperscript(style: AppTypography.titleS),
+                ),
+                Row(
+                  children: [
+                    AppIconButton.withIconData(
+                      Icons.edit_outlined,
+                      onPressed: onEdit,
+                      size: AppSizes.iconSizeSmall,
+                      color: AppColors.black,
+                      borderColor: Colors.transparent,
+                    ),
+                    const SizedBox(width: AppSizes.xs),
+                    AppIconButton.withIconData(
+                      Icons.close,
+                      onPressed: onRemove,
+                      size: AppSizes.iconSizeSmall,
+                      color: AppColors.black,
+                      borderColor: Colors.transparent,
+                    ),
+                  ],
+                ),
+              ],
             ),
           ],
         ),

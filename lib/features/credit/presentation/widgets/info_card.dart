@@ -20,13 +20,19 @@ class InfoCard extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          CircleAvatar(
-            backgroundColor: AppColors.white,
-            radius: 40,
-            child: SvgPicture.asset(
-              image,
-              width: AppSizes.iconSizeLarge,
-              height: AppSizes.iconSizeLarge,
+          Container(
+            decoration: BoxDecoration(
+              border: Border.all(),
+              shape: BoxShape.circle,
+            ),
+            child: CircleAvatar(
+              backgroundColor: AppColors.white,
+              radius: 40,
+              child: Image.asset(
+                image,
+                width: AppSizes.iconSizeLarge,
+                height: AppSizes.iconSizeLarge,
+              ),
             ),
           ),
           const SizedBox(height: AppSizes.md),

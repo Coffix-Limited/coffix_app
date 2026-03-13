@@ -41,7 +41,6 @@ class ProductList extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          AppBackHeader(title: "Products", showBackButton: !isRoot),
           const SizedBox(height: AppSizes.md),
           Row(
             children: [

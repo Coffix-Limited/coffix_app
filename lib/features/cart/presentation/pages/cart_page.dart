@@ -1,6 +1,7 @@
 import 'package:coffix_app/core/constants/colors.dart';
 import 'package:coffix_app/core/constants/sizes.dart';
 import 'package:coffix_app/core/di/service_locator.dart';
+import 'package:coffix_app/core/extensions/price_extensions.dart';
 import 'package:coffix_app/features/cart/data/model/cart_item.dart';
 import 'package:coffix_app/features/cart/logic/cart_cubit.dart';
 import 'package:coffix_app/features/menu/presentation/pages/menu_page.dart';
@@ -49,6 +50,7 @@ class _CartViewState extends State<CartView> {
     final theme = Theme.of(context);
 
     return Scaffold(
+      appBar: AppBackHeader(title: "Order", showBackButton: false),
       body: BlocBuilder<CartCubit, CartState>(
         builder: (context, state) {
           return Column(
@@ -60,10 +62,6 @@ class _CartViewState extends State<CartView> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            AppBackHeader(
-                              title: "Order",
-                              showBackButton: false,
-                            ),
                             const SizedBox(height: AppSizes.lg),
                             Align(
                               alignment: Alignment.centerRight,
@@ -74,20 +72,14 @@ class _CartViewState extends State<CartView> {
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    Icon(
-                                      Icons.add,
-                                      size: AppSizes.iconSizeSmall,
-                                      color: AppColors.primary,
+                                    CircleAvatar(
+                                      child: Icon(
+                                        Icons.add,
+                                        size: AppSizes.iconSizeSmall,
+                                        color: AppColors.primary,
+                                      ),
                                     ),
                                     const SizedBox(width: AppSizes.xs),
-                                    Text(
-                                      'Add item',
-                                      style: theme.textTheme.bodyMedium
-                                          ?.copyWith(
-                                            color: AppColors.primary,
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                    ),
                                   ],
                                 ),
                               ),
@@ -112,11 +104,6 @@ class _CartViewState extends State<CartView> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            AppBackHeader(
-                              title: "Order",
-                              showBackButton: false,
-                            ),
-                            const SizedBox(height: AppSizes.lg),
                             Align(
                               alignment: Alignment.centerRight,
                               child: AppClickable(
@@ -127,23 +114,16 @@ class _CartViewState extends State<CartView> {
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     Icon(
-                                      Icons.add,
-                                      size: AppSizes.iconSizeSmall,
+                                      Icons.add_circle,
+                                      size: AppSizes.iconSizeLarge,
                                       color: AppColors.primary,
                                     ),
                                     const SizedBox(width: AppSizes.xs),
-                                    Text(
-                                      'Add item',
-                                      style: theme.textTheme.bodyMedium
-                                          ?.copyWith(
-                                            color: AppColors.primary,
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                    ),
                                   ],
                                 ),
                               ),
                             ),
+                            SizedBox(height: AppSizes.lg),
                             ListView.separated(
                               shrinkWrap: true,
                               physics: const NeverScrollableScrollPhysics(),
@@ -167,7 +147,7 @@ class _CartViewState extends State<CartView> {
                                     );
                                 return OrderItemRow(
                                   cartItem: cartItem,
-                                  price: '\$${cartItem.lineTotal}',
+                                  price: cartItem.lineTotal,
                                   onRemove: () {
                                     context.read<CartCubit>().removeProduct(
                                       cartItemId: cartItem.id,
@@ -211,12 +191,13 @@ class _CartViewState extends State<CartView> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text('Total', style: theme.textTheme.titleMedium),
-                          Text(
-                            '\$${state.cart?.items.fold(0.0, (sum, item) => sum + item.lineTotal) ?? 0}',
-                            style: theme.textTheme.titleLarge?.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.primary,
-                            ),
+                          Text.rich(
+                            (state.cart?.items.fold(
+                                      0.0,
+                                      (sum, item) => sum + item.lineTotal,
+                                    ) ??
+                                    0)
+                                .toCurrencySuperscript(),
                           ),
                         ],
                       ),
@@ -229,7 +210,7 @@ class _CartViewState extends State<CartView> {
                               onPressed: () {
                                 context.pushNamed(ScheduleOrderPage.route);
                               },
-                              label: 'Next',
+                              label: 'Pay',
                             ),
                           ),
                           const SizedBox(width: AppSizes.md),

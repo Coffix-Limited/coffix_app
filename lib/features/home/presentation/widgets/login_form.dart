@@ -78,10 +78,13 @@ class _LoginFormState extends State<LoginForm> {
                 Center(
                   child: AppTextButton(
                     text: "Forgot my password",
-                    onPressed: () {},
+                    onPressed: () {
+                      context.read<AuthCubit>().forgotPassword();
+                    },
                     showUnderline: true,
                     textStyle: AppTypography.bodyXS.copyWith(
                       decoration: TextDecoration.underline,
+                      color: AppColors.textBlackColor,
                     ),
                   ),
                 ),
