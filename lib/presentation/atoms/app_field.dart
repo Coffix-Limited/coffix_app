@@ -27,8 +27,8 @@ class AppField<T> extends StatefulWidget {
   final int maxLines;
   final String? label;
   final bool filled;
+  final bool isHorizontalAlign;
 
-  
   const AppField({
     super.key,
     required this.hintText,
@@ -50,6 +50,7 @@ class AppField<T> extends StatefulWidget {
     this.maxLines = 1,
     this.label,
     this.filled = true,
+    this.isHorizontalAlign = false,
   });
 
   @override
@@ -78,82 +79,103 @@ class _AppFieldState<T> extends State<AppField<T>> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        if (widget.label != null)
-          Padding(
-            padding: EdgeInsets.only(bottom: AppSizes.xs),
-            child: Row(
-              children: [
-                Text(widget.label!, style: AppTypography.bodyXS),
-                if (widget.isRequired)
-                  Text(
-                    '*',
-                    style: AppTypography.bodyXS.copyWith(
-                      color: AppColors.error,
-                    ),
-                  ),
-              ],
-            ),
-          ),
-
-        FormBuilderTextField(
-          maxLines: widget.maxLines,
-          onTapOutside: (_) => FocusScope.of(context).unfocus(),
-          initialValue: widget.initialValue,
-          onChanged: _onTextChanged,
-          name: widget.name,
-          inputFormatters: widget.inputFormatters,
-          readOnly: widget.readOnly,
-          keyboardType: widget.keyboardType,
-          obscureText: widget.obscureText && !isPasswordVisible,
-          autofocus: widget.autofocus,
-          style: theme.textTheme.bodyMedium?.copyWith(),
-          decoration: InputDecoration(
-            fillColor: widget.readOnly ? AppColors.softGrey : Colors.white,
-            filled: widget.filled,
-            contentPadding: EdgeInsets.symmetric(horizontal: AppSizes.lg),
-            hintText: widget.hintText,
-            hintStyle: AppTypography.bodyXS.copyWith(
-              color: AppColors.lightGrey,
-            ),
-            border: widget.readOnly
-                ? OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(AppSizes.lg),
-                    borderSide: BorderSide.none,
-                  )
-                : OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(AppSizes.lg),
-                    borderSide: BorderSide(color: AppColors.lightGrey),
-                  ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppSizes.lg),
-              borderSide: BorderSide(color: AppColors.lightGrey),
-            ),
-            prefixIcon: widget.prefixIcon,
-            suffixIcon: widget.showPasswordToggle
-                ? IconButton(
-                    icon: Icon(
-                      isPasswordVisible
-                          ? Icons.visibility_off
-                          : Icons.visibility,
-                    ),
-                    onPressed: () =>
-                        setState(() => isPasswordVisible = !isPasswordVisible),
-                  )
-                : null,
-          ),
-          validator: FormBuilderValidators.compose([
-            if (widget.isRequired) FormBuilderValidators.required(),
-            if (widget.validators != null)
-              ...widget.validators!.map(
-                (validator) => validator as FormFieldValidator<String>,
+    final Widget formBuilder = FormBuilderTextField(
+      maxLines: widget.maxLines,
+      onTapOutside: (_) => FocusScope.of(context).unfocus(),
+      initialValue: widget.initialValue,
+      onChanged: _onTextChanged,
+      name: widget.name,
+      inputFormatters: widget.inputFormatters,
+      readOnly: widget.readOnly,
+      keyboardType: widget.keyboardType,
+      obscureText: widget.obscureText && !isPasswordVisible,
+      autofocus: widget.autofocus,
+      style: theme.textTheme.bodyMedium?.copyWith(),
+      decoration: InputDecoration(
+        fillColor: widget.readOnly ? AppColors.softGrey : Colors.white,
+        filled: widget.filled,
+        contentPadding: EdgeInsets.symmetric(horizontal: AppSizes.lg),
+        hintText: widget.hintText,
+        hintStyle: AppTypography.bodyXS.copyWith(color: AppColors.lightGrey),
+        border: widget.readOnly
+            ? OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppSizes.lg),
+                borderSide: BorderSide.none,
+              )
+            : OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppSizes.lg),
+                borderSide: BorderSide(color: AppColors.lightGrey),
               ),
-          ]),
-          errorBuilder: (context, error) => Text(error.toString()),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(AppSizes.lg),
+          borderSide: BorderSide(color: AppColors.lightGrey),
         ),
-      ],
+        prefixIcon: widget.prefixIcon,
+        suffixIcon: widget.showPasswordToggle
+            ? IconButton(
+                icon: Icon(
+                  isPasswordVisible ? Icons.visibility_off : Icons.visibility,
+                ),
+                onPressed: () =>
+                    setState(() => isPasswordVisible = !isPasswordVisible),
+              )
+            : null,
+      ),
+      validator: FormBuilderValidators.compose([
+        if (widget.isRequired) FormBuilderValidators.required(),
+        if (widget.validators != null)
+          ...widget.validators!.map(
+            (validator) => validator as FormFieldValidator<String>,
+          ),
+      ]),
+      errorBuilder: (context, error) => Text(error.toString()),
     );
+    return widget.isHorizontalAlign
+        ? Row(
+            children: [
+              if (widget.label != null)
+                SizedBox(
+                  width: 120,
+                  child: Padding(
+                    padding: EdgeInsets.only(right: AppSizes.md),
+                    child: Row(
+                      children: [
+                        Text(widget.label!, style: AppTypography.bodyXS),
+                        if (widget.isRequired)
+                          Text(
+                            '*',
+                            style: AppTypography.bodyXS.copyWith(
+                              color: AppColors.error,
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
+              Expanded(child: formBuilder),
+            ],
+          )
+        : Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              if (widget.label != null)
+                Padding(
+                  padding: EdgeInsets.only(bottom: AppSizes.xs),
+                  child: Row(
+                    children: [
+                      Text(widget.label!, style: AppTypography.bodyXS),
+                      if (widget.isRequired)
+                        Text(
+                          '*',
+                          style: AppTypography.bodyXS.copyWith(
+                            color: AppColors.error,
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              formBuilder,
+            ],
+          );
   }
 }

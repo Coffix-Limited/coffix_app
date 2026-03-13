@@ -13,6 +13,7 @@ import 'package:coffix_app/features/home/presentation/widgets/login_form.dart';
 import 'package:coffix_app/features/menu/presentation/pages/menu_page.dart';
 import 'package:coffix_app/features/order/presentation/pages/order_page.dart';
 import 'package:coffix_app/features/profile/presentation/pages/profile_page.dart';
+import 'package:coffix_app/features/stores/logic/store_cubit.dart';
 import 'package:coffix_app/presentation/atoms/app_button.dart';
 import 'package:coffix_app/presentation/atoms/app_icon.dart';
 import 'package:coffix_app/presentation/atoms/app_loading.dart';
@@ -36,6 +37,7 @@ class HomePage extends StatelessWidget {
       providers: [
         BlocProvider.value(value: getIt<AuthCubit>()),
         BlocProvider.value(value: getIt<OtpCubit>()),
+        BlocProvider.value(value: getIt<StoreCubit>()),
       ],
       child: const HomeView(),
     );
@@ -60,8 +62,16 @@ class _HomeViewState extends State<HomeView> {
 
   @override
   Widget build(BuildContext context) {
+    final user = context.watch<AuthCubit>().state.maybeWhen(
+      authenticated: (user) => user.user,
+      orElse: () => null,
+    );
+    final bool isAuthenticated = user != null;
+
     return Scaffold(
-      backgroundColor: AppColors.black.withValues(alpha: 0.7),
+      backgroundColor: AppColors.black.withValues(
+        alpha: isAuthenticated ? 1 : 0.7,
+      ),
       body: FormBuilder(
         key: formKey,
         onChanged: () {
@@ -74,8 +84,12 @@ class _HomeViewState extends State<HomeView> {
             child: Padding(
               padding: AppSizes.defaultPadding,
               child: BlocConsumer<AuthCubit, AuthState>(
+                listenWhen: (previous, current) => previous != current,
                 listener: (context, state) {
                   state.whenOrNull(
+                    authenticated: (user) {
+                      context.read<StoreCubit>().getStores();
+                    },
                     error: (message) => AppNotification.error(context, message),
                   );
                 },
@@ -95,19 +109,36 @@ class _HomeViewState extends State<HomeView> {
                   return state == AuthState.loading()
                       ? const Center(child: AppLoading())
                       : Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            Opacity(
-                              opacity: 0.3,
-                              child: SvgPicture.asset(
-                                AppImages.nameLogo,
-                                width: 124.0,
-                                height: 64.0,
-                              ),
+                            Stack(
+                              alignment: Alignment.center,
+                              children: [
+                                Opacity(
+                                  opacity: isAuthenticated ? 1 : 0.3,
+                                  child: SvgPicture.asset(
+                                    AppImages.nameLogo,
+                                    width: 124.0,
+                                    height: 64.0,
+                                  ),
+                                ),
+                                if (isAuthenticated)
+                                  Positioned(
+                                    right: 0,
+                                    child: IconButton(
+                                      onPressed: () {
+                                        context.goNamed(ProfilePage.route);
+                                      },
+                                      icon: Icon(Icons.person),
+                                    ),
+                                  ),
+                              ],
                             ),
 
                             mainContent,
+                            SizedBox(height: AppSizes.xl),
                             Opacity(
-                              opacity: 0.6,
+                              opacity: isAuthenticated ? 1 : 0.6,
                               child: Column(
                                 children: [
                                   AppButton.primary(
@@ -162,6 +193,7 @@ class _HomeContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [

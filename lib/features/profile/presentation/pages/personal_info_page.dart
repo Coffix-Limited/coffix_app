@@ -1,3 +1,4 @@
+import 'package:coffix_app/core/constants/colors.dart';
 import 'package:coffix_app/core/constants/sizes.dart';
 import 'package:coffix_app/core/di/service_locator.dart';
 import 'package:coffix_app/core/theme/typography.dart';
@@ -77,6 +78,7 @@ class _PersonalInfoViewState extends State<PersonalInfoView> {
           label: 'Email',
           hintText: 'Email',
           readOnly: true,
+          isHorizontalAlign: true,
         ),
         const SizedBox(height: AppSizes.lg),
         AppField<String>(
@@ -84,6 +86,8 @@ class _PersonalInfoViewState extends State<PersonalInfoView> {
           label: 'First name',
           hintText: 'Enter first name',
           isRequired: true,
+          isHorizontalAlign: true,
+
           onChanged: (val) {
             _formKey.currentState?.fields["nickname"]?.didChange(val);
           },
@@ -94,6 +98,7 @@ class _PersonalInfoViewState extends State<PersonalInfoView> {
           label: 'Last name',
           hintText: 'Enter last name',
           isRequired: true,
+          isHorizontalAlign: true,
         ),
         const SizedBox(height: AppSizes.lg),
         AppField<String>(
@@ -101,6 +106,7 @@ class _PersonalInfoViewState extends State<PersonalInfoView> {
           label: 'Nickname',
           hintText: 'Enter nickname',
           isRequired: true,
+          isHorizontalAlign: true,
         ),
         const SizedBox(height: AppSizes.lg),
         AppField<String>(
@@ -109,32 +115,45 @@ class _PersonalInfoViewState extends State<PersonalInfoView> {
           hintText: 'Enter mobile',
           keyboardType: TextInputType.phone,
           isRequired: true,
+          isHorizontalAlign: true,
         ),
         const SizedBox(height: AppSizes.lg),
         AppDateField(
           hintText: "Birthdate",
           name: "birthDate",
           label: "Date of Birth",
-          isRequired: true,
           firstDate: DateTime(1900),
           lastDate: DateTime.now(),
           initialDate: user?.birthday,
+          isHorizontalAlign: true,
         ),
-        Text(
-          "You might get something for your birthday ",
-          style: AppTypography.bodyXS,
+        Row(
+          children: [
+            SizedBox(width: 120.0),
+            Text(
+              "You might get something for your birthday ",
+              style: AppTypography.body3XS,
+            ),
+          ],
         ),
         const SizedBox(height: AppSizes.lg),
         AppField<String>(
           name: 'suburb',
           label: 'Suburb',
           hintText: 'Enter suburb',
-          isRequired: true,
+          isHorizontalAlign: true,
         ),
         const SizedBox(height: AppSizes.lg),
-        AppField<String>(name: 'city', label: 'City', hintText: 'Enter city'),
+        AppField<String>(
+          name: 'city',
+          label: 'City',
+          hintText: 'Enter city',
+          isRequired: true,
+          isHorizontalAlign: true,
+        ),
         const SizedBox(height: AppSizes.lg),
         AppDropdown<Store, String>(
+          isHorizontalAlign: true,
           name: 'preferredStoreId',
           label: 'Preferred store',
           hintText: 'Select preferred store',
@@ -193,7 +212,12 @@ class _PersonalInfoViewState extends State<PersonalInfoView> {
       canPop: widget.canBack,
       child: Scaffold(
         appBar: AppBar(
-          title: Text('Personal info', style: theme.textTheme.titleLarge),
+          title: Text(
+            'My Account',
+            style: AppTypography.titleXL.copyWith(
+              color: AppColors.textBlackColor,
+            ),
+          ),
           leading: widget.canBack
               ? IconButton(
                   icon: const Icon(Icons.arrow_back_ios_new_rounded),
