@@ -24,13 +24,13 @@ class QrIdView extends StatelessWidget {
       authenticated: (u) => u,
       orElse: () => null,
     );
-    final docId = userWithStore?.user.docId;
+    final qrId = userWithStore?.user.qrId;
 
     return Scaffold(
       appBar: AppBar(
         title: Text('My QR ID', style: theme.textTheme.titleLarge),
       ),
-      body: docId == null || docId.isEmpty
+      body: qrId == null || qrId.isEmpty
           ? Center(
               child: Text(
                 'No customer ID available',
@@ -44,14 +44,14 @@ class QrIdView extends StatelessWidget {
                   const SizedBox(height: AppSizes.xxl),
                   Center(
                     child: QrImageView(
-                      data: docId,
+                      data: qrId,
                       version: QrVersions.auto,
                       size: 240,
                       backgroundColor: Colors.white,
                     ),
                   ),
                   const SizedBox(height: AppSizes.lg),
-                  SelectableText(docId, style: theme.textTheme.bodyMedium),
+                  SelectableText(qrId, style: theme.textTheme.bodyMedium),
                 ],
               ),
             ),

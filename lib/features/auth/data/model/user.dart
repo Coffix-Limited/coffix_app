@@ -26,6 +26,7 @@ class AppUser {
   @DateTimeConverter()
   final DateTime? lastLogin;
   final bool? disabled;
+  final String? qrId;
 
   AppUser({
     this.creditAvailable,
@@ -46,6 +47,7 @@ class AppUser {
     this.allowWinACoffee,
     this.lastLogin,
     this.disabled,
+    this.qrId,
   });
 
   factory AppUser.fromJson(Map<String, dynamic> json) =>

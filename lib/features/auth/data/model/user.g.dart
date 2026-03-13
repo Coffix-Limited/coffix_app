@@ -25,6 +25,7 @@ AppUser _$AppUserFromJson(Map<String, dynamic> json) => AppUser(
   allowWinACoffee: json['allowWinACoffee'] as bool?,
   lastLogin: const DateTimeConverter().fromJson(json['lastLogin']),
   disabled: json['disabled'] as bool?,
+  qrId: json['qrId'] as String?,
 );
 
 Map<String, dynamic> _$AppUserToJson(AppUser instance) => <String, dynamic>{
@@ -46,4 +47,5 @@ Map<String, dynamic> _$AppUserToJson(AppUser instance) => <String, dynamic>{
   'allowWinACoffee': instance.allowWinACoffee,
   'lastLogin': const DateTimeConverter().toJson(instance.lastLogin),
   'disabled': instance.disabled,
+  'qrId': instance.qrId,
 };

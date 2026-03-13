@@ -221,6 +221,25 @@ class AuthRepositoryImpl extends ApiClient implements AuthRepository {
     }
   }
 
+  String generateQrId(String docId) {
+    final random = Random();
+
+    // First group based on docId hash
+    final first = (docId.hashCode.abs() % 10000).toString().padLeft(4, '0');
+
+    // Random groups
+    String randomGroup() => List.generate(4, (_) => random.nextInt(10)).join();
+
+    final second = randomGroup();
+    final third = randomGroup();
+
+    // Last group based on timestamp
+    final now = DateTime.now().millisecondsSinceEpoch;
+    final fourth = (now % 10000).toString().padLeft(4, '0');
+
+    return '$first-$second-$third-$fourth';
+  }
+
   @override
   Future<void> createUserDoc({
     required String docId,
@@ -233,6 +252,7 @@ class AuthRepositoryImpl extends ApiClient implements AuthRepository {
         'docId': docId,
         'email': email,
         'createdAt': DateTime.now(),
+        'qrId': generateQrId(docId),
       });
     }
   }
