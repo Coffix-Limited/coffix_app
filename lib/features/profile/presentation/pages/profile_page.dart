@@ -1,7 +1,11 @@
+import 'dart:ffi';
+
 import 'package:coffix_app/core/constants/colors.dart';
 import 'package:coffix_app/core/constants/images.dart';
 import 'package:coffix_app/core/constants/sizes.dart';
 import 'package:coffix_app/core/di/service_locator.dart';
+import 'package:coffix_app/core/extensions/price_extensions.dart';
+import 'package:coffix_app/core/theme/typography.dart';
 import 'package:coffix_app/features/auth/logic/auth_cubit.dart';
 import 'package:coffix_app/features/credit/presentation/pages/credit_page.dart';
 import 'package:coffix_app/features/profile/presentation/pages/about_page.dart';
@@ -38,8 +42,9 @@ class ProfileView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final creditBalance = context.watch<AuthCubit>().state.maybeWhen(
-      authenticated: (user) => user.user.creditAvailable,
+    final double creditBalance = context.watch<AuthCubit>().state.maybeWhen(
+      authenticated: (user) =>
+          double.parse(user.user.creditAvailable?.toString() ?? '0.00'),
       orElse: () => 0,
     );
     return Scaffold(
@@ -60,11 +65,12 @@ class ProfileView extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: AppSizes.xs),
-                  Text(
-                    '\$${creditBalance?.toStringAsFixed(2) ?? '0.00'}',
-                    style: theme.textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.primary,
+                  Text.rich(
+                    creditBalance.toCurrencySuperscript(
+                      style: theme.textTheme.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.primary,
+                      ),
                     ),
                   ),
                   const SizedBox(height: AppSizes.md),
@@ -167,9 +173,10 @@ class ProfileView extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(vertical: AppSizes.sm),
                   child: Text(
                     'Terms of use & privacy',
-                    style: theme.textTheme.bodySmall?.copyWith(
+                    style: AppTypography.bodyXS.copyWith(
                       color: AppColors.lightGrey,
                       decoration: TextDecoration.underline,
+                      decorationColor: AppColors.lightGrey,
                     ),
                   ),
                 ),

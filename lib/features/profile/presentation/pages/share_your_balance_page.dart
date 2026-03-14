@@ -39,6 +39,7 @@ class _ShareYourBalanceViewState extends State<ShareYourBalanceView> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Scaffold(
+      appBar: const AppBackHeader(title: 'Share your balance'),
       body: BlocBuilder<AuthCubit, AuthState>(
         builder: (context, state) {
           final balance = state.maybeWhen(
@@ -54,7 +55,6 @@ class _ShareYourBalanceViewState extends State<ShareYourBalanceView> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    const AppBackHeader(title: 'Share your balance'),
                     const SizedBox(height: AppSizes.xxl),
                     AppCard(
                       child: Column(

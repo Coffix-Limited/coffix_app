@@ -11,6 +11,7 @@ import 'package:coffix_app/presentation/atoms/app_clickable.dart';
 import 'package:coffix_app/presentation/atoms/app_loading.dart';
 import 'package:coffix_app/presentation/atoms/app_notification.dart';
 import 'package:coffix_app/presentation/atoms/app_snackbar.dart';
+import 'package:coffix_app/presentation/molecules/app_back_header.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -44,13 +45,7 @@ class AboutView extends StatelessWidget {
       orElse: () => null,
     );
     return Scaffold(
-      appBar: AppBar(
-        title: Text("About", style: theme.textTheme.titleLarge),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded),
-          onPressed: () => context.pop(),
-        ),
-      ),
+      appBar: const AppBackHeader(title: 'About'),
       body: BlocBuilder<AuthCubit, AuthState>(
         builder: (context, state) {
           state.maybeWhen(
@@ -113,7 +108,10 @@ class AboutView extends StatelessWidget {
                         if (global?.specialUrl != null) {
                           launchUrl(Uri.parse(global?.specialUrl ?? ''));
                         } else {
-                          AppNotification.error(context, 'No special URL found');
+                          AppNotification.error(
+                            context,
+                            'No special URL found',
+                          );
                         }
                       },
                       child: Padding(

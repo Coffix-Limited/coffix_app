@@ -1,5 +1,6 @@
 import 'package:coffix_app/core/constants/colors.dart';
 import 'package:coffix_app/core/constants/sizes.dart';
+import 'package:coffix_app/core/extensions/price_extensions.dart';
 import 'package:coffix_app/core/theme/typography.dart';
 import 'package:flutter/material.dart';
 
@@ -24,9 +25,17 @@ class TierCard extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            'Top up \$$amount+',
-            style: AppTypography.bodyM500.copyWith(color: AppColors.black),
+          Text.rich(
+            TextSpan(
+              children: [
+                TextSpan(text: 'Top up '),
+                amount.toCurrencySuperscript(
+                  style: AppTypography.bodyM500.copyWith(
+                    color: AppColors.black,
+                  ),
+                ),
+              ],
+            ),
           ),
           Text(
             'Get $percent more credit',

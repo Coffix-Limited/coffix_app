@@ -34,12 +34,12 @@ class SpecialUrlView extends StatelessWidget {
       orElse: () => null,
     );
     return Scaffold(
+      appBar: const AppBackHeader(title: 'Special Url'),
       body: Padding(
         padding: AppSizes.defaultPadding,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            AppBackHeader(title: "Special Url"),
             const SizedBox(height: AppSizes.xxl),
             Column(
               children: [

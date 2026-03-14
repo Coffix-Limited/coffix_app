@@ -18,6 +18,7 @@ import 'package:coffix_app/features/stores/logic/store_cubit.dart';
 import 'package:coffix_app/presentation/atoms/app_button.dart';
 import 'package:coffix_app/presentation/atoms/app_icon.dart';
 import 'package:coffix_app/presentation/atoms/app_loading.dart';
+import 'package:coffix_app/presentation/atoms/app_location.dart';
 import 'package:coffix_app/presentation/atoms/app_notification.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -142,13 +143,18 @@ class _HomeViewState extends State<HomeView> {
                               Stack(
                                 alignment: Alignment.center,
                                 children: [
-                                  Opacity(
-                                    opacity: isAuthenticated ? 1 : 0.3,
-                                    child: SvgPicture.asset(
-                                      AppImages.nameLogo,
-                                      width: 124.0,
-                                      height: 64.0,
-                                    ),
+                                  Column(
+                                    children: [
+                                      Opacity(
+                                        opacity: isAuthenticated ? 1 : 0.3,
+                                        child: SvgPicture.asset(
+                                          AppImages.nameLogo,
+                                          width: 124.0,
+                                          height: 64.0,
+                                        ),
+                                      ),
+                                      if (isAuthenticated) const AppLocation(),
+                                    ],
                                   ),
                                   if (isAuthenticated)
                                     Positioned(
@@ -228,6 +234,7 @@ class _HomeContent extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        SizedBox(height: AppSizes.xl),
         Text(
           "Welcome ${user.user.firstName ?? user.user.nickName ?? ""}",
           textAlign: TextAlign.center,
@@ -237,33 +244,7 @@ class _HomeContent extends StatelessWidget {
           ),
         ),
         AppIcon.withSvgPath(AppImages.logo, size: AppSizes.iconSizeXXLarge),
-        // AppButton.primary(
-        //   onPressed: () {
-        //     context.goNamed(MenuPage.route);
-        //   },
-        //   label: "New Order",
-        // ),
-        // const SizedBox(height: AppSizes.md),
-        // Row(
-        //   children: [
-        //     Expanded(
-        //       child: AppButton.primary(
-        //         onPressed: () {
-        //           context.pushNamed(OrderPage.route);
-        //         },
-        //         label: "ReOrder",
-        //       ),
-        //     ),
-        //     const SizedBox(width: AppSizes.md),
-        //     Expanded(
-        //       child: AppButton.primary(
-        //         onPressed: () {},
-        //         disabled: true,
-        //         label: "My Drafts",
-        //       ),
-        //     ),
-        //   ],
-        // ),
+        SizedBox(height: AppSizes.xl),
       ],
     );
   }

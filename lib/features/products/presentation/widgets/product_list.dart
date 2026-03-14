@@ -1,5 +1,6 @@
 import 'package:coffix_app/core/constants/colors.dart';
 import 'package:coffix_app/core/constants/sizes.dart';
+import 'package:coffix_app/core/extensions/price_extensions.dart';
 import 'package:coffix_app/core/theme/typography.dart';
 import 'package:coffix_app/features/products/data/model/product_category.dart';
 import 'package:coffix_app/features/products/data/model/product_with_category.dart';
@@ -139,11 +140,17 @@ class ProductList extends StatelessWidget {
                         style: AppTypography.labelS,
                       ),
                     ),
-                    Text(
-                      "\$${product.product.price ?? 0}",
-                      style: AppTypography.labelS.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                    Text.rich(
+                      product.product.price?.toCurrencySuperscript(
+                            style: AppTypography.labelL.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ) ??
+                          0.00.toCurrencySuperscript(
+                            style: AppTypography.labelL.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                     ),
                   ],
                 ),

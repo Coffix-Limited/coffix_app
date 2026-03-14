@@ -24,7 +24,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.example.coffix_app"
+        applicationId = "com.coffix.app"
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
@@ -41,12 +41,13 @@ android {
     productFlavors {
         create("dev") {
             dimension = "app"
-            applicationIdSuffix = ".dev"
+            applicationId = "com.coffix.dev.app"
             versionNameSuffix = "-dev"
             resValue("string", "app_name", "Coffix Dev")
         }
         create("prod") {
             dimension = "app"
+            applicationId = "com.coffix.app"
             resValue("string", "app_name", "Coffix")
         }
     }

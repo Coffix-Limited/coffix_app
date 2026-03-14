@@ -1,5 +1,6 @@
 import 'package:coffix_app/core/constants/sizes.dart';
 import 'package:coffix_app/features/auth/logic/auth_cubit.dart';
+import 'package:coffix_app/presentation/molecules/app_back_header.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:qr_flutter/qr_flutter.dart';
@@ -27,9 +28,8 @@ class QrIdView extends StatelessWidget {
     final qrId = userWithStore?.user.qrId;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text('My QR ID', style: theme.textTheme.titleLarge),
-      ),
+      appBar: const AppBackHeader(title: 'My QR ID'),
+
       body: qrId == null || qrId.isEmpty
           ? Center(
               child: Text(
