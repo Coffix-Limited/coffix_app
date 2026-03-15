@@ -59,14 +59,13 @@ class _PaymentViewState extends State<PaymentView> {
             print("Navigating to ${request.url}");
             final uri = Uri.parse(request.url);
             // Use path match, ignore query params
-            final isSuccess =
-                uri.scheme == 'https' &&
-                uri.host == 'www.coffix.co.nz' &&
-                uri.path == '/payment/successful';
+            final isSuccess = uri.path == '/payment/successful';
 
             if (isSuccess) {
               // IMPORTANT: prevent first
               WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (!mounted) return;
+                context.read<CartCubit>().resetCart();
                 context.goNamed(
                   PaymentSuccessfulPage.route,
                   extra: {
@@ -75,7 +74,6 @@ class _PaymentViewState extends State<PaymentView> {
                     ),
                   },
                 );
-                context.read<CartCubit>().resetCart();
               });
               return NavigationDecision.prevent;
             }
@@ -84,7 +82,11 @@ class _PaymentViewState extends State<PaymentView> {
           },
         ),
       );
-    WidgetsBinding.instance.addPostFrameCallback((_) => initPayment());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      context.read<PaymentCubit>().resetPayment();
+      initPayment();
+    });
   }
 
   void initPayment() {

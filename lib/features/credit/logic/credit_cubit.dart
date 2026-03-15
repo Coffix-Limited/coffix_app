@@ -27,6 +27,10 @@ class CreditCubit extends Cubit<CreditState> {
     }
   }
 
+  void reset() {
+    emit(CreditState.initial(showTopUpField: true));
+  }
+
   void showTopUpField(bool value) {
     state.when(
       initial: (_) => emit(CreditState.initial(showTopUpField: value)),

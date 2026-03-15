@@ -74,7 +74,10 @@ class _PaymentOptionsPageViewState extends State<PaymentOptionsPageView> {
                 success: (order) {
                   context.goNamed(
                     PaymentSuccessfulPage.route,
-                    extra: {"pickupAt": order.scheduledAt},
+                    extra: {
+                      "pickupAt": order.scheduledAt,
+                      "orderNumber": order.orderNumber,
+                    },
                   );
                 },
                 error: (message) {

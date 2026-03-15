@@ -70,7 +70,7 @@ class OrderActivityCard extends StatelessWidget {
             ),
           ),
           Text(
-            '\$${order.total?.toStringAsFixed(2) ?? '0.00'}',
+            '\$${order.amount?.toStringAsFixed(2) ?? '0.00'}',
             style: theme.textTheme.titleSmall?.copyWith(
               fontWeight: FontWeight.w600,
               color: AppColors.primary,

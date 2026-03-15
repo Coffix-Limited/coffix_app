@@ -1,10 +1,13 @@
 import 'package:coffix_app/core/constants/sizes.dart';
 import 'package:coffix_app/core/theme/typography.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
+import 'package:form_builder_validators/form_builder_validators.dart';
 
 class AppMoneyField extends StatelessWidget {
-  const AppMoneyField({super.key});
+  final String name;
+  const AppMoneyField({super.key, required this.name});
 
   @override
   Widget build(BuildContext context) {
@@ -16,8 +19,8 @@ class AppMoneyField extends StatelessWidget {
         SizedBox(
           width: 100,
           child: FormBuilderTextField(
-            name: 'amount',
-          keyboardType: TextInputType.number,
+            name: name,
+            keyboardType: TextInputType.number,
             decoration: InputDecoration(
               hintText: '50',
               border: OutlineInputBorder(
@@ -25,6 +28,13 @@ class AppMoneyField extends StatelessWidget {
               ),
             ),
             style: AppTypography.headlineXxl,
+            inputFormatters: [
+              FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}')),
+            ],
+            validator: FormBuilderValidators.compose([
+              FormBuilderValidators.required(),
+              FormBuilderValidators.min(0),
+            ]),
           ),
         ),
       ],

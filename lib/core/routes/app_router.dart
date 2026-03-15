@@ -280,7 +280,11 @@ class AppRouter {
                 builder: (context, state) {
                   final extra = state.extra as Map<String, dynamic>;
                   final pickupAt = extra["pickupAt"] as DateTime;
-                  return PaymentSuccessfulPage(pickupAt: pickupAt);
+                  final orderNumber = extra["orderNumber"] as String?;
+                  return PaymentSuccessfulPage(
+                    pickupAt: pickupAt,
+                    orderNumber: orderNumber,
+                  );
                 },
               ),
 

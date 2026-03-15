@@ -6,6 +6,7 @@ import 'package:coffix_app/features/auth/logic/auth_cubit.dart';
 import 'package:coffix_app/presentation/atoms/app_button.dart';
 import 'package:coffix_app/presentation/atoms/app_card.dart';
 import 'package:coffix_app/presentation/atoms/app_field.dart';
+import 'package:coffix_app/presentation/atoms/app_money_field.dart';
 import 'package:coffix_app/presentation/molecules/app_back_header.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -106,7 +107,7 @@ class _ShareYourBalanceViewState extends State<ShareYourBalanceView> {
                     const SizedBox(height: AppSizes.md),
                     AppField<String>(
                       name: 'email',
-                      label: 'Receipient Email',
+                      label: 'Recipient Email',
                       hintText: 'Email',
                       isRequired: true,
                       keyboardType: TextInputType.emailAddress,
@@ -131,7 +132,7 @@ class _ShareYourBalanceViewState extends State<ShareYourBalanceView> {
                       validators: [
                         (v) {
                           final n = double.tryParse(v ?? '');
-                          if (n == null || n <= 0)
+                          if (n == null || n <= 0 || n < 15)
                             return 'Enter a valid amount';
                           if (n > balance) return 'Amount exceeds balance';
                           return null;
@@ -139,13 +140,14 @@ class _ShareYourBalanceViewState extends State<ShareYourBalanceView> {
                       ],
                       isHorizontalAlign: true,
                     ),
-                    const SizedBox(height: AppSizes.sm),
-                    Padding(
-                      padding: const EdgeInsets.only(left: AppSizes.sm),
-                      child: Text(
-                        "Minimum of \$15",
-                        style: theme.textTheme.bodyMedium?.copyWith(),
-                      ),
+                    Row(
+                      children: [
+                        SizedBox(width: 140.0),
+                        Text(
+                          "Minimum of \$15",
+                          style: theme.textTheme.bodyMedium?.copyWith(),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: AppSizes.xxl),
                     Text(
@@ -162,7 +164,7 @@ class _ShareYourBalanceViewState extends State<ShareYourBalanceView> {
                           // TODO: call share/gift API with _formKey.currentState!.value
                         }
                       },
-                      label: 'Gift',
+                      label: 'Send a Gift',
                     ),
                   ],
                 ),

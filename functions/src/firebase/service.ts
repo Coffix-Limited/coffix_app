@@ -59,8 +59,7 @@ class FirebaseService {
       createdAt: new Date(),
       status: "pending_payment",
       duration: validation.data.duration,
-      // TODO: add payment method
-      paymentMethod: "",
+      paymentMethod: validation.data.paymentMethod,
     });
 
     return orderRef.id;

@@ -20,6 +20,7 @@ export const createOrderBodySchema = z
       }),
     ),
     duration: z.number().min(0),
+    paymentMethod: z.enum(["coffixCredit", "card"]),
   })
   .strict();
 

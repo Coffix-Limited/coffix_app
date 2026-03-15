@@ -10,7 +10,7 @@ Order _$OrderFromJson(Map<String, dynamic> json) => Order(
   docId: json['docId'] as String?,
   customerId: json['customerId'] as String?,
   storeId: json['storeId'] as String?,
-  total: (json['total'] as num?)?.toDouble(),
+  amount: (json['amount'] as num?)?.toDouble(),
   createdAt: const DateTimeConverter().fromJson(json['createdAt']),
   scheduledAt: const DateTimeConverter().fromJson(json['scheduledAt']),
   orderNumber: json['orderNumber'] as String?,
@@ -22,19 +22,21 @@ Order _$OrderFromJson(Map<String, dynamic> json) => Order(
   items: (json['items'] as List<dynamic>?)
       ?.map((e) => Item.fromJson(e as Map<String, dynamic>))
       .toList(),
+  paymentMethod: json['paymentMethod'] as String?,
 );
 
 Map<String, dynamic> _$OrderToJson(Order instance) => <String, dynamic>{
   'docId': instance.docId,
   'customerId': instance.customerId,
   'storeId': instance.storeId,
-  'total': instance.total,
+  'amount': instance.amount,
   'createdAt': const DateTimeConverter().toJson(instance.createdAt),
   'scheduledAt': const DateTimeConverter().toJson(instance.scheduledAt),
   'orderNumber': instance.orderNumber,
   'items': instance.items?.map((e) => e.toJson()).toList(),
   'status': _$OrderStatusEnumMap[instance.status],
   'paymentStatus': _$PaymentStatusEnumMap[instance.paymentStatus],
+  'paymentMethod': instance.paymentMethod,
 };
 
 const _$OrderStatusEnumMap = {

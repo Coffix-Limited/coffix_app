@@ -62,6 +62,7 @@ router.post(
           storeId: validation.data.storeId,
           items: validation.data.items,
           duration: validation.data.duration,
+          paymentMethod: validation.data.paymentMethod,
         });
 
         await coffixCreditService.deductCredit(customerId, totalAmount);
@@ -98,6 +99,7 @@ router.post(
         storeId: validation.data.storeId,
         items: validation.data.items,
         duration: validation.data.duration,
+        paymentMethod: validation.data.paymentMethod,
       });
 
       logger.info("Total amount:", totalAmount);

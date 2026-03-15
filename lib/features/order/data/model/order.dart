@@ -30,7 +30,7 @@ class Order {
   final String? docId;
   final String? customerId;
   final String? storeId;
-  final double? total;
+  final double? amount;
   @DateTimeConverter()
   final DateTime? createdAt;
   @DateTimeConverter()
@@ -39,18 +39,20 @@ class Order {
   final List<Item>? items;
   final OrderStatus? status;
   final PaymentStatus? paymentStatus;
-
+  final String? paymentMethod;
+  
   Order({
     this.docId,
     this.customerId,
     this.storeId,
-    this.total,
+    this.amount,
     this.createdAt,
     this.scheduledAt,
     this.orderNumber,
     this.status,
     this.paymentStatus,
     this.items,
+    this.paymentMethod,
   });
 
   factory Order.fromJson(Map<String, dynamic> json) => _$OrderFromJson(json);

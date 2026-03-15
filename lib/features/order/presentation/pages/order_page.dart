@@ -235,11 +235,17 @@ class _OrderCard extends StatelessWidget {
                   ],
                 ),
               ),
-              Text.rich(
-                order.total?.toCurrencySuperscript(
-                      style: AppTypography.titleS,
-                    ) ??
-                    0.00.toCurrencySuperscript(style: AppTypography.titleS),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text.rich(
+                    order.amount?.toCurrencySuperscript(
+                          style: AppTypography.titleS,
+                        ) ??
+                        0.00.toCurrencySuperscript(style: AppTypography.titleS),
+                  ),
+                  Text(order.paymentMethod ?? '—'),
+                ],
               ),
             ],
           ),

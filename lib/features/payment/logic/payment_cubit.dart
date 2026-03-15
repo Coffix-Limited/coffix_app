@@ -13,6 +13,8 @@ class PaymentCubit extends Cubit<PaymentState> {
     : _paymentRepository = paymentRepository,
       super(PaymentState.initial());
 
+  void resetPayment() => emit(PaymentState.initial());
+
   void createPayment({required PaymentRequest request}) async {
     emit(PaymentState.loading());
     try {

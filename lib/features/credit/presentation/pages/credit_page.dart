@@ -94,6 +94,7 @@ class _CreditViewState extends State<CreditView> {
                         CreditTopupPaymentPage.route,
                         extra: {'paymentSessionUrl': paymentSessionUrl},
                       );
+                      context.read<CreditCubit>().reset();
                     });
                   },
                 );
@@ -185,7 +186,7 @@ class _CreditViewState extends State<CreditView> {
                           children: [
                             Text("Please enter the amount you wish to TopUp"),
                             SizedBox(height: AppSizes.md),
-                            AppMoneyField(),
+                            AppMoneyField(name: 'amount'),
 
                             // AppField<String>(
                             //   label: "\$",
