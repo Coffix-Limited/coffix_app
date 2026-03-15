@@ -1,4 +1,5 @@
 import 'package:coffix_app/core/constants/colors.dart';
+import 'package:coffix_app/core/constants/images.dart';
 import 'package:coffix_app/core/constants/sizes.dart';
 import 'package:coffix_app/core/di/service_locator.dart';
 import 'package:coffix_app/core/extensions/date_extensions.dart';
@@ -215,6 +216,8 @@ class _OrderCard extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              Image.asset(AppImages.email, width: 24, height: 24),
+              const SizedBox(width: AppSizes.sm),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -226,12 +229,7 @@ class _OrderCard extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: AppSizes.xs),
-                    Text(
-                      dateStr,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: AppColors.lightGrey,
-                      ),
-                    ),
+                    Text(dateStr, style: theme.textTheme.bodySmall?.copyWith()),
                     const SizedBox(height: AppSizes.sm),
                     // StatusChip(label: statusLabel, color: statusColor),
                   ],
@@ -245,17 +243,31 @@ class _OrderCard extends StatelessWidget {
               ),
             ],
           ),
-          if (items.isNotEmpty) ...[
-            const SizedBox(height: AppSizes.md),
-            const Divider(height: 1),
-            const SizedBox(height: AppSizes.md),
-            ...items.map((item) => _OrderItemRow(item: item)),
-          ],
-          const SizedBox(height: AppSizes.md),
-          AppButton.outlined(
-            onPressed: () => _reorder(context),
-            label: 'Reorder',
-            prefixIcon: const Icon(Icons.refresh, size: AppSizes.iconSizeSmall),
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  children: [
+                    if (items.isNotEmpty) ...[
+                      const SizedBox(height: AppSizes.md),
+                      const SizedBox(height: AppSizes.md),
+                      ...items.map((item) => _OrderItemRow(item: item)),
+                    ],
+                  ],
+                ),
+              ),
+              AppButton(
+                height: 24,
+                width: 48,
+                onPressed: () {
+                  _reorder(context);
+                },
+                label: "Reorder",
+                textStyle: AppTypography.body2XS.copyWith(
+                  color: AppColors.white,
+                ),
+              ),
+            ],
           ),
         ],
       ),

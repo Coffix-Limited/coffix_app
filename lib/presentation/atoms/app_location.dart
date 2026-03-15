@@ -39,6 +39,9 @@ class AppLocation extends StatelessWidget {
                       "${user.store?.name}",
                       style: theme.textTheme.bodyMedium!.copyWith(
                         color: AppColors.lightGrey,
+                        decoration: TextDecoration.underline,
+                        decorationColor: AppColors.lightGrey,
+                        decorationThickness: 1,
                       ),
                     ),
                 ],

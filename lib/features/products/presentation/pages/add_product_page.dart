@@ -133,7 +133,9 @@ class _AddProductViewState extends State<AddProductView> {
                         ),
                         child: Image.network(
                           widget.product.imageUrl!,
-                          fit: BoxFit.cover,
+                          fit: BoxFit.fill,
+                          height: 300,
+                          width: 300,
                         ),
                       )
                     : Container(
@@ -297,7 +299,6 @@ class _AddProductViewState extends State<AddProductView> {
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      const SizedBox(height: AppSizes.lg),
                       AppButton(
                         onPressed: () {
                           final modifierState = context

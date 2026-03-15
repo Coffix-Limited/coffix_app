@@ -38,6 +38,7 @@ class AppImages {
   static const String bag = "assets/icons/bag.png";
   static const String info = "assets/icons/info.png";
   static const String logout = "assets/icons/logout.png";
+  static const String email = "assets/icons/email.png";
   static const String backButton = "assets/icons/back-button.png";
 
   // SSO ICONS

@@ -48,50 +48,41 @@ class _AppBackHeaderState extends State<AppBackHeader> {
                   vertical: AppSizes.sm,
                   horizontal: AppSizes.xs,
                 ),
-                child: Stack(
-                  alignment: Alignment.center,
+                child: Row(
                   children: [
-                    // Back Button (Left aligned)
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          if (widget.showBackButton)
-                            Padding(
-                              padding: const EdgeInsets.only(left: 12.0),
-                              child: AppClickable(
-                                showSplash: false,
-                                onPressed: () {
-                                  if (widget.onBack != null) {
-                                    widget.onBack!();
-                                  } else {
-                                    context.pop();
-                                  }
-                                },
-                                child: Image.asset(
-                                  AppImages.backButton,
-                                  width: AppSizes.iconSizeMedium,
-                                  height: AppSizes.iconSizeMedium,
-                                ),
-                              ),
-                            ),
-                        ],
-                      ),
-                    ),
-
-                    Column(
-                      children: [
-                        Center(
-                          child: Text(
-                            widget.title,
-                            style: AppTypography.headlineXxl.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
+                    if (widget.showBackButton)
+                      Padding(
+                        padding: const EdgeInsets.only(left: 12.0),
+                        child: AppClickable(
+                          showSplash: false,
+                          onPressed: () {
+                            if (widget.onBack != null) {
+                              widget.onBack!();
+                            } else {
+                              context.pop();
+                            }
+                          },
+                          child: Image.asset(
+                            AppImages.backButton,
+                            width: AppSizes.iconSizeMedium,
+                            height: AppSizes.iconSizeMedium,
                           ),
                         ),
-                      ],
+                      )
+                    else
+                      const SizedBox(width: AppSizes.iconSizeMedium + 12),
+                    Expanded(
+                      child: Text(
+                        widget.title,
+                        style: AppTypography.headlineXxl.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.center,
+                      ),
                     ),
+                    const SizedBox(width: AppSizes.iconSizeMedium + 12),
                   ],
                 ),
               ),

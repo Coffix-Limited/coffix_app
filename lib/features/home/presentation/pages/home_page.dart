@@ -185,11 +185,10 @@ class _HomeViewState extends State<HomeView> {
                                                     ProfilePage.route,
                                                   );
                                                 },
-                                                icon: Image.asset(
-                                                  AppImages.profile,
-                                                  fit: BoxFit.cover,
-                                                  width: 42.0,
-                                                  height: 42.0,
+                                                icon: Icon(
+                                                  Icons.settings,
+                                                  color: Colors.white,
+                                                  size: AppSizes.iconSizeLarge,
                                                 ),
                                               ),
                                             ),

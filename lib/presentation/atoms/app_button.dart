@@ -17,6 +17,9 @@ class AppButton extends StatelessWidget {
     this.suffixIcon,
     this.disabled = false,
     this.color,
+    this.textStyle,
+    this.height,
+    this.width,
   });
 
   final AppButtonVariant variant;
@@ -28,6 +31,9 @@ class AppButton extends StatelessWidget {
   final Widget? suffixIcon;
   final bool disabled;
   final Color? color;
+  final TextStyle? textStyle;
+  final double? height;
+  final double? width;
 
   factory AppButton.primary({
     required VoidCallback onPressed,
@@ -122,7 +128,11 @@ class AppButton extends StatelessWidget {
       borderRadius: borderRadius,
       showSplash: !disabled,
       child: Container(
-        constraints: const BoxConstraints(minHeight: 48, maxHeight: 48),
+        // constraints: BoxConstraints(
+        //   minHeight: height ?? 48,
+        //   maxHeight: width ?? 48,
+        // ),
+        padding: EdgeInsets.all(AppSizes.md),
         decoration: decoration,
         alignment: Alignment.center,
         child: prefixIcon != null || suffixIcon != null
@@ -136,9 +146,9 @@ class AppButton extends StatelessWidget {
                   ],
                   Text(
                     label,
-                    style: theme.textTheme.bodyLarge?.copyWith(
-                      color: textColor,
-                    ),
+                    style:
+                        textStyle ??
+                        theme.textTheme.bodyLarge?.copyWith(color: textColor),
                   ),
                   if (suffixIcon != null) ...[
                     const SizedBox(width: AppSizes.sm),
@@ -148,7 +158,9 @@ class AppButton extends StatelessWidget {
               )
             : Text(
                 label,
-                style: theme.textTheme.bodyLarge?.copyWith(color: textColor),
+                style:
+                    textStyle ??
+                    theme.textTheme.bodyLarge?.copyWith(color: textColor),
               ),
       ),
     );
