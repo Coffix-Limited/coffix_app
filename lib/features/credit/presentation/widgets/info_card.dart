@@ -32,6 +32,7 @@ class InfoCard extends StatelessWidget {
                 image,
                 width: AppSizes.iconSizeLarge,
                 height: AppSizes.iconSizeLarge,
+                fit: BoxFit.fitHeight,
               ),
             ),
           ),

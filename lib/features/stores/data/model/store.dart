@@ -10,6 +10,7 @@ class Store {
   final String? gstNumber;
   final String? imageUrl;
   final String? invoiceText;
+  // "-37.683, 176.1665"
   final String? location;
   final String? name;
   final Map<String, DayHours>? openingHours;

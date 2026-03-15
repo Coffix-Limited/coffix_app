@@ -56,12 +56,12 @@ class _ProductViewState extends State<ProductView> {
           return state.when(
             initial: () => const SizedBox.shrink(),
             loading: () => AppLoading(),
-            loaded: (
-              List<ProductWithCategory> products,
-              List<ProductCategory> allCategories,
-              String? categoryFilter,
-            ) =>
-                ProductList(
+            loaded:
+                (
+                  List<ProductWithCategory> products,
+                  List<ProductCategory> allCategories,
+                  String? categoryFilter,
+                ) => ProductList(
                   products: products.productsByStore(widget.storeId),
                   allCategories: allCategories,
                   categoryFilter: categoryFilter,

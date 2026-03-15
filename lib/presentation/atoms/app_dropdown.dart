@@ -113,21 +113,13 @@ class AppDropdown<T, V> extends StatelessWidget {
             children: [
               if (label != null)
                 SizedBox(
-                  width: 120,
+                  width: 140,
                   child: Padding(
                     padding: EdgeInsets.only(right: AppSizes.md),
                     child: Row(
                       children: [
-                        Expanded(
-                          child: Text(label!, style: AppTypography.bodyXS),
-                        ),
-                        if (isRequired)
-                          Text(
-                            '*',
-                            style: AppTypography.bodyXS.copyWith(
-                              color: AppColors.error,
-                            ),
-                          ),
+                        Text(label!, style: AppTypography.bodyXS),
+                        if (isRequired) Text(' *', style: AppTypography.bodyXS),
                       ],
                     ),
                   ),
@@ -143,19 +135,8 @@ class AppDropdown<T, V> extends StatelessWidget {
                   padding: const EdgeInsets.only(bottom: AppSizes.xs),
                   child: Row(
                     children: [
-                      Text(
-                        label!,
-                        style: AppTypography.bodyXS.copyWith(
-                          color: AppColors.black,
-                        ),
-                      ),
-                      if (isRequired)
-                        Text(
-                          ' *',
-                          style: AppTypography.bodyXS.copyWith(
-                            color: AppColors.error,
-                          ),
-                        ),
+                      Text(label!, style: AppTypography.bodyXS),
+                      if (isRequired) Text(' *', style: AppTypography.bodyXS),
                     ],
                   ),
                 ),

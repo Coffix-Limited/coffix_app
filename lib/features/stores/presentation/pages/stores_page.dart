@@ -1,4 +1,5 @@
 import 'package:coffix_app/core/di/service_locator.dart';
+import 'package:coffix_app/features/cart/logic/cart_cubit.dart';
 import 'package:coffix_app/features/stores/logic/store_cubit.dart';
 import 'package:coffix_app/features/stores/presentation/widgets/store_list.dart';
 import 'package:coffix_app/presentation/atoms/app_loading.dart';
@@ -36,7 +37,9 @@ class _StoresViewState extends State<StoresView> {
         listener: (context, state) {
           state.whenOrNull(
             loaded: (stores) {
-              if (stores.isNotEmpty) {}
+              if (stores.isNotEmpty) {
+                context.read<CartCubit>().resetCart();
+              }
             },
           );
         },

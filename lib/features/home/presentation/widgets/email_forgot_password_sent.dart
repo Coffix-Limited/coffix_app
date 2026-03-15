@@ -27,7 +27,7 @@ class EmailForgotPasswordSent extends StatelessWidget {
             Text("Check your email", style: AppTypography.titleS),
             SizedBox(height: AppSizes.sm),
             Text(
-              "An retrieval link has been emailed to you. Please click the link, update your password  and login again",
+              "A retrieval link has been emailed to you. Please click the link, update your password  and login again",
               style: AppTypography.bodyXS.copyWith(
                 color: AppColors.textBlackColor,
               ),

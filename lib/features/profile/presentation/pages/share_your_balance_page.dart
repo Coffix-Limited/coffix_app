@@ -1,6 +1,7 @@
 import 'package:coffix_app/core/constants/colors.dart';
 import 'package:coffix_app/core/constants/sizes.dart';
 import 'package:coffix_app/core/di/service_locator.dart';
+import 'package:coffix_app/core/extensions/price_extensions.dart';
 import 'package:coffix_app/features/auth/logic/auth_cubit.dart';
 import 'package:coffix_app/presentation/atoms/app_button.dart';
 import 'package:coffix_app/presentation/atoms/app_card.dart';
@@ -60,61 +61,63 @@ class _ShareYourBalanceViewState extends State<ShareYourBalanceView> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          Text(
-                            'Your balance',
-                            style: theme.textTheme.bodyMedium?.copyWith(
-                              color: AppColors.lightGrey,
-                            ),
-                          ),
                           const SizedBox(height: AppSizes.xs),
-                          Text(
-                            '\$${balance.toStringAsFixed(2)}',
-                            style: theme.textTheme.headlineSmall?.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.primary,
+                          Text.rich(
+                            textAlign: TextAlign.center,
+                            TextSpan(
+                              children: [
+                                TextSpan(text: 'Your have '),
+                                balance.toCurrencySuperscript(
+                                  style: theme.textTheme.headlineSmall
+                                      ?.copyWith(fontWeight: FontWeight.bold),
+                                ),
+                                TextSpan(text: ' in Coffix Credit'),
+                              ],
                             ),
                           ),
                         ],
                       ),
                     ),
                     const SizedBox(height: AppSizes.xxl),
-                    Text(
-                      'Recipient details',
-                      style: theme.textTheme.titleMedium,
-                    ),
                     const SizedBox(height: AppSizes.md),
-                    AppField<String>(
-                      name: 'email',
-                      label: 'Email',
-                      hintText: 'Email',
-                      isRequired: true,
-                      keyboardType: TextInputType.emailAddress,
-                      validators: [FormBuilderValidators.email()],
-                    ),
+
                     const SizedBox(height: AppSizes.md),
                     AppField<String>(
                       name: 'firstName',
-                      label: 'First name',
+                      label: 'Recipient first name',
                       hintText: 'First name',
                       isRequired: true,
                       validators: [
                         (v) => (v ?? '').trim().isEmpty ? 'Required' : null,
                       ],
+                      isHorizontalAlign: true,
                     ),
                     const SizedBox(height: AppSizes.md),
                     AppField<String>(
                       name: 'lastName',
-                      label: 'Last name',
+                      label: 'Recipient last name',
                       hintText: 'Last name',
                       isRequired: true,
                       validators: [
                         (v) => (v ?? '').trim().isEmpty ? 'Required' : null,
                       ],
+                      isHorizontalAlign: true,
                     ),
                     const SizedBox(height: AppSizes.md),
                     AppField<String>(
+                      name: 'email',
+                      label: 'Receipient Email',
+                      hintText: 'Email',
+                      isRequired: true,
+                      keyboardType: TextInputType.emailAddress,
+                      validators: [FormBuilderValidators.email()],
+                      isHorizontalAlign: true,
+                    ),
+                    const SizedBox(height: AppSizes.md),
+
+                    AppField<String>(
                       name: 'amount',
-                      label: 'Amount',
+                      label: 'Amount to gift',
                       hintText: '0.00',
                       isRequired: true,
                       keyboardType: const TextInputType.numberWithOptions(
@@ -134,11 +137,15 @@ class _ShareYourBalanceViewState extends State<ShareYourBalanceView> {
                           return null;
                         },
                       ],
+                      isHorizontalAlign: true,
                     ),
                     const SizedBox(height: AppSizes.sm),
-                    Text(
-                      "Minimum of \$15",
-                      style: theme.textTheme.bodyMedium?.copyWith(),
+                    Padding(
+                      padding: const EdgeInsets.only(left: AppSizes.sm),
+                      child: Text(
+                        "Minimum of \$15",
+                        style: theme.textTheme.bodyMedium?.copyWith(),
+                      ),
                     ),
                     const SizedBox(height: AppSizes.xxl),
                     Text(

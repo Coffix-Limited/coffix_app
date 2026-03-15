@@ -9,10 +9,12 @@ import 'package:coffix_app/features/credit/presentation/pages/credit_topup_payme
 import 'package:coffix_app/features/credit/presentation/widgets/info_card.dart';
 import 'package:coffix_app/features/credit/presentation/widgets/tier_card.dart';
 import 'package:coffix_app/presentation/atoms/app_button.dart';
+import 'package:coffix_app/presentation/atoms/app_layout_builder.dart';
 import 'package:coffix_app/presentation/atoms/app_loading.dart';
 import 'package:coffix_app/presentation/atoms/app_field.dart';
 import 'package:coffix_app/presentation/atoms/app_notification.dart';
 import 'package:coffix_app/presentation/molecules/app_back_header.dart';
+import 'package:coffix_app/presentation/organisms/app_layout_body.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
@@ -74,8 +76,7 @@ class _CreditViewState extends State<CreditView> {
           });
         },
         child: SafeArea(
-          child: SingleChildScrollView(
-            padding: AppSizes.defaultPadding,
+          child: AppLayoutBuilder(
             child: BlocConsumer<CreditCubit, CreditState>(
               listenWhen: (previous, current) => previous != current,
               listener: (context, state) {
@@ -98,86 +99,101 @@ class _CreditViewState extends State<CreditView> {
                   error: (_, v) => v,
                   orElse: () => false,
                 );
-                if (state.maybeWhen(loading: (_) => true, orElse: () => false)) {
+                if (state.maybeWhen(
+                  loading: (_) => true,
+                  orElse: () => false,
+                )) {
                   return const Center(child: AppLoading());
                 }
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    RichText(
-                      textAlign: TextAlign.center,
-                      text: TextSpan(
-                        text: "PAY BY COFFIX CREDIT AND",
-                        style: AppTypography.headlineL.copyWith(
-                          color: AppColors.black,
-                        ),
-                        children: [
-                          TextSpan(
-                            text: " SAVE 10%- 20%",
-                            style: AppTypography.headlineL.copyWith(
-                              color: AppColors.primary,
-                            ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSizes.lg,
+                      ),
+                      child: RichText(
+                        textAlign: TextAlign.center,
+                        text: TextSpan(
+                          text: "PAY BY COFFIX CREDIT AND",
+                          style: AppTypography.headlineL.copyWith(
+                            color: AppColors.black,
                           ),
-                        ],
+                          children: [
+                            TextSpan(
+                              text: " \nSAVE 10%- 20%",
+                              style: AppTypography.headlineL.copyWith(
+                                color: AppColors.primary,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                     const SizedBox(height: AppSizes.xxl),
-                    IntrinsicHeight(
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          InfoCard(
-                            text: 'TopUp your Coffix Credit account',
-                            image: AppImages.creditGray,
-                          ),
-                          const SizedBox(width: AppSizes.sm),
-                          InfoCard(
-                            text: 'Order in your app',
-                            image: AppImages.menuGray,
-                          ),
-                          const SizedBox(width: AppSizes.sm),
-                          InfoCard(
-                            text: 'Get 10% - 20% discount for any order',
-                            image: AppImages.creditGray,
-                          ),
-                        ],
+                    if (!showTopUpField)
+                      IntrinsicHeight(
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            InfoCard(
+                              text: 'TopUp your Coffix Credit account',
+                              image: AppImages.card,
+                            ),
+                            const SizedBox(width: AppSizes.sm),
+                            InfoCard(
+                              text: 'Order in your App',
+                              image: AppImages.menuGray,
+                            ),
+                            const SizedBox(width: AppSizes.sm),
+                            InfoCard(
+                              text: 'Get 10% - 20% discount for any order',
+                              image: AppImages.creditGray,
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
                     const SizedBox(height: AppSizes.xl),
-                    showTopUpField
-                        ? Column(
-                            children: [
-                              Text("Please enter the amount you wish to TopUp"),
-                              SizedBox(height: AppSizes.md),
-                              AppField<String>(
-                                label: "\$",
-                                isHorizontalAlign: true,
-                                hintText: "\$50+",
-                                name: "amount",
-                                keyboardType: TextInputType.number,
-                                validators: [
-                                  FormBuilderValidators.required(),
-                                  FormBuilderValidators.min(0),
-                                ],
+                    Column(
+                      children: [
+                        TierCard(amount: 50, percent: '10%'),
+                        const SizedBox(height: AppSizes.sm),
+                        TierCard(amount: 250, percent: '15%'),
+                        const SizedBox(height: AppSizes.sm),
+                        TierCard(amount: 500, percent: '20%'),
+                        const SizedBox(height: AppSizes.xl),
+                      ],
+                    ),
+                    if (showTopUpField)
+                      Padding(
+                        padding: const EdgeInsets.only(top: AppSizes.xxxxxl),
+                        child: Column(
+                          children: [
+                            Text("Please enter the amount you wish to TopUp"),
+                            SizedBox(height: AppSizes.md),
+
+                            AppField<String>(
+                              label: "\$",
+                              isHorizontalAlign: true,
+                              hintText: "\$50+",
+                              name: "amount",
+                              keyboardType: TextInputType.number,
+                              validators: [
+                                FormBuilderValidators.required(),
+                                FormBuilderValidators.min(0),
+                              ],
+                            ),
+                            SizedBox(height: AppSizes.sm),
+                            if (amount != null && amount.isNotEmpty)
+                              Text(
+                                "You will receive: \$${calculateTopUp(double.parse(amount ?? '0')).toStringAsFixed(2)} Coffix Credits",
                               ),
-                              SizedBox(height: AppSizes.sm),
-                              if (amount != null && amount.isNotEmpty)
-                                Text(
-                                  "You will receive: ${calculateTopUp(double.parse(amount ?? '0')).toStringAsFixed(2)}\$ Coffix Credits",
-                                ),
-                            ],
-                          )
-                        : Column(
-                            children: [
-                              TierCard(amount: 50, percent: '10%'),
-                              const SizedBox(height: AppSizes.sm),
-                              TierCard(amount: 250, percent: '15%'),
-                              const SizedBox(height: AppSizes.sm),
-                              TierCard(amount: 500, percent: '20%'),
-                              const SizedBox(height: AppSizes.xl),
-                            ],
-                          ),
+                          ],
+                        ),
+                      ),
+
                     SizedBox(height: AppSizes.xl),
+                    Spacer(),
                     AppButton(
                       onPressed: () {
                         if (showTopUpField &&
@@ -193,6 +209,7 @@ class _CreditViewState extends State<CreditView> {
                           ? "TopUp"
                           : "TopUp Your Coffix Credit",
                     ),
+                    SizedBox(height: AppSizes.xl),
                   ],
                 );
               },

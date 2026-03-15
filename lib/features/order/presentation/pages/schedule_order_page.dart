@@ -75,7 +75,7 @@ class _ScheduleOrderViewState extends State<ScheduleOrderView> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Text(
-                    'At what time do you want to collect your order from ${user?.store?.name}',
+                    'At what time do you want to collect your order from ${user?.store?.name}?',
                     style: theme.textTheme.bodyMedium,
                   ),
                   const SizedBox(height: AppSizes.lg),

@@ -135,19 +135,23 @@ class _AppFieldState<T> extends State<AppField<T>> {
             children: [
               if (widget.label != null)
                 SizedBox(
-                  width: 120,
+                  width: 140,
                   child: Padding(
                     padding: EdgeInsets.only(right: AppSizes.md),
                     child: Row(
                       children: [
-                        Text(widget.label!, style: AppTypography.bodyXS),
-                        if (widget.isRequired)
-                          Text(
-                            '*',
-                            style: AppTypography.bodyXS.copyWith(
-                              color: AppColors.error,
+                        Expanded(
+                          child: RichText(
+                            textAlign: TextAlign.left,
+                            text: TextSpan(
+                              style: AppTypography.bodyXS,
+                              children: [
+                                TextSpan(text: widget.label!),
+                                if (widget.isRequired) TextSpan(text: '*'),
+                              ],
                             ),
                           ),
+                        ),
                       ],
                     ),
                   ),

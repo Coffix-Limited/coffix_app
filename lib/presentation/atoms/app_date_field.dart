@@ -129,7 +129,7 @@ class _AppDateFieldState extends State<AppDateField> {
             children: [
               if (widget.label != null)
                 SizedBox(
-                  width: 120,
+                  width: 140,
                   child: Padding(
                     padding: EdgeInsets.only(right: AppSizes.md),
                     child: Row(

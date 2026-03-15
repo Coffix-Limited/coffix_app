@@ -11,4 +11,5 @@ abstract class StoreRepository {
     required String storeId,
   });
   Future<void> updatePreferredStore({required String storeId});
+  Future<void> openMap(double lat, double lng);
 }

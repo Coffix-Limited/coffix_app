@@ -81,7 +81,7 @@ class AboutView extends StatelessWidget {
                       const Divider(height: 1),
                       _InfoRow(
                         label: 'Customer ID',
-                        value: '${user?.user.docId}',
+                        value: user?.user.qrId ?? '',
                       ),
                     ],
                   ),

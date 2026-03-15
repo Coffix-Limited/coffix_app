@@ -28,7 +28,7 @@ class TierCard extends StatelessWidget {
           Text.rich(
             TextSpan(
               children: [
-                TextSpan(text: 'Top up '),
+                TextSpan(text: 'TopUp '),
                 amount.toCurrencySuperscript(
                   style: AppTypography.bodyM500.copyWith(
                     color: AppColors.black,

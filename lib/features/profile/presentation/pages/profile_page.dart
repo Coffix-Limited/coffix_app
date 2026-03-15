@@ -7,6 +7,7 @@ import 'package:coffix_app/core/di/service_locator.dart';
 import 'package:coffix_app/core/extensions/price_extensions.dart';
 import 'package:coffix_app/core/theme/typography.dart';
 import 'package:coffix_app/features/auth/logic/auth_cubit.dart';
+import 'package:coffix_app/features/cart/logic/cart_cubit.dart';
 import 'package:coffix_app/features/credit/presentation/pages/credit_page.dart';
 import 'package:coffix_app/features/profile/presentation/pages/about_page.dart';
 import 'package:coffix_app/features/profile/presentation/pages/personal_info_page.dart';
@@ -29,8 +30,11 @@ class ProfilePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider.value(
-      value: getIt<AuthCubit>(),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider.value(value: getIt<AuthCubit>()),
+        BlocProvider.value(value: getIt<CartCubit>()),
+      ],
       child: const ProfileView(),
     );
   }
@@ -59,7 +63,7 @@ class ProfileView extends StatelessWidget {
     return Scaffold(
       appBar: AppBackHeader(
         title: isAuthenticated
-            ? "${user?.firstName} + ${user?.lastName}"
+            ? "${user?.firstName} ${user?.lastName}"
             : "My Account",
       ),
       body: SingleChildScrollView(
@@ -77,19 +81,19 @@ class ProfileView extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Text(
-                    'Credit balance',
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: AppColors.lightGrey,
-                    ),
-                  ),
-                  const SizedBox(height: AppSizes.xs),
                   Text.rich(
-                    creditBalance.toCurrencySuperscript(
-                      style: theme.textTheme.headlineSmall?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.primary,
-                      ),
+                    textAlign: TextAlign.center,
+                    TextSpan(
+                      children: [
+                        creditBalance.toCurrencySuperscript(
+                          style: AppTypography.headlineXl,
+                        ),
+                        TextSpan(text: "+ ", style: AppTypography.headlineXl),
+                        0.00.toCurrencySuperscript(
+                          style: AppTypography.headlineXl,
+                        ),
+                        TextSpan(text: " Coupon", style: AppTypography.bodyXS),
+                      ],
                     ),
                   ),
                   const SizedBox(height: AppSizes.md),
@@ -162,6 +166,7 @@ class ProfileView extends StatelessWidget {
               label: 'Logout',
               onTap: () {
                 context.read<AuthCubit>().signOut();
+                context.read<CartCubit>().resetCart();
               },
               icon: AppImages.logout,
             ),

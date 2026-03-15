@@ -13,6 +13,7 @@ class StoreCubit extends Cubit<StoreState> {
   final StoreRepository _storeRepository;
   StreamSubscription<List<Store>>? _storesSubscription;
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  List<Store> _allStores = [];
 
   StoreCubit({required StoreRepository storeRepository})
     : _storeRepository = storeRepository,
@@ -22,9 +23,26 @@ class StoreCubit extends Cubit<StoreState> {
     emit(StoreState.loading());
     _storesSubscription?.cancel();
     _storesSubscription = _storeRepository.getStores().listen(
-      (stores) => emit(StoreState.loaded(stores: stores)),
+      (stores) {
+        _allStores = stores;
+        emit(StoreState.loaded(stores: stores));
+      },
       onError: (e) => emit(StoreState.error(message: e.toString())),
     );
+  }
+
+  void searchStores(String query) {
+    if (query.isEmpty) {
+      emit(StoreState.loaded(stores: List.from(_allStores)));
+      return;
+    }
+    final lower = query.toLowerCase();
+    final filtered = _allStores.where((s) {
+      final nameMatch = s.name?.toLowerCase().contains(lower) ?? false;
+      final addressMatch = s.address?.toLowerCase().contains(lower) ?? false;
+      return nameMatch || addressMatch;
+    }).toList();
+    emit(StoreState.loaded(stores: filtered));
   }
 
   Future<void> updatePreferredStore({required String storeId}) async {

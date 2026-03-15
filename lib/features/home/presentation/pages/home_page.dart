@@ -2,6 +2,7 @@ import 'package:coffix_app/core/constants/colors.dart';
 import 'package:coffix_app/core/constants/images.dart';
 import 'package:coffix_app/core/constants/sizes.dart';
 import 'package:coffix_app/core/di/service_locator.dart';
+import 'package:coffix_app/features/app/logic/app_cubit.dart';
 import 'package:coffix_app/features/auth/data/model/user_with_store.dart';
 import 'package:coffix_app/features/auth/logic/auth_cubit.dart';
 import 'package:coffix_app/features/auth/logic/otp_cubit.dart';
@@ -36,6 +37,7 @@ class HomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
+        BlocProvider.value(value: getIt<AppCubit>()),
         BlocProvider.value(value: getIt<AuthCubit>()),
         BlocProvider.value(value: getIt<OtpCubit>()),
         BlocProvider.value(value: getIt<StoreCubit>()),
@@ -60,6 +62,7 @@ class _HomeViewState extends State<HomeView> {
   @override
   void initState() {
     super.initState();
+    context.read<AppCubit>().getGlobal();
     context.read<AuthCubit>().listenToUser();
   }
 
@@ -173,6 +176,7 @@ class _HomeViewState extends State<HomeView> {
                                           ),
                                           if (isAuthenticated)
                                             Positioned(
+                                              top: 0,
                                               right: 0,
                                               child: IconButton(
                                                 onPressed: () {
@@ -180,7 +184,12 @@ class _HomeViewState extends State<HomeView> {
                                                     ProfilePage.route,
                                                   );
                                                 },
-                                                icon: Icon(Icons.person),
+                                                icon: Image.asset(
+                                                  AppImages.profile,
+                                                  fit: BoxFit.cover,
+                                                  width: 42.0,
+                                                  height: 42.0,
+                                                ),
                                               ),
                                             ),
                                         ],
@@ -194,6 +203,7 @@ class _HomeViewState extends State<HomeView> {
                                         child: Column(
                                           children: [
                                             AppButton.primary(
+                                              color: AppColors.lightGrey,
                                               onPressed: () {
                                                 context.goNamed(MenuPage.route);
                                               },

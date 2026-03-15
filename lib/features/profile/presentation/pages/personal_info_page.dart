@@ -83,7 +83,7 @@ class _PersonalInfoViewState extends State<PersonalInfoView> {
         const SizedBox(height: AppSizes.lg),
         AppField<String>(
           name: 'firstName',
-          label: 'First name',
+          label: 'First Name',
           hintText: 'Enter first name',
           isRequired: true,
           isHorizontalAlign: true,
@@ -95,7 +95,7 @@ class _PersonalInfoViewState extends State<PersonalInfoView> {
         const SizedBox(height: AppSizes.lg),
         AppField<String>(
           name: 'lastName',
-          label: 'Last name',
+          label: 'Last Name',
           hintText: 'Enter last name',
           isRequired: true,
           isHorizontalAlign: true,
@@ -103,7 +103,7 @@ class _PersonalInfoViewState extends State<PersonalInfoView> {
         const SizedBox(height: AppSizes.lg),
         AppField<String>(
           name: 'nickname',
-          label: 'Nickname',
+          label: 'Nick Name',
           hintText: 'Enter nickname',
           isRequired: true,
           isHorizontalAlign: true,
@@ -129,10 +129,12 @@ class _PersonalInfoViewState extends State<PersonalInfoView> {
         ),
         Row(
           children: [
-            SizedBox(width: 120.0),
-            Text(
-              "You might get something for your birthday ",
-              style: AppTypography.body3XS,
+            SizedBox(width: 140.0),
+            Expanded(
+              child: Text(
+                "You might get something for your birthday ",
+                style: AppTypography.body3XS,
+              ),
             ),
           ],
         ),

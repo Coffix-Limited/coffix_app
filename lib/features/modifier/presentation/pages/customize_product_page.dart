@@ -64,6 +64,7 @@ class _CustomizeProductViewState extends State<CustomizeProductView> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Scaffold(
+      appBar: AppBackHeader(title: "Customize Product"),
       body: BlocBuilder<ModifierCubit, ModifierState>(
         builder: (context, state) {
           return state.when(
@@ -77,10 +78,6 @@ class _CustomizeProductViewState extends State<CustomizeProductView> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        AppBackHeader(
-                          title: "Customize Product",
-                          showLocation: false,
-                        ),
                         ...modifiersGroups.map((bundle) {
                           final groupTitle =
                               bundle.group.name ??

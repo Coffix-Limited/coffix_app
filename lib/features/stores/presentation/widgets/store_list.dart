@@ -1,11 +1,17 @@
 import 'package:coffix_app/core/constants/colors.dart';
+import 'package:coffix_app/core/constants/images.dart';
 import 'package:coffix_app/core/constants/sizes.dart';
+import 'package:coffix_app/core/di/service_locator.dart';
+import 'package:coffix_app/core/extensions/location_extensions.dart';
 import 'package:coffix_app/core/theme/typography.dart';
+import 'package:coffix_app/data/repositories/store_repository.dart';
+import 'package:coffix_app/features/auth/logic/auth_cubit.dart';
 import 'package:coffix_app/features/home/presentation/pages/home_page.dart';
 import 'package:coffix_app/features/stores/data/model/store.dart';
 import 'package:coffix_app/features/stores/logic/store_cubit.dart';
 import 'package:coffix_app/presentation/atoms/app_clickable.dart';
 import 'package:coffix_app/presentation/atoms/app_icon.dart';
+import 'package:coffix_app/presentation/atoms/app_icon_button.dart';
 import 'package:coffix_app/presentation/atoms/app_notification.dart';
 import 'package:coffix_app/presentation/atoms/app_field.dart';
 import 'package:coffix_app/presentation/molecules/app_back_header.dart';
@@ -33,6 +39,14 @@ class StoreList extends StatelessWidget {
       }
     }
 
+    final user = context.watch<AuthCubit>().state.maybeWhen(
+      authenticated: (user) => user,
+      orElse: () => null,
+    );
+
+    final lat = user?.store?.location?.latitude;
+    final lng = user?.store?.location?.longitude;
+
     return SingleChildScrollView(
       padding: AppSizes.defaultPadding,
       child: Column(
@@ -41,7 +55,22 @@ class StoreList extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                child: AppField(hintText: "Store Search", name: "search"),
+                child: AppField(
+                  hintText: "Store Search",
+                  name: "search",
+                  prefixIcon: Icon(Icons.search, color: AppColors.lightGrey),
+                  onChanged: (val) {
+                    context.read<StoreCubit>().searchStores(val ?? "");
+                  },
+                ),
+              ),
+              SizedBox(width: AppSizes.sm),
+              AppClickable(
+                showSplash: false,
+                onPressed: () async {
+                  await getIt<StoreRepository>().openMap(lat ?? 0, lng ?? 0);
+                },
+                child: Image.asset(AppImages.target),
               ),
             ],
           ),
@@ -58,7 +87,8 @@ class StoreList extends StatelessWidget {
                 start: DateTime.now(),
                 end: DateTime.now().add(const Duration(hours: 1)),
               );
-              final isOpen = store.isOpenAt();
+              // final isOpen = store.isOpenAt();
+              final isOpen = true;
               return AppClickable(
                 showSplash: false,
                 onPressed: () {

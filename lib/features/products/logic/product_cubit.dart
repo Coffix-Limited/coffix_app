@@ -13,6 +13,7 @@ class ProductCubit extends Cubit<ProductState> {
   final ProductRepository _productRepository;
   StreamSubscription<List<ProductWithCategory>>? _productsSubscription;
   List<ProductWithCategory> _allProducts = [];
+  bool _initialized = false;
 
   ProductCubit({required ProductRepository productRepository})
     : _productRepository = productRepository,
@@ -21,18 +22,33 @@ class ProductCubit extends Cubit<ProductState> {
   List<ProductCategory> get _categories =>
       _allProducts.map((p) => p.category).toSet().toList();
 
+  void _initDefaultCategory() {
+    if (_categories.isEmpty) return;
+    final coffee = _categories.firstWhere(
+      (c) => c.name?.toLowerCase() == 'coffee',
+      orElse: () => _categories.first,
+    );
+    filterProductsByCategory(coffee.name!);
+  }
+
   Future<void> getProducts() async {
     emit(ProductState.loading());
     _productsSubscription?.cancel();
+    _initialized = false;
     try {
       _productsSubscription = _productRepository
           .getProductsWithCategories()
           .listen((products) {
             _allProducts = products;
-            emit(ProductState.loaded(
-              products: products,
-              allCategories: _categories,
-            ));
+            if (!_initialized) {
+              _initialized = true;
+              _initDefaultCategory();
+            } else {
+              emit(ProductState.loaded(
+                products: products,
+                allCategories: _categories,
+              ));
+            }
           }, onError: (e) => emit(ProductState.error(message: e.toString())));
     } catch (e) {
       emit(ProductState.error(message: e.toString()));

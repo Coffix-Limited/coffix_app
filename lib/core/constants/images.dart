@@ -14,6 +14,8 @@ class AppImages {
   static const String storeGray = "assets/icons/store-gray.png";
   static const String orderBlack = "assets/icons/order-black.png";
   static const String orderGray = "assets/icons/order-gray.png";
+  static const String card = "assets/icons/card.png";
+  static const String target = "assets/icons/target.png";
 
   static const String location = "assets/icons/location.svg";
   static const String logo = "assets/icons/logo.svg";

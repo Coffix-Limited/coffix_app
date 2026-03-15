@@ -7,6 +7,7 @@ import 'package:coffix_app/features/products/data/model/product_override.dart';
 import 'package:coffix_app/features/stores/data/model/store.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:rxdart/rxdart.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class StoreRepositoryImpl implements StoreRepository {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -85,5 +86,18 @@ class StoreRepositoryImpl implements StoreRepository {
       'preferredStoreId': storeId,
       'updatedAt': DateTime.now(),
     }, SetOptions(merge: true));
+  }
+
+  @override
+  Future<void> openMap(double lat, double lng) async {
+    final Uri url = Uri.parse(
+      'https://www.google.com/maps/search/?api=1&query=$lat,$lng',
+    );
+
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url, mode: LaunchMode.externalApplication);
+    } else {
+      throw "Could not open the map";
+    }
   }
 }
