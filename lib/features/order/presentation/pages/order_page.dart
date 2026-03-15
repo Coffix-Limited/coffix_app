@@ -53,7 +53,7 @@ class _OrderViewState extends State<OrderView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const AppBackHeader(title: 'Orders'),
+      appBar: const AppBackHeader(title: 'My Orders'),
       body: BlocBuilder<OrderCubit, OrderState>(
         builder: (context, state) {
           return state.when(
@@ -119,7 +119,7 @@ class _OrderCard extends StatelessWidget {
   void _reorder(BuildContext context) {
     final productState = context.read<ProductCubit>().state;
     final products = productState.maybeWhen(
-      loaded: (products, _) => products,
+      loaded: (products, _, _) => products,
       orElse: () => null,
     );
 
@@ -234,7 +234,7 @@ class _OrderCard extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: AppSizes.sm),
-                    StatusChip(label: statusLabel, color: statusColor),
+                    // StatusChip(label: statusLabel, color: statusColor),
                   ],
                 ),
               ),
@@ -273,7 +273,7 @@ class _OrderItemRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final productState = context.watch<ProductCubit>().state;
     final product = productState.maybeWhen(
-      loaded: (products, _) => products
+      loaded: (products, _, _) => products
           .firstWhere(
             (p) => p.product.docId == item.productId,
             orElse: () => products.first,

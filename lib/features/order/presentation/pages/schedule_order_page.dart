@@ -1,12 +1,16 @@
 import 'package:coffix_app/core/constants/colors.dart';
 import 'package:coffix_app/core/constants/sizes.dart';
 import 'package:coffix_app/core/di/service_locator.dart';
+import 'package:coffix_app/features/auth/data/model/user_with_store.dart';
+import 'package:coffix_app/features/auth/logic/auth_cubit.dart';
 import 'package:coffix_app/features/cart/logic/cart_cubit.dart';
 import 'package:coffix_app/features/payment/presentation/pages/payment_options_page.dart';
 import 'package:coffix_app/presentation/atoms/app_button.dart';
 import 'package:coffix_app/presentation/atoms/app_card.dart';
 import 'package:coffix_app/presentation/atoms/app_clickable.dart';
+import 'package:coffix_app/presentation/molecules/app_back_header.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 enum PickupOption { now, fifteenMinutes, thirtyMinutes }
@@ -56,10 +60,12 @@ class _ScheduleOrderViewState extends State<ScheduleOrderView> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final AppUserWithStore? user = context.watch<AuthCubit>().state.maybeWhen(
+      authenticated: (user) => user,
+      orElse: () => null,
+    );
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Pickup time', style: theme.textTheme.titleLarge),
-      ),
+      appBar: AppBackHeader(title: "Pickup time"),
       body: Column(
         children: [
           Expanded(
@@ -69,7 +75,7 @@ class _ScheduleOrderViewState extends State<ScheduleOrderView> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Text(
-                    'Order will be ready for pickup around:',
+                    'At what time do you want to collect your order from ${user?.store?.name}',
                     style: theme.textTheme.bodyMedium,
                   ),
                   const SizedBox(height: AppSizes.lg),

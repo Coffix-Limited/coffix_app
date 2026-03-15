@@ -11,7 +11,6 @@ import 'package:coffix_app/presentation/atoms/app_card.dart';
 import 'package:coffix_app/presentation/atoms/app_clickable.dart';
 import 'package:coffix_app/presentation/atoms/app_field.dart';
 import 'package:coffix_app/presentation/atoms/app_text_button.dart';
-import 'package:coffix_app/presentation/molecules/app_back_header.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -20,23 +19,20 @@ class ProductList extends StatelessWidget {
   const ProductList({
     super.key,
     required this.products,
+    required this.allCategories,
     this.isRoot = false,
     this.categoryFilter,
     required this.storeId,
   });
 
   final List<ProductWithCategory> products;
+  final List<ProductCategory> allCategories;
   final bool isRoot;
   final String? categoryFilter;
   final String storeId;
 
   @override
   Widget build(BuildContext context) {
-    final List<ProductCategory> categories = products
-        .map((product) => product.category)
-        .toSet()
-        .toList();
-
     return SingleChildScrollView(
       padding: AppSizes.defaultPadding,
       child: Column(
@@ -67,11 +63,11 @@ class ProductList extends StatelessWidget {
                 child: ListView.separated(
                   scrollDirection: Axis.horizontal,
                   shrinkWrap: true,
-                  itemCount: categories.length,
+                  itemCount: allCategories.length,
                   separatorBuilder: (_, index) =>
                       const SizedBox(width: AppSizes.md),
                   itemBuilder: (context, index) {
-                    final category = categories[index];
+                    final category = allCategories[index];
                     return AppClickable(
                       showSplash: false,
                       onPressed: () {
@@ -80,9 +76,10 @@ class ProductList extends StatelessWidget {
                         );
                       },
                       child: AppCard(
-                        color: categoryFilter == category.name
+                        borderColor: categoryFilter == category.name
                             ? AppColors.primary
                             : AppColors.white,
+                        color: AppColors.lightGrey,
                         child: Text(
                           category.name ?? "",
                           style: AppTypography.labelS,

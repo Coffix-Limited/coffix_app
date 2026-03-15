@@ -47,13 +47,32 @@ class ProfileView extends StatelessWidget {
           double.parse(user.user.creditAvailable?.toString() ?? '0.00'),
       orElse: () => 0,
     );
+    final user = context.watch<AuthCubit>().state.maybeWhen(
+      authenticated: (user) => user.user,
+      orElse: () => null,
+    );
+    final isAuthenticated = (context.read<AuthCubit>().state).maybeWhen(
+      authenticated: (user) => true,
+      orElse: () => false,
+    );
+
     return Scaffold(
-      appBar: AppBackHeader(title: "My Account"),
+      appBar: AppBackHeader(
+        title: isAuthenticated
+            ? "${user?.firstName} + ${user?.lastName}"
+            : "My Account",
+      ),
       body: SingleChildScrollView(
         padding: AppSizes.defaultPadding,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            Text(
+              "My Coffix Credit Balance",
+              style: AppTypography.bodyL,
+              textAlign: TextAlign.center,
+            ),
+            SizedBox(height: AppSizes.md),
             AppCard(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -84,12 +103,7 @@ class ProfileView extends StatelessWidget {
               ),
             ),
             const SizedBox(height: AppSizes.xxl),
-            Text(
-              'Account',
-              style: theme.textTheme.labelLarge?.copyWith(
-                color: AppColors.lightGrey,
-              ),
-            ),
+
             ProfileTile(
               label: 'Profile',
               onTap: () {
@@ -98,13 +112,6 @@ class ProfileView extends StatelessWidget {
               icon: AppImages.profile,
             ),
             const SizedBox(height: AppSizes.sm),
-
-            Text(
-              'Wallet',
-              style: theme.textTheme.labelLarge?.copyWith(
-                color: AppColors.lightGrey,
-              ),
-            ),
             ProfileTile(
               label: 'Transaction history',
               onTap: () {
@@ -134,23 +141,16 @@ class ProfileView extends StatelessWidget {
               icon: AppImages.id,
             ),
             ProfileTile(
-              label: 'Coffee on us',
+              label: 'Coffee on US',
               onTap: () {},
               icon: AppImages.coffee,
             ),
             ProfileTile(
-              label: 'Coffee for home',
+              label: 'Coffee for Home',
               onTap: () {},
               icon: AppImages.bag,
             ),
             const SizedBox(height: AppSizes.sm),
-
-            Text(
-              'About Coffix',
-              style: theme.textTheme.labelLarge?.copyWith(
-                color: AppColors.lightGrey,
-              ),
-            ),
             ProfileTile(
               label: 'About',
               onTap: () {

@@ -14,30 +14,61 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$CreditState {
 
-
+ bool get showTopUpField;
+/// Create a copy of CreditState
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$CreditStateCopyWith<CreditState> get copyWith => _$CreditStateCopyWithImpl<CreditState>(this as CreditState, _$identity);
 
 
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is CreditState);
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is CreditState&&(identical(other.showTopUpField, showTopUpField) || other.showTopUpField == showTopUpField));
 }
 
 
 @override
-int get hashCode => runtimeType.hashCode;
+int get hashCode => Object.hash(runtimeType,showTopUpField);
 
 @override
 String toString() {
-  return 'CreditState()';
+  return 'CreditState(showTopUpField: $showTopUpField)';
 }
 
 
 }
 
 /// @nodoc
-class $CreditStateCopyWith<$Res>  {
-$CreditStateCopyWith(CreditState _, $Res Function(CreditState) __);
+abstract mixin class $CreditStateCopyWith<$Res>  {
+  factory $CreditStateCopyWith(CreditState value, $Res Function(CreditState) _then) = _$CreditStateCopyWithImpl;
+@useResult
+$Res call({
+ bool showTopUpField
+});
+
+
+
+
+}
+/// @nodoc
+class _$CreditStateCopyWithImpl<$Res>
+    implements $CreditStateCopyWith<$Res> {
+  _$CreditStateCopyWithImpl(this._self, this._then);
+
+  final CreditState _self;
+  final $Res Function(CreditState) _then;
+
+/// Create a copy of CreditState
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? showTopUpField = null,}) {
+  return _then(_self.copyWith(
+showTopUpField: null == showTopUpField ? _self.showTopUpField : showTopUpField // ignore: cast_nullable_to_non_nullable
+as bool,
+  ));
+}
+
 }
 
 
@@ -128,13 +159,13 @@ return error(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  initial,TResult Function()?  loading,TResult Function( String paymentSessionUrl)?  loaded,TResult Function( String message)?  error,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( bool showTopUpField)?  initial,TResult Function( bool showTopUpField)?  loading,TResult Function( String paymentSessionUrl,  bool showTopUpField)?  loaded,TResult Function( String message,  bool showTopUpField)?  error,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Initial() when initial != null:
-return initial();case _Loading() when loading != null:
-return loading();case _Loaded() when loaded != null:
-return loaded(_that.paymentSessionUrl);case _Error() when error != null:
-return error(_that.message);case _:
+return initial(_that.showTopUpField);case _Loading() when loading != null:
+return loading(_that.showTopUpField);case _Loaded() when loaded != null:
+return loaded(_that.paymentSessionUrl,_that.showTopUpField);case _Error() when error != null:
+return error(_that.message,_that.showTopUpField);case _:
   return orElse();
 
 }
@@ -152,13 +183,13 @@ return error(_that.message);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  initial,required TResult Function()  loading,required TResult Function( String paymentSessionUrl)  loaded,required TResult Function( String message)  error,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( bool showTopUpField)  initial,required TResult Function( bool showTopUpField)  loading,required TResult Function( String paymentSessionUrl,  bool showTopUpField)  loaded,required TResult Function( String message,  bool showTopUpField)  error,}) {final _that = this;
 switch (_that) {
 case _Initial():
-return initial();case _Loading():
-return loading();case _Loaded():
-return loaded(_that.paymentSessionUrl);case _Error():
-return error(_that.message);case _:
+return initial(_that.showTopUpField);case _Loading():
+return loading(_that.showTopUpField);case _Loaded():
+return loaded(_that.paymentSessionUrl,_that.showTopUpField);case _Error():
+return error(_that.message,_that.showTopUpField);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -175,13 +206,13 @@ return error(_that.message);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  initial,TResult? Function()?  loading,TResult? Function( String paymentSessionUrl)?  loaded,TResult? Function( String message)?  error,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( bool showTopUpField)?  initial,TResult? Function( bool showTopUpField)?  loading,TResult? Function( String paymentSessionUrl,  bool showTopUpField)?  loaded,TResult? Function( String message,  bool showTopUpField)?  error,}) {final _that = this;
 switch (_that) {
 case _Initial() when initial != null:
-return initial();case _Loading() when loading != null:
-return loading();case _Loaded() when loaded != null:
-return loaded(_that.paymentSessionUrl);case _Error() when error != null:
-return error(_that.message);case _:
+return initial(_that.showTopUpField);case _Loading() when loading != null:
+return loading(_that.showTopUpField);case _Loaded() when loaded != null:
+return loaded(_that.paymentSessionUrl,_that.showTopUpField);case _Error() when error != null:
+return error(_that.message,_that.showTopUpField);case _:
   return null;
 
 }
@@ -193,78 +224,147 @@ return error(_that.message);case _:
 
 
 class _Initial implements CreditState {
-  const _Initial();
+  const _Initial({this.showTopUpField = false});
   
 
+@override@JsonKey() final  bool showTopUpField;
 
-
+/// Create a copy of CreditState
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$InitialCopyWith<_Initial> get copyWith => __$InitialCopyWithImpl<_Initial>(this, _$identity);
 
 
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Initial);
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Initial&&(identical(other.showTopUpField, showTopUpField) || other.showTopUpField == showTopUpField));
 }
 
 
 @override
-int get hashCode => runtimeType.hashCode;
+int get hashCode => Object.hash(runtimeType,showTopUpField);
 
 @override
 String toString() {
-  return 'CreditState.initial()';
+  return 'CreditState.initial(showTopUpField: $showTopUpField)';
 }
 
 
 }
 
+/// @nodoc
+abstract mixin class _$InitialCopyWith<$Res> implements $CreditStateCopyWith<$Res> {
+  factory _$InitialCopyWith(_Initial value, $Res Function(_Initial) _then) = __$InitialCopyWithImpl;
+@override @useResult
+$Res call({
+ bool showTopUpField
+});
 
 
+
+
+}
+/// @nodoc
+class __$InitialCopyWithImpl<$Res>
+    implements _$InitialCopyWith<$Res> {
+  __$InitialCopyWithImpl(this._self, this._then);
+
+  final _Initial _self;
+  final $Res Function(_Initial) _then;
+
+/// Create a copy of CreditState
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? showTopUpField = null,}) {
+  return _then(_Initial(
+showTopUpField: null == showTopUpField ? _self.showTopUpField : showTopUpField // ignore: cast_nullable_to_non_nullable
+as bool,
+  ));
+}
+
+
+}
 
 /// @nodoc
 
 
 class _Loading implements CreditState {
-  const _Loading();
+  const _Loading({this.showTopUpField = false});
   
 
+@override@JsonKey() final  bool showTopUpField;
 
-
+/// Create a copy of CreditState
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$LoadingCopyWith<_Loading> get copyWith => __$LoadingCopyWithImpl<_Loading>(this, _$identity);
 
 
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Loading);
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Loading&&(identical(other.showTopUpField, showTopUpField) || other.showTopUpField == showTopUpField));
 }
 
 
 @override
-int get hashCode => runtimeType.hashCode;
+int get hashCode => Object.hash(runtimeType,showTopUpField);
 
 @override
 String toString() {
-  return 'CreditState.loading()';
+  return 'CreditState.loading(showTopUpField: $showTopUpField)';
 }
 
 
 }
 
+/// @nodoc
+abstract mixin class _$LoadingCopyWith<$Res> implements $CreditStateCopyWith<$Res> {
+  factory _$LoadingCopyWith(_Loading value, $Res Function(_Loading) _then) = __$LoadingCopyWithImpl;
+@override @useResult
+$Res call({
+ bool showTopUpField
+});
 
 
+
+
+}
+/// @nodoc
+class __$LoadingCopyWithImpl<$Res>
+    implements _$LoadingCopyWith<$Res> {
+  __$LoadingCopyWithImpl(this._self, this._then);
+
+  final _Loading _self;
+  final $Res Function(_Loading) _then;
+
+/// Create a copy of CreditState
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? showTopUpField = null,}) {
+  return _then(_Loading(
+showTopUpField: null == showTopUpField ? _self.showTopUpField : showTopUpField // ignore: cast_nullable_to_non_nullable
+as bool,
+  ));
+}
+
+
+}
 
 /// @nodoc
 
 
 class _Loaded implements CreditState {
-  const _Loaded({required this.paymentSessionUrl});
+  const _Loaded({required this.paymentSessionUrl, this.showTopUpField = false});
   
 
  final  String paymentSessionUrl;
+@override@JsonKey() final  bool showTopUpField;
 
 /// Create a copy of CreditState
 /// with the given fields replaced by the non-null parameter values.
-@JsonKey(includeFromJson: false, includeToJson: false)
+@override @JsonKey(includeFromJson: false, includeToJson: false)
 @pragma('vm:prefer-inline')
 _$LoadedCopyWith<_Loaded> get copyWith => __$LoadedCopyWithImpl<_Loaded>(this, _$identity);
 
@@ -272,16 +372,16 @@ _$LoadedCopyWith<_Loaded> get copyWith => __$LoadedCopyWithImpl<_Loaded>(this, _
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Loaded&&(identical(other.paymentSessionUrl, paymentSessionUrl) || other.paymentSessionUrl == paymentSessionUrl));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Loaded&&(identical(other.paymentSessionUrl, paymentSessionUrl) || other.paymentSessionUrl == paymentSessionUrl)&&(identical(other.showTopUpField, showTopUpField) || other.showTopUpField == showTopUpField));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,paymentSessionUrl);
+int get hashCode => Object.hash(runtimeType,paymentSessionUrl,showTopUpField);
 
 @override
 String toString() {
-  return 'CreditState.loaded(paymentSessionUrl: $paymentSessionUrl)';
+  return 'CreditState.loaded(paymentSessionUrl: $paymentSessionUrl, showTopUpField: $showTopUpField)';
 }
 
 
@@ -290,9 +390,9 @@ String toString() {
 /// @nodoc
 abstract mixin class _$LoadedCopyWith<$Res> implements $CreditStateCopyWith<$Res> {
   factory _$LoadedCopyWith(_Loaded value, $Res Function(_Loaded) _then) = __$LoadedCopyWithImpl;
-@useResult
+@override @useResult
 $Res call({
- String paymentSessionUrl
+ String paymentSessionUrl, bool showTopUpField
 });
 
 
@@ -309,10 +409,11 @@ class __$LoadedCopyWithImpl<$Res>
 
 /// Create a copy of CreditState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') $Res call({Object? paymentSessionUrl = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? paymentSessionUrl = null,Object? showTopUpField = null,}) {
   return _then(_Loaded(
 paymentSessionUrl: null == paymentSessionUrl ? _self.paymentSessionUrl : paymentSessionUrl // ignore: cast_nullable_to_non_nullable
-as String,
+as String,showTopUpField: null == showTopUpField ? _self.showTopUpField : showTopUpField // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 
@@ -323,14 +424,15 @@ as String,
 
 
 class _Error implements CreditState {
-  const _Error({required this.message});
+  const _Error({required this.message, this.showTopUpField = false});
   
 
  final  String message;
+@override@JsonKey() final  bool showTopUpField;
 
 /// Create a copy of CreditState
 /// with the given fields replaced by the non-null parameter values.
-@JsonKey(includeFromJson: false, includeToJson: false)
+@override @JsonKey(includeFromJson: false, includeToJson: false)
 @pragma('vm:prefer-inline')
 _$ErrorCopyWith<_Error> get copyWith => __$ErrorCopyWithImpl<_Error>(this, _$identity);
 
@@ -338,16 +440,16 @@ _$ErrorCopyWith<_Error> get copyWith => __$ErrorCopyWithImpl<_Error>(this, _$ide
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Error&&(identical(other.message, message) || other.message == message));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Error&&(identical(other.message, message) || other.message == message)&&(identical(other.showTopUpField, showTopUpField) || other.showTopUpField == showTopUpField));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,message);
+int get hashCode => Object.hash(runtimeType,message,showTopUpField);
 
 @override
 String toString() {
-  return 'CreditState.error(message: $message)';
+  return 'CreditState.error(message: $message, showTopUpField: $showTopUpField)';
 }
 
 
@@ -356,9 +458,9 @@ String toString() {
 /// @nodoc
 abstract mixin class _$ErrorCopyWith<$Res> implements $CreditStateCopyWith<$Res> {
   factory _$ErrorCopyWith(_Error value, $Res Function(_Error) _then) = __$ErrorCopyWithImpl;
-@useResult
+@override @useResult
 $Res call({
- String message
+ String message, bool showTopUpField
 });
 
 
@@ -375,10 +477,11 @@ class __$ErrorCopyWithImpl<$Res>
 
 /// Create a copy of CreditState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') $Res call({Object? message = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? message = null,Object? showTopUpField = null,}) {
   return _then(_Error(
 message: null == message ? _self.message : message // ignore: cast_nullable_to_non_nullable
-as String,
+as String,showTopUpField: null == showTopUpField ? _self.showTopUpField : showTopUpField // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 

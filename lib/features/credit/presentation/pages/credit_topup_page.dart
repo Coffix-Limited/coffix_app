@@ -50,13 +50,13 @@ class _CreditTopupViewState extends State<CreditTopupView> {
       body: BlocConsumer<CreditCubit, CreditState>(
         listener: (context, state) {
           state.whenOrNull(
-            loaded: (url) {
+            loaded: (url, _) {
               context.pushNamed(
                 CreditTopupPaymentPage.route,
                 extra: {'paymentSessionUrl': url},
               );
             },
-            error: (message) {
+            error: (message, _) {
               AppNotification.error(context, 'Top up failed: $message');
             },
           );

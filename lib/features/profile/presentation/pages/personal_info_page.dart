@@ -168,7 +168,7 @@ class _PersonalInfoViewState extends State<PersonalInfoView> {
         FormBuilderSwitch(
           name: 'receiveNotification',
           title: Text(
-            'Receive notification',
+            'Receive notifications',
             style: theme.textTheme.bodyMedium,
           ),
           initialValue: true,

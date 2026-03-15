@@ -7,6 +7,7 @@ import 'package:coffix_app/features/app/logic/app_cubit.dart';
 import 'package:coffix_app/features/auth/logic/auth_cubit.dart';
 import 'package:coffix_app/features/auth/presentation/pages/verify_email_page.dart';
 import 'package:coffix_app/features/cart/logic/cart_cubit.dart';
+import 'package:coffix_app/features/credit/logic/credit_cubit.dart';
 import 'package:coffix_app/features/modifier/logic/modifier_cubit.dart';
 import 'package:coffix_app/features/products/logic/product_cubit.dart';
 import 'package:coffix_app/features/stores/logic/store_cubit.dart';
@@ -69,6 +70,7 @@ class LayoutPage extends StatelessWidget {
         BlocProvider.value(value: getIt<StoreCubit>()),
         BlocProvider.value(value: getIt<ProductCubit>()),
         BlocProvider.value(value: getIt<ModifierCubit>()),
+        BlocProvider.value(value: getIt<CreditCubit>()),
       ],
       child: LayoutView(shell: shell),
     );
@@ -148,8 +150,17 @@ class _LayoutViewState extends State<LayoutView> {
                         currentIndex: widget.shell.currentIndex,
                         onTap: (index) {
                           state.maybeWhen(
-                            authenticated: (user) =>
-                                widget.shell.goBranch(index),
+                            authenticated: (user) {
+                              if (index == LayoutPageTab.coffixCredit.index) {
+                                context.read<CreditCubit>().showTopUpField(
+                                  false,
+                                );
+                              }
+                              widget.shell.goBranch(
+                                index,
+                                initialLocation: true,
+                              );
+                            },
                             orElse: () => null,
                           );
                         },

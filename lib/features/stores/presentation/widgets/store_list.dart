@@ -46,7 +46,7 @@ class StoreList extends StatelessWidget {
             ],
           ),
           const SizedBox(height: AppSizes.md),
-          Text("Please select your preferred loaction:"),
+          Text("Please select your preferred location:"),
           const SizedBox(height: AppSizes.lg),
           ListView.separated(
             padding: EdgeInsets.zero,

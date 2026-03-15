@@ -106,7 +106,7 @@ class AuthCubit extends Cubit<AuthState> {
     try {
       await _authRepository.signInWithGoogle();
     } on UserCancelledSignIn {
-      emit(AuthState.initial());
+      emit(AuthState.unauthenticated());
       return;
     } on GoogleSignInException catch (e) {
       emit(AuthState.error(message: e.code.name));
@@ -217,9 +217,12 @@ class AuthCubit extends Cubit<AuthState> {
     try {
       await _authRepository.sendPasswordResetEmail(email: email);
       emit(AuthState.passwordResetEmailSent());
-      emit(AuthState.unauthenticated());
     } catch (e) {
       emit(AuthState.error(message: e.toString()));
     }
+  }
+
+  void goToLogin() {
+    emit(AuthState.unauthenticated());
   }
 }

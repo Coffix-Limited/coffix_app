@@ -5,6 +5,7 @@ import 'package:coffix_app/core/di/service_locator.dart';
 import 'package:coffix_app/features/auth/data/model/user_with_store.dart';
 import 'package:coffix_app/features/auth/logic/auth_cubit.dart';
 import 'package:coffix_app/features/auth/logic/otp_cubit.dart';
+import 'package:coffix_app/features/home/presentation/widgets/email_forgot_password_sent.dart';
 import 'package:coffix_app/features/home/presentation/widgets/email_verification_form.dart';
 import 'package:coffix_app/features/home/presentation/widgets/forgot_password.dart';
 import 'package:coffix_app/features/home/presentation/widgets/login_form.dart';
@@ -132,7 +133,8 @@ class _HomeViewState extends State<HomeView> {
                                   LoginForm(formKey: formKey),
                               otpSent: (email) => LoginForm(formKey: formKey),
                               forgotPassword: () => ForgotPassword(),
-                              passwordResetEmailSent: () => ForgotPassword(),
+                              passwordResetEmailSent: () =>
+                                  EmailForgotPasswordSent(),
                               initial: () => AppLoading(),
                               loading: () => const Center(child: AppLoading()),
                               authenticated: (userWithStore) =>
@@ -206,11 +208,11 @@ class _HomeViewState extends State<HomeView> {
                                                 Expanded(
                                                   child: AppButton.primary(
                                                     onPressed: () async {
-                                                      context.pushNamed(
-                                                        OrderPage.route,
-                                                      );
-                                                      // await FirebaseAuth.instance
-                                                      // .signOut();
+                                                      if (isAuthenticated) {
+                                                        context.pushNamed(
+                                                          OrderPage.route,
+                                                        );
+                                                      }
                                                     },
                                                     label: "ReOrder",
                                                   ),

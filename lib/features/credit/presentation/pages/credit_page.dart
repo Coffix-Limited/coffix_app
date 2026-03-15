@@ -40,7 +40,6 @@ class CreditView extends StatefulWidget {
 }
 
 class _CreditViewState extends State<CreditView> {
-  bool _showTopUpField = false;
   final formKey = GlobalKey<FormBuilderState>();
 
   double calculateTopUp(double amount) {
@@ -48,9 +47,9 @@ class _CreditViewState extends State<CreditView> {
 
     if (amount < 50) {
       return totalAmount;
-    } else if (amount <= 250) {
+    } else if (amount < 250) {
       totalAmount += amount * 0.10;
-    } else if (amount <= 500) {
+    } else if (amount < 500) {
       totalAmount += amount * 0.15;
     } else {
       totalAmount += amount * 0.20;
@@ -81,7 +80,7 @@ class _CreditViewState extends State<CreditView> {
               listenWhen: (previous, current) => previous != current,
               listener: (context, state) {
                 state.whenOrNull(
-                  loaded: (paymentSessionUrl) {
+                  loaded: (paymentSessionUrl, _) {
                     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
                       context.pushNamed(
                         CreditTopupPaymentPage.route,
@@ -92,7 +91,14 @@ class _CreditViewState extends State<CreditView> {
                 );
               },
               builder: (context, state) {
-                if (state.maybeWhen(loading: () => true, orElse: () => false)) {
+                final showTopUpField = state.maybeWhen(
+                  initial: (v) => v,
+                  loading: (v) => v,
+                  loaded: (_, v) => v,
+                  error: (_, v) => v,
+                  orElse: () => false,
+                );
+                if (state.maybeWhen(loading: (_) => true, orElse: () => false)) {
                   return const Center(child: AppLoading());
                 }
                 return Column(
@@ -107,7 +113,7 @@ class _CreditViewState extends State<CreditView> {
                         ),
                         children: [
                           TextSpan(
-                            text: " SAVE 10\$ - 20\$",
+                            text: " SAVE 10%- 20%",
                             style: AppTypography.headlineL.copyWith(
                               color: AppColors.primary,
                             ),
@@ -116,19 +122,12 @@ class _CreditViewState extends State<CreditView> {
                       ),
                     ),
                     const SizedBox(height: AppSizes.xxl),
-                    Text(
-                      'How it works',
-                      style: AppTypography.titleM.copyWith(
-                        color: AppColors.black,
-                      ),
-                    ),
-                    const SizedBox(height: AppSizes.md),
                     IntrinsicHeight(
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           InfoCard(
-                            text: 'Top up your Coffix credit account',
+                            text: 'TopUp your Coffix Credit account',
                             image: AppImages.creditGray,
                           ),
                           const SizedBox(width: AppSizes.sm),
@@ -145,17 +144,15 @@ class _CreditViewState extends State<CreditView> {
                       ),
                     ),
                     const SizedBox(height: AppSizes.xl),
-                    _showTopUpField
+                    showTopUpField
                         ? Column(
                             children: [
-                              Text(
-                                "Please enter the amount you wish to Top Up",
-                              ),
+                              Text("Please enter the amount you wish to TopUp"),
                               SizedBox(height: AppSizes.md),
                               AppField<String>(
-                                label: "\$ Amount",
+                                label: "\$",
                                 isHorizontalAlign: true,
-                                hintText: "\$50",
+                                hintText: "\$50+",
                                 name: "amount",
                                 keyboardType: TextInputType.number,
                                 validators: [
@@ -166,7 +163,7 @@ class _CreditViewState extends State<CreditView> {
                               SizedBox(height: AppSizes.sm),
                               if (amount != null && amount.isNotEmpty)
                                 Text(
-                                  "You will receive: ${calculateTopUp(double.parse(amount ?? '0')).toStringAsFixed(2)} Coffix credits",
+                                  "You will receive: ${calculateTopUp(double.parse(amount ?? '0')).toStringAsFixed(2)}\$ Coffix Credits",
                                 ),
                             ],
                           )
@@ -183,20 +180,18 @@ class _CreditViewState extends State<CreditView> {
                     SizedBox(height: AppSizes.xl),
                     AppButton(
                       onPressed: () {
-                        if (_showTopUpField &
+                        if (showTopUpField &&
                             formKey.currentState!.validate()) {
                           context.read<CreditCubit>().topup(
                             amount: double.parse(amount),
                           );
                         } else {
-                          setState(() {
-                            _showTopUpField = true;
-                          });
+                          context.read<CreditCubit>().showTopUpField(true);
                         }
                       },
-                      label: _showTopUpField
+                      label: showTopUpField
                           ? "TopUp"
-                          : "Top Up Your Coffix Credit",
+                          : "TopUp Your Coffix Credit",
                     ),
                   ],
                 );

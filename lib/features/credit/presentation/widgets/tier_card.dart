@@ -34,6 +34,7 @@ class TierCard extends StatelessWidget {
                     color: AppColors.black,
                   ),
                 ),
+                TextSpan(text: "+"),
               ],
             ),
           ),

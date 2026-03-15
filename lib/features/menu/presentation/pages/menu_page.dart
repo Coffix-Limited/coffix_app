@@ -44,8 +44,9 @@ class MenuView extends StatelessWidget {
           return state.when(
             initial: () => const SizedBox.shrink(),
             loading: () => AppLoading(),
-            loaded: (products, categoryFilter) => ProductList(
+            loaded: (products, allCategories, categoryFilter) => ProductList(
               products: products,
+              allCategories: allCategories,
               isRoot: true,
               categoryFilter: categoryFilter,
               storeId: user?.user.preferredStoreId ?? '',

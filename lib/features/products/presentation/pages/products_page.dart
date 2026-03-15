@@ -1,6 +1,7 @@
 import 'package:coffix_app/core/di/service_locator.dart';
 import 'package:coffix_app/core/extensions/product_extensions.dart';
 import 'package:coffix_app/features/cart/logic/cart_cubit.dart';
+import 'package:coffix_app/features/products/data/model/product_category.dart';
 import 'package:coffix_app/features/products/data/model/product_with_category.dart';
 import 'package:coffix_app/features/modifier/logic/modifier_cubit.dart';
 import 'package:coffix_app/features/products/logic/product_cubit.dart';
@@ -55,12 +56,17 @@ class _ProductViewState extends State<ProductView> {
           return state.when(
             initial: () => const SizedBox.shrink(),
             loading: () => AppLoading(),
-            loaded:
-                (List<ProductWithCategory> products, String? categoryFilter) =>
-                    ProductList(
-                      products: products.productsByStore(widget.storeId),
-                      storeId: widget.storeId,
-                    ),
+            loaded: (
+              List<ProductWithCategory> products,
+              List<ProductCategory> allCategories,
+              String? categoryFilter,
+            ) =>
+                ProductList(
+                  products: products.productsByStore(widget.storeId),
+                  allCategories: allCategories,
+                  categoryFilter: categoryFilter,
+                  storeId: widget.storeId,
+                ),
             error: (message) =>
                 AppError(title: "Failed getting products", subtitle: message),
           );

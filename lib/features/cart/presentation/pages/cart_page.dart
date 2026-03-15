@@ -50,7 +50,7 @@ class _CartViewState extends State<CartView> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBackHeader(title: "Order", showBackButton: false),
+      appBar: AppBackHeader(title: "My Order", showBackButton: false),
       body: BlocBuilder<CartCubit, CartState>(
         builder: (context, state) {
           return Column(
@@ -136,7 +136,7 @@ class _CartViewState extends State<CartView> {
                                     .watch<ProductCubit>()
                                     .state
                                     .maybeWhen(
-                                      loaded: (products, _) => products
+                                      loaded: (products, _, _) => products
                                           .firstWhereOrNull(
                                             (p) =>
                                                 p.product.docId ==
