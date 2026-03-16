@@ -1,6 +1,7 @@
 import 'package:coffix_app/core/constants/colors.dart';
 import 'package:coffix_app/core/constants/sizes.dart';
 import 'package:coffix_app/core/di/service_locator.dart';
+import 'package:coffix_app/core/extensions/price_extensions.dart';
 import 'package:coffix_app/core/theme/typography.dart';
 import 'package:coffix_app/features/products/data/model/product.dart';
 import 'package:coffix_app/features/modifier/logic/modifier_cubit.dart';
@@ -96,49 +97,66 @@ class _CustomizeProductViewState extends State<CustomizeProductView> {
                                   ),
                                 ),
                                 const SizedBox(height: AppSizes.md),
-                                Wrap(
-                                  spacing: AppSizes.sm,
-                                  runSpacing: AppSizes.sm,
-                                  children: bundle.modifiers.map((mod) {
-                                    final isSelected = productModifierState
-                                        .modifiers
-                                        .any((m) => m.docId == mod.docId);
+                                SizedBox(
+                                  height: 40,
+                                  child: ListView.separated(
+                                    separatorBuilder: (_, _) =>
+                                        SizedBox(width: AppSizes.sm),
+                                    scrollDirection: Axis.horizontal,
+                                    shrinkWrap: true,
+                                    itemCount: bundle.modifiers.length,
+                                    itemBuilder: (context, index) {
+                                      final mod = bundle.modifiers[0];
+                                      final isSelected = productModifierState
+                                          .modifiers
+                                          .any((m) => m.docId == mod.docId);
 
-                                    final priceText =
-                                        mod.priceDelta != null &&
-                                            mod.priceDelta != 0
-                                        ? '(+\$${mod.priceDelta!.toStringAsFixed(2)})'
-                                        : '';
-                                    return AppClickable(
-                                      borderRadius: BorderRadius.circular(
-                                        AppSizes.md,
-                                      ),
-                                      onPressed: () {
-                                        context
-                                            .read<ProductModifierCubit>()
-                                            .selectModifiers(modifier: mod);
-                                      },
-                                      child: AppCard(
-                                        color: isSelected
-                                            ? AppColors.primary.withValues(
-                                                alpha: AppSizes.opacityDisabled,
-                                              )
-                                            : null,
-                                        borderColor: isSelected
-                                            ? AppColors.primary.withValues()
-                                            : null,
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: AppSizes.md,
-                                          vertical: AppSizes.sm,
+                                      return AppClickable(
+                                        borderRadius: BorderRadius.circular(
+                                          AppSizes.md,
                                         ),
-                                        child: Text(
-                                          '${mod.label ?? ''} $priceText',
-                                          style: AppTypography.bodyXS
-                                              .copyWith(),
+                                        onPressed: () {
+                                          context
+                                              .read<ProductModifierCubit>()
+                                              .selectModifiers(modifier: mod);
+                                        },
+                                        child: AppCard(
+                                          color: isSelected
+                                              ? AppColors.primary.withValues(
+                                                  alpha:
+                                                      AppSizes.opacityDisabled,
+                                                )
+                                              : null,
+                                          borderColor: isSelected
+                                              ? AppColors.primary.withValues()
+                                              : null,
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: AppSizes.md,
+                                            vertical: AppSizes.sm,
+                                          ),
+                                          child: Text.rich(
+                                            TextSpan(
+                                              children: [
+                                                TextSpan(
+                                                  text: mod.isDefault == true
+                                                      ? '*${mod.label} '
+                                                      : '${mod.label} ',
+                                                ),
+                                                mod.priceDelta
+                                                        ?.toCurrencySuperscript(
+                                                          style: AppTypography
+                                                              .bodyXS,
+                                                        ) ??
+                                                    TextSpan(text: ''),
+                                              ],
+                                            ),
+                                            style: AppTypography.bodyXS
+                                                .copyWith(),
+                                          ),
                                         ),
-                                      ),
-                                    );
-                                  }).toList(),
+                                      );
+                                    },
+                                  ),
                                 ),
                               ],
                             ),

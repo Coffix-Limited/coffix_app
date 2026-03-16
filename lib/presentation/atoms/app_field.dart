@@ -91,6 +91,7 @@ class _AppFieldState<T> extends State<AppField<T>> {
       obscureText: widget.obscureText && !isPasswordVisible,
       autofocus: widget.autofocus,
       style: theme.textTheme.bodyMedium?.copyWith(),
+      textCapitalization: TextCapitalization.sentences,
       decoration: InputDecoration(
         fillColor: widget.readOnly ? AppColors.softGrey : Colors.white,
         filled: widget.filled,

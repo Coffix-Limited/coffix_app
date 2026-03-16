@@ -88,10 +88,13 @@ class ProfileView extends StatelessWidget {
                         creditBalance.toCurrencySuperscript(
                           style: AppTypography.headlineXl,
                         ),
-                        TextSpan(text: "+ ", style: AppTypography.headlineXl),
-                        0.00.toCurrencySuperscript(
-                          style: AppTypography.headlineXl,
-                        ),
+                        // TODO: IMPLEMENT THE COUPON SYSTEM
+                        if (false)
+                          TextSpan(text: "+ ", style: AppTypography.headlineXl),
+                        if (false)
+                          0.00.toCurrencySuperscript(
+                            style: AppTypography.headlineXl,
+                          ),
                         TextSpan(text: " Coupon", style: AppTypography.bodyXS),
                       ],
                     ),

@@ -69,22 +69,26 @@ class _ScheduleOrderViewState extends State<ScheduleOrderView> {
       body: Column(
         children: [
           Expanded(
-            child: SingleChildScrollView(
+            child: Padding(
               padding: AppSizes.defaultPadding,
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   RichText(
+                    textAlign: TextAlign.center,
                     text: TextSpan(
-                      style: AppTypography.bodyXS,
+                      style: AppTypography.bodyL.copyWith(
+                        color: AppColors.black,
+                      ),
                       text:
                           "At what time do you want to collect your order from ",
                       children: [
                         TextSpan(
-                          text: "${user?.store?.name}?",
-                          style: AppTypography.bodyXS.copyWith(
+                          text: "\n${user?.store?.name}?",
+                          style: AppTypography.bodyL.copyWith(
                             fontWeight: FontWeight.bold,
                             decoration: TextDecoration.underline,
+                            color: AppColors.black,
                           ),
                         ),
                       ],
@@ -117,7 +121,13 @@ class _ScheduleOrderViewState extends State<ScheduleOrderView> {
                                 size: AppSizes.iconSizeMedium,
                               ),
                               const SizedBox(width: AppSizes.md),
-                              Text(_label(option), style: AppTypography.labelS),
+                              Expanded(
+                                child: Text(
+                                  _label(option),
+                                  style: AppTypography.labelS,
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
                             ],
                           ),
                         ),

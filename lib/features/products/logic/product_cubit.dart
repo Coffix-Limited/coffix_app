@@ -22,7 +22,7 @@ class ProductCubit extends Cubit<ProductState> {
   List<ProductCategory> get _categories =>
       _allProducts.map((p) => p.category).toSet().toList();
 
-  void _initDefaultCategory() {
+  void initDefaultCategory() {
     if (_categories.isEmpty) return;
     final coffee = _categories.firstWhere(
       (c) => c.name?.toLowerCase() == 'coffee',
@@ -42,12 +42,14 @@ class ProductCubit extends Cubit<ProductState> {
             _allProducts = products;
             if (!_initialized) {
               _initialized = true;
-              _initDefaultCategory();
+              initDefaultCategory();
             } else {
-              emit(ProductState.loaded(
-                products: products,
-                allCategories: _categories,
-              ));
+              emit(
+                ProductState.loaded(
+                  products: products,
+                  allCategories: _categories,
+                ),
+              );
             }
           }, onError: (e) => emit(ProductState.error(message: e.toString())));
     } catch (e) {
@@ -57,10 +59,12 @@ class ProductCubit extends Cubit<ProductState> {
 
   void searchProducts(String query) {
     if (query.isEmpty) {
-      emit(ProductState.loaded(
-        products: List.from(_allProducts),
-        allCategories: _categories,
-      ));
+      emit(
+        ProductState.loaded(
+          products: List.from(_allProducts),
+          allCategories: _categories,
+        ),
+      );
       return;
     }
     final lower = query.toLowerCase();
@@ -78,17 +82,21 @@ class ProductCubit extends Cubit<ProductState> {
               false,
         )
         .toList();
-    emit(ProductState.loaded(
-      products: filtered,
-      allCategories: _categories,
-      categoryFilter: category,
-    ));
+    emit(
+      ProductState.loaded(
+        products: filtered,
+        allCategories: _categories,
+        categoryFilter: category,
+      ),
+    );
   }
 
   void clearFilter() {
-    emit(ProductState.loaded(
-      products: List.from(_allProducts),
-      allCategories: _categories,
-    ));
+    emit(
+      ProductState.loaded(
+        products: List.from(_allProducts),
+        allCategories: _categories,
+      ),
+    );
   }
 }

@@ -50,16 +50,38 @@ class OrderItemRow extends StatelessWidget {
               ),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: cartItem.selectedByGroup.entries
-                    .map(
-                      (entry) => Text(
-                        entry.value,
-                        style: AppTypography.body2XS.copyWith(
-                          color: AppColors.textBlackColor,
+                children: cartItem.selectedByGroup.entries.map((entry) {
+                  final modifierId = entry.value;
+                  final label =
+                      cartItem.modifierLabelSnapshot[modifierId] ?? modifierId;
+                  final price = cartItem.modifierPriceSnapshot[modifierId];
+                  return Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          label,
+                          style: AppTypography.body3XS.copyWith(
+                            color: AppColors.textBlackColor,
+                          ),
                         ),
                       ),
-                    )
-                    .toList(),
+                      if (price != null && price != 0) ...[
+                        const SizedBox(width: AppSizes.xs),
+                        Text.rich(
+                          TextSpan(
+                            children: [
+                              price.toCurrencySuperscript(
+                                style: AppTypography.body2XS.copyWith(
+                                  color: AppColors.textBlackColor,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ],
+                  );
+                }).toList(),
               ),
             ],
           ),

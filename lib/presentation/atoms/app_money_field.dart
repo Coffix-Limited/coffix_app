@@ -1,3 +1,4 @@
+import 'package:coffix_app/core/constants/colors.dart';
 import 'package:coffix_app/core/constants/sizes.dart';
 import 'package:coffix_app/core/theme/typography.dart';
 import 'package:flutter/material.dart';
@@ -17,11 +18,14 @@ class AppMoneyField extends StatelessWidget {
         Text('\$', style: AppTypography.headlineXxl),
         SizedBox(width: AppSizes.sm),
         SizedBox(
-          width: 100,
+          width: 140,
           child: FormBuilderTextField(
             name: name,
             keyboardType: TextInputType.number,
             decoration: InputDecoration(
+              hintStyle: AppTypography.headlineXxl.copyWith(
+                color: AppColors.lightGrey,
+              ),
               hintText: '50',
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(AppSizes.md),

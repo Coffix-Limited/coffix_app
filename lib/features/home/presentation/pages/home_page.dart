@@ -205,6 +205,9 @@ class _HomeViewState extends State<HomeView> {
                                             AppButton.primary(
                                               color: AppColors.lightGrey,
                                               onPressed: () {
+                                                context
+                                                    .read<ProductCubit>()
+                                                    .initDefaultCategory();
                                                 context.goNamed(MenuPage.route);
                                               },
                                               label: "New Order",
@@ -266,11 +269,12 @@ class _HomeContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final screenHeight = MediaQuery.of(context).size.height;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        SizedBox(height: AppSizes.xl),
+        SizedBox(height: screenHeight * 0.1),
         Text(
           "Welcome ${user.user.firstName ?? user.user.nickName ?? ""}",
           textAlign: TextAlign.center,

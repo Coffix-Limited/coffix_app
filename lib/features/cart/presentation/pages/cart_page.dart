@@ -56,6 +56,7 @@ class _CartViewState extends State<CartView> {
         onBack: () {
           context.goNamed(HomePage.route);
         },
+        showAddButton: true,
       ),
       body: BlocBuilder<CartCubit, CartState>(
         builder: (context, state) {
@@ -101,20 +102,6 @@ class _CartViewState extends State<CartView> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            Align(
-                              alignment: Alignment.centerRight,
-                              child: AppClickable(
-                                showSplash: false,
-                                onPressed: () =>
-                                    context.goNamed(MenuPage.route),
-                                child: Icon(
-                                  Icons.add_circle,
-                                  size: AppSizes.iconSizeXXXLarge,
-                                  color: AppColors.primary,
-                                ),
-                              ),
-                            ),
-                            SizedBox(height: AppSizes.lg),
                             ListView.separated(
                               shrinkWrap: true,
                               physics: const NeverScrollableScrollPhysics(),

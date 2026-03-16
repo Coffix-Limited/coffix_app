@@ -87,7 +87,14 @@ class _PaymentOptionsPageViewState extends State<PaymentOptionsPageView> {
             },
             builder: (context, state) {
               if (state == PaymentState.loading()) {
-                return const Expanded(child: AppLoading());
+                return Expanded(
+                  child: Center(
+                    child: Text(
+                      "Processing your payment...",
+                      style: AppTypography.titleL.copyWith(),
+                    ),
+                  ),
+                );
               }
               return Expanded(
                 child: Column(
@@ -144,17 +151,14 @@ class _PaymentOptionsPageViewState extends State<PaymentOptionsPageView> {
                                       style: AppTypography.labelM,
                                     ),
                                   ),
-                                  AppClickable(
-                                    showSplash: false,
+                                  AppButton(
+                                    textStyle: AppTypography.labelS.copyWith(
+                                      color: AppColors.white,
+                                    ),
+                                    label: "TopUp",
                                     onPressed: () {
                                       context.pushNamed(CreditPage.route);
                                     },
-                                    child: Text(
-                                      "TopUp credit",
-                                      style: AppTypography.labelS.copyWith(
-                                        color: AppColors.primary,
-                                      ),
-                                    ),
                                   ),
                                 ],
                               ),

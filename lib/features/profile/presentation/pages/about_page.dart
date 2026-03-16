@@ -6,12 +6,14 @@ import 'package:coffix_app/core/theme/typography.dart';
 import 'package:coffix_app/features/app/logic/app_cubit.dart';
 import 'package:coffix_app/features/auth/logic/auth_cubit.dart';
 import 'package:coffix_app/features/profile/presentation/widgets/confirm_account_deletion.dart';
+import 'package:coffix_app/presentation/atoms/app_button.dart';
 import 'package:coffix_app/presentation/atoms/app_card.dart';
 import 'package:coffix_app/presentation/atoms/app_clickable.dart';
 import 'package:coffix_app/presentation/atoms/app_loading.dart';
 import 'package:coffix_app/presentation/atoms/app_notification.dart';
 import 'package:coffix_app/presentation/atoms/app_snackbar.dart';
 import 'package:coffix_app/presentation/molecules/app_back_header.dart';
+import 'package:coffix_app/presentation/organisms/app_layout_body.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -52,58 +54,51 @@ class AboutView extends StatelessWidget {
             loading: () => const AppLoading(),
             orElse: () => const SizedBox.shrink(),
           );
-          return SingleChildScrollView(
-            padding: AppSizes.defaultPadding,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Text(
-                  'General information',
-                  style: theme.textTheme.labelLarge?.copyWith(
-                    color: AppColors.lightGrey,
-                  ),
-                ),
-                const SizedBox(height: AppSizes.sm),
-                AppCard(
-                  padding: EdgeInsets.zero,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      _InfoRow(
-                        label: 'App version',
-                        value: global?.appVersion ?? '',
-                      ),
-                      const Divider(height: 1),
-                      _InfoRow(
-                        label: 'Last login',
-                        value: '${user?.user.lastLogin?.formatDate()}',
-                      ),
-                      const Divider(height: 1),
-                      _InfoRow(
-                        label: 'Customer ID',
-                        value: user?.user.qrId ?? '',
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: AppSizes.xxl),
-                Column(
-                  children: [
-                    AppClickable(
-                      onPressed: () {},
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          vertical: AppSizes.sm,
-                        ),
-                        child: Text(
-                          'Report an issue / feedback',
-                          style: theme.textTheme.bodyLarge?.copyWith(
-                            color: AppColors.accent,
-                          ),
-                        ),
-                      ),
+          return AppLayoutBody(
+            child: Padding(
+              padding: AppSizes.defaultPadding,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(
+                    'General information',
+                    style: theme.textTheme.labelLarge?.copyWith(
+                      color: AppColors.lightGrey,
                     ),
-                    AppClickable(
+                  ),
+                  const SizedBox(height: AppSizes.sm),
+                  AppCard(
+                    padding: EdgeInsets.zero,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        _InfoRow(
+                          label: 'App version',
+                          value: global?.appVersion ?? '',
+                        ),
+                        const Divider(height: 1),
+                        _InfoRow(
+                          label: 'Last login',
+                          value: '${user?.user.lastLogin?.formatDate()}',
+                        ),
+                        const Divider(height: 1),
+                        _InfoRow(
+                          label: 'Customer ID',
+                          value: user?.user.qrId ?? '',
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: AppSizes.xxl),
+                  Center(
+                    child: AppButton(
+                      onPressed: () {},
+                      label: 'Report an issue / feedback',
+                    ),
+                  ),
+                  SizedBox(height: AppSizes.sm),
+                  Center(
+                    child: AppButton(
                       onPressed: () {
                         if (global?.specialUrl != null) {
                           launchUrl(Uri.parse(global?.specialUrl ?? ''));
@@ -114,19 +109,13 @@ class AboutView extends StatelessWidget {
                           );
                         }
                       },
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          vertical: AppSizes.sm,
-                        ),
-                        child: Text(
-                          'Coffix website',
-                          style: theme.textTheme.bodyLarge?.copyWith(
-                            color: AppColors.accent,
-                          ),
-                        ),
-                      ),
+                      label: 'Coffix website',
                     ),
-                    AppClickable(
+                  ),
+                  Spacer(),
+                  Center(
+                    child: AppButton(
+                      color: AppColors.error,
                       onPressed: () {
                         ConfirmAccountDeletion.show(
                           context,
@@ -135,22 +124,12 @@ class AboutView extends StatelessWidget {
                           },
                         );
                       },
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          vertical: AppSizes.sm,
-                        ),
-                        child: Text(
-                          'Delete account',
-                          style: theme.textTheme.bodyLarge?.copyWith(
-                            color: AppColors.primary,
-                          ),
-                        ),
-                      ),
+                      label: 'Delete account',
                     ),
-                  ],
-                ),
-                const SizedBox(height: AppSizes.xxl),
-              ],
+                  ),
+                  const SizedBox(height: AppSizes.xxl),
+                ],
+              ),
             ),
           );
         },

@@ -3,6 +3,7 @@ import 'package:coffix_app/core/constants/images.dart';
 import 'package:coffix_app/core/constants/sizes.dart';
 import 'package:coffix_app/features/auth/logic/auth_cubit.dart';
 import 'package:coffix_app/features/profile/presentation/pages/profile_page.dart';
+import 'package:coffix_app/features/stores/presentation/pages/stores_page.dart';
 import 'package:coffix_app/presentation/atoms/app_clickable.dart';
 import 'package:coffix_app/presentation/atoms/app_icon.dart';
 import 'package:coffix_app/presentation/atoms/app_text_button.dart';
@@ -24,7 +25,7 @@ class AppLocation extends StatelessWidget {
             return AppClickable(
               showSplash: false,
               onPressed: () {
-                context.pushNamed(ProfilePage.route);
+                context.pushNamed(StoresPage.route);
               },
               child: Row(
                 mainAxisSize: MainAxisSize.min,

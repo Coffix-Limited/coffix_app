@@ -17,6 +17,9 @@ CartItem _$CartItemFromJson(Map<String, dynamic> json) => CartItem(
   basePrice: (json['basePrice'] as num).toDouble(),
   modifierPriceSnapshot: (json['modifierPriceSnapshot'] as Map<String, dynamic>)
       .map((k, e) => MapEntry(k, (e as num).toDouble())),
+  modifierLabelSnapshot: (json['modifierLabelSnapshot'] as Map<String, dynamic>?)
+          ?.map((k, e) => MapEntry(k, e as String)) ??
+      const {},
   unitTotal: (json['unitTotal'] as num).toDouble(),
   lineTotal: (json['lineTotal'] as num).toDouble(),
   createdAt: DateTime.parse(json['createdAt'] as String),
@@ -32,6 +35,7 @@ Map<String, dynamic> _$CartItemToJson(CartItem instance) => <String, dynamic>{
   'selectedByGroup': instance.selectedByGroup,
   'basePrice': instance.basePrice,
   'modifierPriceSnapshot': instance.modifierPriceSnapshot,
+  'modifierLabelSnapshot': instance.modifierLabelSnapshot,
   'unitTotal': instance.unitTotal,
   'lineTotal': instance.lineTotal,
   'createdAt': instance.createdAt.toIso8601String(),

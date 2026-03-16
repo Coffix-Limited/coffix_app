@@ -5,6 +5,7 @@ import 'package:coffix_app/core/di/service_locator.dart';
 import 'package:coffix_app/core/extensions/date_extensions.dart';
 import 'package:coffix_app/core/extensions/price_extensions.dart';
 import 'package:coffix_app/core/theme/typography.dart';
+import 'package:coffix_app/features/auth/logic/auth_cubit.dart';
 import 'package:coffix_app/features/cart/data/model/cart_item.dart';
 import 'package:coffix_app/features/cart/domain/helper.dart';
 import 'package:coffix_app/features/cart/logic/cart_cubit.dart';
@@ -12,7 +13,9 @@ import 'package:coffix_app/features/cart/presentation/pages/cart_page.dart';
 import 'package:coffix_app/features/order/data/model/order.dart';
 import 'package:coffix_app/features/order/logic/order_cubit.dart';
 import 'package:coffix_app/features/products/logic/product_cubit.dart';
+import 'package:coffix_app/features/stores/logic/store_cubit.dart';
 import 'package:coffix_app/presentation/atoms/app_button.dart';
+import 'package:coffix_app/presentation/atoms/app_notification.dart';
 import 'package:coffix_app/presentation/molecules/app_back_header.dart';
 import 'package:coffix_app/presentation/molecules/empty_state.dart';
 import 'package:coffix_app/presentation/molecules/status_chip.dart';
@@ -126,18 +129,15 @@ class _OrderCard extends StatelessWidget {
     );
 
     if (products == null || order.items == null || order.items!.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Unable to reorder at this time')),
-      );
+      AppNotification.error(context, 'Unable to reorder at this time');
       return;
     }
 
     if (order.storeId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Store information missing')),
-      );
+      AppNotification.error(context, 'Store information missing');
       return;
     }
+    context.read<StoreCubit>().updatePreferredStore(storeId: order.storeId!);
 
     final cartCubit = context.read<CartCubit>();
     cartCubit.resetCart();
@@ -301,9 +301,7 @@ class _OrderItemRow extends StatelessWidget {
 
     final hasValidProduct = product?.docId == item.productId;
     final imageUrl = hasValidProduct ? (product?.imageUrl ?? '') : '';
-    final name = hasValidProduct
-        ? (product?.name ?? '—')
-        : (item.productId ?? '—');
+    final name = hasValidProduct ? (product?.name ?? 'n/a') : "n/a";
     final modifiers = item.selectedModifiers?.values.toList() ?? [];
 
     return Padding(

@@ -13,6 +13,7 @@ class AppBackHeader extends StatefulWidget implements PreferredSizeWidget {
   final String title;
   final bool showLocation;
   final bool showBackButton;
+  final bool showAddButton;
 
   const AppBackHeader({
     super.key,
@@ -20,6 +21,7 @@ class AppBackHeader extends StatefulWidget implements PreferredSizeWidget {
     required this.title,
     this.showLocation = true,
     this.showBackButton = true,
+    this.showAddButton = false,
   });
 
   @override
@@ -72,14 +74,18 @@ class _AppBackHeaderState extends State<AppBackHeader> {
                     else
                       const SizedBox(width: AppSizes.iconSizeMedium + 12),
                     Expanded(
-                      child: Text(
-                        widget.title,
-                        style: AppTypography.headlineXxl.copyWith(
-                          fontWeight: FontWeight.bold,
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          widget.title,
+                          softWrap: false,
+                          style: AppTypography.headlineXxl.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.center,
                         ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        textAlign: TextAlign.center,
                       ),
                     ),
                     const SizedBox(width: AppSizes.iconSizeMedium + 12),
@@ -88,7 +94,30 @@ class _AppBackHeaderState extends State<AppBackHeader> {
               ),
             ),
           ),
-          Divider(height: 1, color: AppColors.borderColor),
+          widget.showAddButton
+              ? Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    Divider(height: 1, color: AppColors.borderColor),
+                    Positioned(
+                      right: AppSizes.md,
+                      top: -AppSizes.iconSizeXXXLarge / 2,
+                      child: Align(
+                        alignment: Alignment.centerRight,
+                        child: AppClickable(
+                          showSplash: false,
+                          onPressed: () => context.goNamed(MenuPage.route),
+                          child: Icon(
+                            Icons.add_circle,
+                            size: AppSizes.iconSizeXXXLarge,
+                            color: AppColors.primary,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                )
+              : Divider(height: 1, color: AppColors.borderColor),
           if (widget.showLocation) AppLocation(),
         ],
       ),

@@ -114,37 +114,15 @@ class StoreList extends StatelessWidget {
                                 Expanded(
                                   child: Text(
                                     store.name ?? "",
-                                    style: AppTypography.labelS,
+                                    style: AppTypography.labelM,
                                   ),
                                 ),
-                                if (!isOpen)
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: AppSizes.sm,
-                                      vertical: AppSizes.xs,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: AppColors.lightGrey.withValues(
-                                        alpha: 0.3,
-                                      ),
-                                      borderRadius: BorderRadius.circular(
-                                        AppSizes.sm,
-                                      ),
-                                    ),
-                                    child: Text(
-                                      "Closed",
-                                      style: AppTypography.body2XS.copyWith(
-                                        color: AppColors.lightGrey,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                  ),
                               ],
                             ),
                             Text(
                               store.address ?? "",
-                              style: AppTypography.body2XS.copyWith(
-                                color: AppColors.lightGrey,
+                              style: AppTypography.bodyXS.copyWith(
+                                color: AppColors.black,
                               ),
                             ),
                             Text(

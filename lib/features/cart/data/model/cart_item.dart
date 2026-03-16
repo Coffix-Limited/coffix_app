@@ -19,6 +19,7 @@ class CartItem extends Equatable {
   final Map<String, String> selectedByGroup;
   final double basePrice;
   final Map<String, double> modifierPriceSnapshot;
+  final Map<String, String> modifierLabelSnapshot;
 
   final double unitTotal;
   final double lineTotal;
@@ -35,6 +36,7 @@ class CartItem extends Equatable {
     required this.selectedByGroup,
     required this.basePrice,
     required this.modifierPriceSnapshot,
+    this.modifierLabelSnapshot = const {},
     required this.unitTotal,
     required this.lineTotal,
     required this.createdAt,
@@ -63,6 +65,10 @@ class CartItem extends Equatable {
       selectedByGroup: selectedByGroup,
       modifierMap: modifierMap,
     );
+    final modifierLabelSnapshot = {
+      for (final m in modifiers)
+        if (m.docId != null && m.label != null) m.docId!: m.label!
+    };
     final basePrice = product.price ?? 0;
     final unitTotal = helper.computeUnitTotal(
       basePrice: basePrice,
@@ -80,6 +86,7 @@ class CartItem extends Equatable {
       selectedByGroup: selectedByGroup,
       basePrice: basePrice,
       modifierPriceSnapshot: modifierPriceSnapshot,
+      modifierLabelSnapshot: modifierLabelSnapshot,
       unitTotal: unitTotal,
       lineTotal: lineTotal,
       createdAt: now,
@@ -98,6 +105,7 @@ class CartItem extends Equatable {
     Map<String, String>? selectedByGroup,
     double? basePrice,
     Map<String, double>? modifierPriceSnapshot,
+    Map<String, String>? modifierLabelSnapshot,
     double? unitTotal,
     double? lineTotal,
     DateTime? createdAt,
@@ -111,6 +119,7 @@ class CartItem extends Equatable {
     selectedByGroup: selectedByGroup ?? this.selectedByGroup,
     basePrice: basePrice ?? this.basePrice,
     modifierPriceSnapshot: modifierPriceSnapshot ?? this.modifierPriceSnapshot,
+    modifierLabelSnapshot: modifierLabelSnapshot ?? this.modifierLabelSnapshot,
     unitTotal: unitTotal ?? this.unitTotal,
     lineTotal: lineTotal ?? this.lineTotal,
     createdAt: createdAt ?? this.createdAt,
