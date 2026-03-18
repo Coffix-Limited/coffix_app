@@ -69,7 +69,7 @@ class _CustomizeProductViewState extends State<CustomizeProductView> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Scaffold(
-      appBar: AppBackHeader(title: "Customize Product"),
+      appBar: AppBackHeader(title: "Customise Product"),
       body: BlocBuilder<ModifierCubit, ModifierState>(
         builder: (context, state) {
           return state.when(
@@ -83,89 +83,104 @@ class _CustomizeProductViewState extends State<CustomizeProductView> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        ...modifiersGroups.where((b) => b.modifiers.isNotEmpty).map((bundle) {
-                          final groupTitle =
-                              bundle.group.name ??
-                              bundle.group.docId ??
-                              'Options';
+                        ...modifiersGroups
+                            .where((b) => b.modifiers.isNotEmpty)
+                            .map((bundle) {
+                              final groupTitle =
+                                  bundle.group.name ??
+                                  bundle.group.docId ??
+                                  'Options';
 
-                          return Padding(
-                            padding: const EdgeInsets.only(bottom: AppSizes.lg),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
-                              children: [
-                                Text(
-                                  groupTitle,
-                                  style: theme.textTheme.bodyMedium?.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                  ),
+                              return Padding(
+                                padding: const EdgeInsets.only(
+                                  bottom: AppSizes.lg,
                                 ),
-                                const SizedBox(height: AppSizes.md),
-                                SizedBox(
-                                  height: 40,
-                                  child: ListView.separated(
-                                    separatorBuilder: (_, _) =>
-                                        SizedBox(width: AppSizes.sm),
-                                    scrollDirection: Axis.horizontal,
-                                    shrinkWrap: true,
-                                    itemCount: bundle.modifiers.length,
-                                    itemBuilder: (context, index) {
-                                      final mod = bundle.modifiers[index];
-                                      final isSelected = productModifierState
-                                          .modifiers
-                                          .any((m) => m.docId == mod.docId);
-
-                                      return AppClickable(
-                                        borderRadius: BorderRadius.circular(
-                                          AppSizes.md,
-                                        ),
-                                        onPressed: () {
-                                          context
-                                              .read<ProductModifierCubit>()
-                                              .selectModifiers(modifier: mod);
-                                        },
-                                        child: AppCard(
-                                          color: isSelected
-                                              ? AppColors.primary.withValues(
-                                                  alpha:
-                                                      AppSizes.opacityDisabled,
-                                                )
-                                              : null,
-                                          borderColor: isSelected
-                                              ? AppColors.primary.withValues()
-                                              : null,
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: AppSizes.md,
-                                            vertical: AppSizes.sm,
+                                child: Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.stretch,
+                                  children: [
+                                    Text(
+                                      groupTitle,
+                                      style: theme.textTheme.bodyMedium
+                                          ?.copyWith(
+                                            fontWeight: FontWeight.bold,
                                           ),
-                                          child: Text.rich(
-                                            TextSpan(
-                                              children: [
-                                                TextSpan(
-                                                  text: mod.isDefault == true
-                                                      ? '*${mod.label} '
-                                                      : '${mod.label} ',
-                                                ),
-                                                mod.priceDelta
-                                                        ?.toCurrencySuperscript(
-                                                          style: AppTypography
-                                                              .bodyXS,
-                                                        ) ??
-                                                    TextSpan(text: ''),
-                                              ],
+                                    ),
+                                    const SizedBox(height: AppSizes.md),
+                                    SizedBox(
+                                      height: 40,
+                                      child: ListView.separated(
+                                        separatorBuilder: (_, _) =>
+                                            SizedBox(width: AppSizes.sm),
+                                        scrollDirection: Axis.horizontal,
+                                        shrinkWrap: true,
+                                        itemCount: bundle.modifiers.length,
+                                        itemBuilder: (context, index) {
+                                          final mod = bundle.modifiers[index];
+                                          final isSelected =
+                                              productModifierState.modifiers
+                                                  .any(
+                                                    (m) => m.docId == mod.docId,
+                                                  );
+
+                                          return AppClickable(
+                                            borderRadius: BorderRadius.circular(
+                                              AppSizes.md,
                                             ),
-                                            style: AppTypography.bodyXS
-                                                .copyWith(),
-                                          ),
-                                        ),
-                                      );
-                                    },
-                                  ),
+                                            onPressed: () {
+                                              context
+                                                  .read<ProductModifierCubit>()
+                                                  .selectModifiers(
+                                                    modifier: mod,
+                                                  );
+                                            },
+                                            child: AppCard(
+                                              color: isSelected
+                                                  ? AppColors.primary
+                                                        .withValues(
+                                                          alpha: AppSizes
+                                                              .opacityDisabled,
+                                                        )
+                                                  : null,
+                                              borderColor: isSelected
+                                                  ? AppColors.primary
+                                                        .withValues()
+                                                  : null,
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    horizontal: AppSizes.md,
+                                                    vertical: AppSizes.sm,
+                                                  ),
+                                              child: Text.rich(
+                                                TextSpan(
+                                                  children: [
+                                                    TextSpan(
+                                                      text:
+                                                          mod.isDefault == true
+                                                          ? '*${mod.label} '
+                                                          : '${mod.label} ',
+                                                    ),
+                                                    mod.priceDelta
+                                                            ?.toCurrencySuperscript(
+                                                              style:
+                                                                  AppTypography
+                                                                      .bodyXS,
+                                                            ) ??
+                                                        TextSpan(text: ''),
+                                                  ],
+                                                ),
+                                                style: AppTypography.bodyXS
+                                                    .copyWith(),
+                                              ),
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                              ],
-                            ),
-                          );
-                        }),
+                              );
+                            }),
                         const SizedBox(height: AppSizes.lg),
                         AppButton.primary(
                           label:

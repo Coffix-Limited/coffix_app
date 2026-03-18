@@ -3,6 +3,7 @@ import 'package:coffix_app/core/constants/sizes.dart';
 import 'package:coffix_app/core/di/service_locator.dart';
 import 'package:coffix_app/core/extensions/date_extensions.dart';
 import 'package:coffix_app/core/extensions/order_extensions.dart';
+import 'package:coffix_app/core/extensions/payment_method_extensions.dart';
 import 'package:coffix_app/core/extensions/price_extensions.dart';
 import 'package:coffix_app/features/transaction/data/model/transaction.dart';
 import 'package:coffix_app/features/transaction/logic/transaction_cubit.dart';
@@ -176,10 +177,9 @@ class _TransactionViewState extends State<TransactionView> {
                                 color: statusColor,
                               ),
                               const SizedBox(width: AppSizes.sm),
-                              if (t.paymentMethod != null &&
-                                  t.paymentMethod!.isNotEmpty)
+                              if (t.paymentMethod != null)
                                 Text(
-                                  "via ${t.paymentMethod!}",
+                                  "via ${t.paymentMethod?.label ?? '—'}",
                                   style: theme.textTheme.bodySmall,
                                 ),
                             ],

@@ -2,6 +2,8 @@ import { z } from "zod";
 
 export const createPaymentSessionBodySchema = z.object({
   storeId: z.string().trim(),
+  // storeName: z.string().trim(),
+  // storeAddress: z.string().trim(),
   duration: z.number(),
   items: z.array(
     z.object({

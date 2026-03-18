@@ -4,17 +4,19 @@ import { WindcaveService } from "../windcave/service";
 import { CoffixCreditService } from "../coffixCredit/service";
 import { parseTopupMerchantReference } from "../coffixCredit/utils";
 import { logger } from "firebase-functions";
+import { ReceiptService } from "../receipt/service";
 
 export class WebhookService {
   private readonly windcaveService: WindcaveService;
   private readonly firebaseService: FirebaseService;
-
+  private readonly receiptService: ReceiptService;
   private readonly coffixCreditService: CoffixCreditService;
 
   constructor() {
     this.windcaveService = new WindcaveService();
     this.firebaseService = new FirebaseService();
     this.coffixCreditService = new CoffixCreditService();
+    this.receiptService = new ReceiptService();
   }
 
   /**
@@ -106,12 +108,12 @@ export class WebhookService {
     //             "storedCardIndicator": "single",
     //             "notificationUrl": "https://doom-saint-away-cottage.trycloudflare.com/coffix-app-dev/us-central1/v1/webhook",
     //             "customer": {
-    //                 "firstName": "",
-    //                 "lastName": "",
-    //                 "email": "pajunar0@gmail.com",
-    //                 "phoneNumber": "",
-    //                 "homePhoneNumber": "",
-    //                 "account": ""
+    //                "firstName": "Choih",
+    //                "lastName": "",
+    //                "email": "pajunar0@gmail.com",
+    //                "phoneNumber": "",
+    //                "homePhoneNumber": "",
+    //                "account": ""
     //             },
     //             "sessionId": "0000050000173579050ea491c10a3e56",
     //             "browser": {
@@ -166,6 +168,8 @@ export class WebhookService {
       });
     }
 
+    logger.info(`Transaction Document: ${JSON.stringify(transactionDoc)}`);
+
     if (["approved", "declined", "cancelled"].includes(transactionDoc.status)) {
       return;
     }
@@ -205,6 +209,9 @@ export class WebhookService {
     // if the user buys a product this function will be called
     const orderId = merchantReference;
     const orderDoc = await this.firebaseService.findOrderByOrderId(orderId);
+    const storeDoc = await this.firebaseService.findStoreByStoreId(
+      orderDoc?.storeId,
+    );
 
     if (authorised) {
       if (!orderDoc) {
@@ -229,6 +236,26 @@ export class WebhookService {
         responseText: transaction.responseText,
         orderNumber: orderDoc?.orderNumber,
       });
+
+      // CREATE RECEIPT PRINT QUEUE
+      await this.receiptService.createPrintQueue({
+        receiptData: {
+          storeName: storeDoc?.name ?? "",
+          storeAddress: storeDoc?.address ?? "",
+          orderNumber: orderDoc?.orderNumber.toString() ?? "",
+          orders: (orderDoc.items ?? [])
+            .map(
+              (item: any) =>
+                `${item.quantity}x ${item.productName} | $${item.price.toFixed(2)}`,
+            )
+            .join("\n"),
+          total: Number((orderDoc.amount ?? 0).toFixed(2)),
+          customer: transaction.customer.firstName ?? "",
+          baristaName: "John Doe",
+          duration: orderDoc?.duration ?? 0,
+        },
+      });
+      return;
     } else {
       await this.firebaseService.updateTransaction(transactionDoc.docId, {
         status: "declined",

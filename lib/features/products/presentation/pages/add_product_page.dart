@@ -175,7 +175,9 @@ class _AddProductViewState extends State<AddProductView> {
                             children: [
                               Icon(
                                 Icons.settings,
-                                color: hasModifiers ? AppColors.primary : AppColors.lightGrey,
+                                color: hasModifiers
+                                    ? AppColors.primary
+                                    : AppColors.lightGrey,
                                 size: AppSizes.iconSizeLarge,
                               ),
                               const SizedBox(height: AppSizes.xs),
@@ -183,7 +185,9 @@ class _AddProductViewState extends State<AddProductView> {
                                 "Customise",
                                 style: theme.textTheme.bodyMedium?.copyWith(
                                   fontWeight: FontWeight.w500,
-                                  color: hasModifiers ? null : AppColors.lightGrey,
+                                  color: hasModifiers
+                                      ? null
+                                      : AppColors.lightGrey,
                                 ),
                               ),
                             ],

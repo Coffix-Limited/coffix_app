@@ -1,4 +1,5 @@
 import 'package:coffix_app/core/utils/date_time_converter.dart';
+import 'package:coffix_app/features/payment/data/model/payment.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'transaction.g.dart';
@@ -23,7 +24,8 @@ class Transaction {
   @DateTimeConverter()
   final DateTime? createdAt;
   final TransactionStatus? status;
-  final String? paymentMethod;
+  @PaymentMethodConverter()
+  final PaymentMethod? paymentMethod;
   final String? paymentId;
   @DateTimeConverter()
   final DateTime? paymentTime;

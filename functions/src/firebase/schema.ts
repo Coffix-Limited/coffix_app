@@ -12,11 +12,20 @@ export const createOrderBodySchema = z
     amount: z.number().positive(),
     customerId: z.string().trim(),
     storeId: z.string().trim(),
+    storeName: z.string().trim(),
+    storeAddress: z.string().trim(),
     items: z.array(
       z.object({
         productId: z.string().trim(),
+        productName: z.string().trim(),
+        price: z.number().nonnegative(),
         quantity: z.number().positive(),
         selectedModifiers: z.record(z.string(), z.string()),
+        modifiers: z.array(z.object({
+          modifierId: z.string(),
+          name: z.string(),
+          priceDelta: z.number(),
+        })),
       }),
     ),
     duration: z.number().min(0),

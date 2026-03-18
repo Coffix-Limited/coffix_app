@@ -63,11 +63,33 @@ class Order {
 @JsonSerializable(explicitToJson: true)
 class Item {
   final String? productId;
+  final String? productName;
+  final double? price;
   final int? quantity;
   final Map<String, String>? selectedModifiers;
+  final List<ItemModifier>? modifiers;
 
-  Item({this.productId, this.quantity, this.selectedModifiers});
+  Item({
+    this.productId,
+    this.productName,
+    this.price,
+    this.quantity,
+    this.selectedModifiers,
+    this.modifiers,
+  });
 
   factory Item.fromJson(Map<String, dynamic> json) => _$ItemFromJson(json);
   Map<String, dynamic> toJson() => _$ItemToJson(this);
+}
+
+@JsonSerializable(explicitToJson: true)
+class ItemModifier {
+  final String? modifierId;
+  final double? priceDelta;
+
+  ItemModifier({this.modifierId, this.priceDelta});
+
+  factory ItemModifier.fromJson(Map<String, dynamic> json) =>
+      _$ItemModifierFromJson(json);
+  Map<String, dynamic> toJson() => _$ItemModifierToJson(this);
 }

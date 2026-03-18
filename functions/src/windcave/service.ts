@@ -5,8 +5,9 @@ import {
   WINDCAVE_FAILED_URL,
   WINDCAVE_SUCCESS_URL,
 } from "../constant/constant";
-import { Product } from "../firebase/interface";
+import { EnrichedOrderItem, Product, SnapshotModifier } from "../firebase/interface";
 import { WindcaveError } from "../utils/windcave.error";
+import { DocumentData } from "firebase-admin/firestore";
 
 function getWindcaveApiSecret(
   windcaveApiUsername: string,
@@ -50,12 +51,14 @@ export class WindcaveService {
   async createPaymentSession({
     amount,
     orderId,
-    customerEmail,
+    userDoc,
   }: {
     amount: number;
     orderId: string;
-    customerEmail: string;
+    userDoc: DocumentData;
   }) {
+    const nickName = userDoc.nickName ?? userDoc.firstName;
+    const customerEmail = userDoc.email;
     const response = await fetch(`${this.windcaveApiUrl}/api/v1/sessions`, {
       method: "POST",
       headers: {
@@ -74,6 +77,8 @@ export class WindcaveService {
         },
         notificationUrl: `${process.env.BASE_URL}/webhook`,
         customer: {
+          firstName: nickName ?? "",
+          lastName: "",
           email: customerEmail,
         },
       }),
@@ -106,8 +111,8 @@ export class WindcaveService {
       quantity: number;
       selectedModifiers: Record<string, string>;
     }>;
-  }) {
-    const lineTotals = await Promise.all(
+  }): Promise<{ total: number; enrichedItems: EnrichedOrderItem[] }> {
+    const results = await Promise.all(
       items.map(async (item) => {
         if (item.quantity <= 0) {
           throw new Error("Quantity must be greater than 0");
@@ -132,6 +137,7 @@ export class WindcaveService {
         );
 
         let extra = 0;
+        let found = new Map<string, any>();
 
         if (modifierIds.length > 0) {
           const chunks: string[][] = [];
@@ -151,7 +157,7 @@ export class WindcaveService {
           const modifierDocs = chunkSnaps.flatMap((snap) => snap.docs);
 
           // 3. Validate all requested modifier IDs exist
-          const found = new Map(
+          found = new Map(
             modifierDocs.map((doc) => [doc.id, doc.data() as any]),
           );
           for (const modifierId of modifierIds) {
@@ -185,11 +191,33 @@ export class WindcaveService {
 
         // 5. Line total
         const unitPrice = basePrice + extra;
-        return unitPrice * item.quantity;
+
+        const modifiersSnapshot: SnapshotModifier[] = Object.entries(item.selectedModifiers ?? {})
+          .map(([_groupId, modifierId]) => {
+            const m = found.get(modifierId);
+            return {
+              modifierId,
+              name: m?.name ?? "",
+              priceDelta: Number(m?.priceDelta ?? 0),
+            };
+          });
+
+        const enrichedItem: EnrichedOrderItem = {
+          productId: item.productId,
+          productName: product.name,
+          price: unitPrice,
+          quantity: item.quantity,
+          selectedModifiers: item.selectedModifiers,
+          modifiers: modifiersSnapshot,
+        };
+
+        return { lineTotal: unitPrice * item.quantity, enrichedItem };
       }),
     );
 
-    return lineTotals.reduce((sum, line) => sum + line, 0);
+    const total = results.reduce((sum, r) => sum + r.lineTotal, 0);
+    const enrichedItems = results.map(r => r.enrichedItem);
+    return { total, enrichedItems };
   }
 
   async getSession(sessionId: string) {

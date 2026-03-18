@@ -24,7 +24,6 @@ router.post(
     const windcaveService = new WindcaveService();
     const coffixCreditService = new CoffixCreditService();
     const customerId = request.user?.uid;
-    const customerEmail = request.user?.email;
 
     if (!customerId) {
       return response
@@ -41,16 +40,32 @@ router.post(
         return response.status(400).json({ success: false, errors });
       }
 
-      const totalAmount = await windcaveService.computeOrderTotal({
+      const userDoc = await firebaseService.findUserByCustomerId(customerId);
+      if (!userDoc) {
+        return response
+          .status(401)
+          .json({ success: false, message: "Unauthorized" });
+      }
+
+      const { total: totalAmount, enrichedItems } = await windcaveService.computeOrderTotal({
         items: validation.data.items,
       });
+
+      const storeDoc = await firebaseService.findStoreByStoreId(validation.data.storeId);
+      if (!storeDoc) {
+        return response
+          .status(400)
+          .json({ success: false, message: "Store not found" });
+      }
 
       // create order
       const { orderId, orderData } = await firebaseService.createNewOrder({
         amount: totalAmount,
         customerId,
         storeId: validation.data.storeId,
-        items: validation.data.items,
+        storeName: storeDoc.name,
+        storeAddress: storeDoc.address,
+        items: enrichedItems,
         duration: validation.data.duration,
         paymentMethod: validation.data.paymentMethod,
       });
@@ -91,7 +106,7 @@ router.post(
         await windcaveService.createPaymentSession({
           amount: totalAmount,
           orderId,
-          customerEmail: customerEmail ?? "",
+          userDoc,
         });
 
       await firebaseService.createNewTransaction({

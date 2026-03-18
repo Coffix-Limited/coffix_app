@@ -1,12 +1,9 @@
 import { firestore } from "../config/firebaseAdmin";
+import { nzDateKey } from "./nz_time";
 
 // Format: {storeId}{YYMMDD}{runningNumber} e.g. {atdqdUXR8HQjRyBUJjEx}{260224}{000001}
 export async function generateOrderNumber(storeId: string): Promise<string> {
-  const now = new Date();
-  const yy = now.getFullYear().toString().slice(-2);
-  const mm = String(now.getMonth() + 1).padStart(2, "0");
-  const dd = String(now.getDate()).padStart(2, "0");
-  const dateKey = `${yy}${mm}${dd}`;
+  const dateKey = nzDateKey();
 
   return await firestore.runTransaction(async (tx) => {
     const counterRef = firestore

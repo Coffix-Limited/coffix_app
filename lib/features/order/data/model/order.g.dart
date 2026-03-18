@@ -63,14 +63,33 @@ const _$PaymentStatusEnumMap = {
 
 Item _$ItemFromJson(Map<String, dynamic> json) => Item(
   productId: json['productId'] as String?,
+  productName: json['productName'] as String?,
+  price: (json['price'] as num?)?.toDouble(),
   quantity: (json['quantity'] as num?)?.toInt(),
   selectedModifiers: (json['selectedModifiers'] as Map<String, dynamic>?)?.map(
     (k, e) => MapEntry(k, e as String),
   ),
+  modifiers: (json['modifiers'] as List<dynamic>?)
+      ?.map((e) => ItemModifier.fromJson(e as Map<String, dynamic>))
+      .toList(),
 );
 
 Map<String, dynamic> _$ItemToJson(Item instance) => <String, dynamic>{
   'productId': instance.productId,
+  'productName': instance.productName,
+  'price': instance.price,
   'quantity': instance.quantity,
   'selectedModifiers': instance.selectedModifiers,
+  'modifiers': instance.modifiers?.map((e) => e.toJson()).toList(),
 };
+
+ItemModifier _$ItemModifierFromJson(Map<String, dynamic> json) => ItemModifier(
+  modifierId: json['modifierId'] as String?,
+  priceDelta: (json['priceDelta'] as num?)?.toDouble(),
+);
+
+Map<String, dynamic> _$ItemModifierToJson(ItemModifier instance) =>
+    <String, dynamic>{
+      'modifierId': instance.modifierId,
+      'priceDelta': instance.priceDelta,
+    };

@@ -16,7 +16,6 @@ router.post(
   requiredAuth,
   async (request: AuthenticatedRequest, response: Response) => {
     const customerId = request.user?.uid;
-    const customerEmail = request.user?.email;
     if (!customerId) {
       return response
         .status(401)
@@ -35,6 +34,13 @@ router.post(
         return response.status(400).json({ success: false, errors });
       }
 
+      const userDoc = await firebaseService.findUserByCustomerId(customerId);
+      if (!userDoc) {
+        return response
+          .status(401)
+          .json({ success: false, message: "Unauthorized" });
+      }
+
       const { amount } = validation.data;
       const merchantReference = getTopupMerchantReference(customerId);
 
@@ -42,7 +48,7 @@ router.post(
         await windcaveService.createPaymentSession({
           amount,
           orderId: merchantReference,
-          customerEmail: customerEmail ?? "",
+          userDoc: userDoc,
         });
 
       await firebaseService.createTopupTransaction({

@@ -48,6 +48,9 @@ class FirebaseService {
     if (!validation.success) {
       throw new Error("Invalid body");
     }
+    const storeDoc = await this.findStoreByStoreId(validation.data.storeId);
+    if (!storeDoc) throw new Error(`Store not found: ${validation.data.storeId}`);
+
     const orderRef = firestore.collection("orders").doc();
     // [StoreCode][YYMMDD][RunningNumber]
     const orderNumber = await generateOrderNumber(validation.data.storeId);
@@ -57,6 +60,8 @@ class FirebaseService {
       amount: validation.data.amount,
       customerId: validation.data.customerId,
       storeId: validation.data.storeId,
+      storeName: storeDoc.name,
+      storeAddress: storeDoc.address,
       items: validation.data.items,
       createdAt: new Date(),
       status: "pending_payment",
@@ -186,6 +191,25 @@ class FirebaseService {
       return null;
     }
     return orderRef.data();
+  }
+
+  async findStoreByStoreId(storeId: string) {
+    const storeRef = await firestore.collection("stores").doc(storeId).get();
+    if (!storeRef.exists) {
+      return null;
+    }
+    return storeRef.data();
+  }
+
+  async findUserByCustomerId(customerId: string) {
+    const userRef = await firestore
+      .collection("customers")
+      .doc(customerId)
+      .get();
+    if (!userRef.exists) {
+      return null;
+    }
+    return userRef.data();
   }
 }
 

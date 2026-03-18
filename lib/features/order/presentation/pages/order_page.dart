@@ -10,6 +10,7 @@ import 'package:coffix_app/core/utils/time_utils.dart';
 import 'package:coffix_app/features/auth/logic/auth_cubit.dart';
 import 'package:coffix_app/features/cart/data/model/cart_item.dart';
 import 'package:coffix_app/features/cart/domain/helper.dart';
+import 'package:coffix_app/features/modifier/data/model/modifier.dart';
 import 'package:coffix_app/features/cart/logic/cart_cubit.dart';
 import 'package:coffix_app/features/cart/presentation/pages/cart_page.dart';
 import 'package:coffix_app/features/order/data/model/order.dart';
@@ -158,9 +159,17 @@ class _OrderCard extends StatelessWidget {
 
       final product = match.product;
       final selectedByGroup = item.selectedModifiers ?? {};
+      final modifierMap = <String, Modifier>{
+        for (final im in item.modifiers ?? [])
+          if (im.modifierId != null)
+            im.modifierId!: Modifier(
+              docId: im.modifierId,
+              priceDelta: im.priceDelta,
+            ),
+      };
       final modifierPriceSnapshot = helper.buildModifierPriceSnapshot(
         selectedByGroup: selectedByGroup,
-        modifierMap: {},
+        modifierMap: modifierMap,
       );
       final basePrice = product.price ?? 0;
       final unitTotal = helper.computeUnitTotal(
