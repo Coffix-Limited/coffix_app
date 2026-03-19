@@ -23,6 +23,7 @@ import 'package:coffix_app/features/modifier/presentation/pages/customize_produc
 import 'package:coffix_app/features/products/presentation/pages/products_page.dart';
 import 'package:coffix_app/features/profile/presentation/pages/about_page.dart';
 import 'package:coffix_app/features/profile/presentation/pages/coffee_for_home_page.dart';
+import 'package:coffix_app/features/profile/presentation/pages/coffee_on_us_page.dart';
 import 'package:coffix_app/features/profile/presentation/pages/personal_info_page.dart';
 import 'package:coffix_app/features/profile/presentation/pages/profile_page.dart';
 import 'package:coffix_app/features/profile/presentation/pages/qr_id_page.dart';
@@ -157,6 +158,11 @@ class AppRouter {
                           final url = extra?['url'] as String? ?? '';
                           return CoffeeForHomePage(url: url);
                         },
+                      ),
+                      GoRoute(
+                        path: "/coffee-on-us",
+                        name: CoffeeOnUsPage.route,
+                        builder: (context, state) => const CoffeeOnUsPage(),
                       ),
                     ],
                   ),

@@ -3,8 +3,9 @@ import 'package:coffix_app/core/constants/images.dart';
 import 'package:coffix_app/core/constants/sizes.dart';
 import 'package:coffix_app/core/di/service_locator.dart';
 import 'package:coffix_app/core/theme/typography.dart';
+import 'package:coffix_app/features/app/data/model/global.dart';
+import 'package:coffix_app/features/app/logic/app_cubit.dart';
 import 'package:coffix_app/features/credit/logic/credit_cubit.dart';
-import 'package:coffix_app/features/credit/presentation/pages/credit_topup_page.dart';
 import 'package:coffix_app/features/credit/presentation/pages/credit_topup_payment_page.dart';
 import 'package:coffix_app/features/credit/presentation/widgets/info_card.dart';
 import 'package:coffix_app/features/credit/presentation/widgets/tier_card.dart';
@@ -12,11 +13,8 @@ import 'package:coffix_app/features/home/presentation/pages/home_page.dart';
 import 'package:coffix_app/presentation/atoms/app_button.dart';
 import 'package:coffix_app/presentation/atoms/app_layout_builder.dart';
 import 'package:coffix_app/presentation/atoms/app_loading.dart';
-import 'package:coffix_app/presentation/atoms/app_field.dart';
 import 'package:coffix_app/presentation/atoms/app_money_field.dart';
-import 'package:coffix_app/presentation/atoms/app_notification.dart';
 import 'package:coffix_app/presentation/molecules/app_back_header.dart';
-import 'package:coffix_app/presentation/organisms/app_layout_body.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
@@ -46,17 +44,17 @@ class CreditView extends StatefulWidget {
 class _CreditViewState extends State<CreditView> {
   final formKey = GlobalKey<FormBuilderState>();
 
-  double calculateTopUp(double amount) {
+  double calculateTopUp(double amount, AppGlobal global) {
     double totalAmount = amount;
 
     if (amount < 50) {
       return totalAmount;
     } else if (amount < 250) {
-      totalAmount += amount * 0.10;
+      totalAmount += amount * ((global.basicDiscount ?? 0) / 100);
     } else if (amount < 500) {
-      totalAmount += amount * 0.15;
+      totalAmount += amount * ((global.discountLevel2 ?? 0) / 100);
     } else {
-      totalAmount += amount * 0.20;
+      totalAmount += amount * ((global.discountLevel3 ?? 0) / 100);
     }
 
     return totalAmount;
@@ -65,6 +63,10 @@ class _CreditViewState extends State<CreditView> {
   @override
   Widget build(BuildContext context) {
     final amount = formKey.currentState?.fields['amount']?.value;
+    final global = context.watch<AppCubit>().state.maybeWhen(
+      loaded: (global) => global,
+      orElse: () => null,
+    );
 
     return Scaffold(
       appBar: AppBackHeader(
@@ -171,11 +173,20 @@ class _CreditViewState extends State<CreditView> {
                       child: Column(
                         children: [
                           const SizedBox(height: AppSizes.lg),
-                          TierCard(amount: 50, percent: '10%'),
+                          TierCard(
+                            amount: 50,
+                            percent: '${global?.basicDiscount?.toInt()}%',
+                          ),
                           const SizedBox(height: AppSizes.sm),
-                          TierCard(amount: 250, percent: '15%'),
+                          TierCard(
+                            amount: 250,
+                            percent: '${global?.discountLevel2?.toInt()}%',
+                          ),
                           const SizedBox(height: AppSizes.sm),
-                          TierCard(amount: 500, percent: '20%'),
+                          TierCard(
+                            amount: 500,
+                            percent: '${global?.discountLevel3?.toInt()}%',
+                          ),
                         ],
                       ),
                     ),
@@ -186,7 +197,15 @@ class _CreditViewState extends State<CreditView> {
                           children: [
                             Text("Please enter the amount you wish to TopUp"),
                             SizedBox(height: AppSizes.md),
-                            AppMoneyField(name: 'amount'),
+                            AppMoneyField(
+                              name: 'amount',
+                              validators: [
+                                FormBuilderValidators.required(),
+                                FormBuilderValidators.min(
+                                  global?.minTopUp ?? 0,
+                                ),
+                              ],
+                            ),
 
                             // AppField<String>(
                             //   label: "\$",
@@ -202,7 +221,7 @@ class _CreditViewState extends State<CreditView> {
                             SizedBox(height: AppSizes.sm),
                             if (amount != null && amount.isNotEmpty)
                               Text(
-                                "You will receive: \$${calculateTopUp(double.parse(amount ?? '0')).toStringAsFixed(2)} Coffix Credits",
+                                "You will receive: \$${calculateTopUp(double.parse(amount ?? '0'), global ?? AppGlobal()).toStringAsFixed(2)} Coffix Credits",
                               ),
                           ],
                         ),

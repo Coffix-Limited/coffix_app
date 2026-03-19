@@ -1,14 +1,16 @@
 import 'package:cloud_firestore/cloud_firestore.dart' hide Order;
+import 'package:coffix_app/core/api/api_client.dart';
 import 'package:coffix_app/core/utils/time_utils.dart';
 import 'package:coffix_app/data/repositories/order_repository.dart';
 import 'package:coffix_app/features/order/data/model/order.dart';
+import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-class OrderRepositoryImpl implements OrderRepository {
+class OrderRepositoryImpl extends ApiClient implements OrderRepository {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  OrderRepositoryImpl();
+  OrderRepositoryImpl() : super(dio: Dio());
 
   @override
   Stream<List<Order>> getOrders() {
@@ -44,5 +46,14 @@ class OrderRepositoryImpl implements OrderRepository {
       ...data,
       "updatedAt": TimeUtils.now(),
     }, SetOptions(merge: true));
+  }
+
+  @override
+  Future<void> sendOrderToEmail({required String orderId}) async {
+    final userId = _auth.currentUser?.uid;
+    if (userId == null) {
+      throw Exception('User not found');
+    }
+    await post('/order/email', data: {'orderId': orderId});
   }
 }

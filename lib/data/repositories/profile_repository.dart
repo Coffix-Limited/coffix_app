@@ -9,4 +9,5 @@ abstract class ProfileRepository {
     String? city,
     String? preferredStoreId,
   });
+  Future<void> sendCoffeeOnUs({required List<Map<String, dynamic>> datas});
 }

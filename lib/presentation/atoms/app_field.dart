@@ -28,6 +28,7 @@ class AppField<T> extends StatefulWidget {
   final String? label;
   final bool filled;
   final bool isHorizontalAlign;
+  final TextCapitalization? textCapitalization;
 
   const AppField({
     super.key,
@@ -51,6 +52,7 @@ class AppField<T> extends StatefulWidget {
     this.label,
     this.filled = true,
     this.isHorizontalAlign = false,
+    this.textCapitalization,
   });
 
   @override
@@ -91,7 +93,11 @@ class _AppFieldState<T> extends State<AppField<T>> {
       obscureText: widget.obscureText && !isPasswordVisible,
       autofocus: widget.autofocus,
       style: theme.textTheme.bodyMedium?.copyWith(),
-      textCapitalization: TextCapitalization.sentences,
+      textCapitalization:
+          widget.textCapitalization ??
+          (widget.obscureText
+              ? TextCapitalization.none
+              : TextCapitalization.sentences),
       decoration: InputDecoration(
         fillColor: widget.readOnly ? AppColors.softGrey : Colors.white,
         filled: widget.filled,

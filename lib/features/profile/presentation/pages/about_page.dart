@@ -5,18 +5,16 @@ import 'package:coffix_app/core/extensions/date_extensions.dart';
 import 'package:coffix_app/core/theme/typography.dart';
 import 'package:coffix_app/features/app/logic/app_cubit.dart';
 import 'package:coffix_app/features/auth/logic/auth_cubit.dart';
+import 'package:coffix_app/features/cart/logic/cart_cubit.dart';
 import 'package:coffix_app/features/profile/presentation/widgets/confirm_account_deletion.dart';
 import 'package:coffix_app/presentation/atoms/app_button.dart';
 import 'package:coffix_app/presentation/atoms/app_card.dart';
-import 'package:coffix_app/presentation/atoms/app_clickable.dart';
 import 'package:coffix_app/presentation/atoms/app_loading.dart';
 import 'package:coffix_app/presentation/atoms/app_notification.dart';
-import 'package:coffix_app/presentation/atoms/app_snackbar.dart';
 import 'package:coffix_app/presentation/molecules/app_back_header.dart';
 import 'package:coffix_app/presentation/organisms/app_layout_body.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class AboutPage extends StatelessWidget {
@@ -25,8 +23,11 @@ class AboutPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider.value(
-      value: getIt<AuthCubit>(),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider.value(value: getIt<AuthCubit>()),
+        BlocProvider.value(value: getIt<CartCubit>()),
+      ],
       child: const AboutView(),
     );
   }
@@ -121,6 +122,7 @@ class AboutView extends StatelessWidget {
                           context,
                           onConfirm: () {
                             context.read<AuthCubit>().deleteAccount();
+                            context.read<CartCubit>().resetCart();
                           },
                         );
                       },

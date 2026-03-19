@@ -8,7 +8,8 @@ import 'package:form_builder_validators/form_builder_validators.dart';
 
 class AppMoneyField extends StatelessWidget {
   final String name;
-  const AppMoneyField({super.key, required this.name});
+  const AppMoneyField({super.key, required this.name, this.validators});
+  final List<FormFieldValidator<String>>? validators;
 
   @override
   Widget build(BuildContext context) {
@@ -38,6 +39,7 @@ class AppMoneyField extends StatelessWidget {
             validator: FormBuilderValidators.compose([
               FormBuilderValidators.required(),
               FormBuilderValidators.min(0),
+              if (validators != null) ...validators!,
             ]),
           ),
         ),

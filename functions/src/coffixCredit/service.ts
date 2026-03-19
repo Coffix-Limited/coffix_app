@@ -40,24 +40,40 @@ export class CoffixCreditService {
     });
   }
 
-  private calculateTopUp(amount: number): number {
-    let totalAmount = amount;
-
-    if (amount < 50) {
-      return totalAmount;
-    } else if (amount < 250) {
-      totalAmount += amount * 0.1;
-    } else if (amount < 500) {
-      totalAmount += amount * 0.15;
-    } else {
-      totalAmount += amount * 0.2;
-    }
-
-    return totalAmount;
-  }
-
   async addCredit(customerId: string, amount: number): Promise<void> {
     const customerRef = firestore.collection("customers").doc(customerId);
+    const globals = await firestore
+      .collection("global")
+      .doc("EQ0i4V6H47Ra7yMCdG7B")
+      .get();
+    if (!globals.exists) {
+      throw new Error("Global not found");
+    }
+    const globalData = globals.data();
+    if (!globalData) {
+      throw new Error("Global data not found");
+    }
+
+    const minTopUp = (globalData.minTopUp ?? 0) as number;
+    const basicDiscount = (globalData.basicDiscount ?? 0) as number;
+    const discountLevel2 = (globalData.discountLevel2 ?? 0) as number;
+    const discountLevel3 = (globalData.discountLevel3 ?? 0) as number;
+    const topupLevel2 = (globalData.topupLevel2 ?? Infinity) as number;
+    const topupLevel3 = (globalData.topupLevel3 ?? Infinity) as number;
+
+    if (amount < minTopUp) {
+      throw new Error(`Top-up amount is below the minimum of ${minTopUp}`);
+    }
+
+    let bonus: number;
+    if (amount < topupLevel2) {
+      bonus = amount * basicDiscount;
+    } else if (amount < topupLevel3) {
+      bonus = amount * discountLevel2;
+    } else {
+      bonus = amount * discountLevel3;
+    }
+    const totalAmount = amount + bonus;
 
     await firestore.runTransaction(async (tx) => {
       const customerSnap = await tx.get(customerRef);
@@ -65,7 +81,6 @@ export class CoffixCreditService {
         ? ((customerSnap.data()?.creditAvailable ?? 0) as number)
         : 0;
 
-      const totalAmount = this.calculateTopUp(amount);
       tx.set(
         customerRef,
         { creditAvailable: current + totalAmount },

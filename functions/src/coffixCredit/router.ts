@@ -75,4 +75,18 @@ router.post(
   },
 );
 
+// router.post(
+//   "/share",
+//   requiredAuth,
+//   requirePost,
+//   async (request: AuthenticatedRequest, response: Response) => {
+//     const customerId = request.user?.uid;
+//     if (!customerId) {
+//       return response
+//         .status(401)
+//         .json({ success: false, message: "Unauthorized" });
+//     }
+//   },
+// );
+
 export default router;

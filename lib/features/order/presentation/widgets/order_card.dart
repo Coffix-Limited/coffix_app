@@ -16,6 +16,7 @@ import 'package:coffix_app/features/products/data/model/product.dart';
 import 'package:coffix_app/features/products/logic/product_cubit.dart';
 import 'package:coffix_app/features/stores/logic/store_cubit.dart';
 import 'package:coffix_app/presentation/atoms/app_button.dart';
+import 'package:coffix_app/presentation/atoms/app_clickable.dart';
 import 'package:coffix_app/presentation/atoms/app_notification.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -128,7 +129,11 @@ class OrderCard extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Image.asset(AppImages.email, width: 24, height: 24),
+              AppClickable(
+                onPressed: () {
+                  
+                },
+                child: Image.asset(AppImages.email, width: 24, height: 24)),
               const SizedBox(width: AppSizes.sm),
               Expanded(
                 child: Column(

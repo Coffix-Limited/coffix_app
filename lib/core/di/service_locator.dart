@@ -121,7 +121,10 @@ Future<void> setupServiceLocator() async {
 
   // Profile Cubit
   getIt.registerLazySingleton<ProfileCubit>(
-    () => ProfileCubit(updateProfileUseCase: getIt<UpdateProfileUseCase>()),
+    () => ProfileCubit(
+      updateProfileUseCase: getIt<UpdateProfileUseCase>(),
+      profileRepository: getIt<ProfileRepository>(),
+    ),
   );
 
   // Product Cubit

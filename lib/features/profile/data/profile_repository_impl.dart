@@ -43,4 +43,9 @@ class ProfileRepositoryImpl implements ProfileRepository {
       throw Exception(e);
     }
   }
+
+  @override
+  Future<void> sendCoffeeOnUs({
+    required List<Map<String, dynamic>> datas,
+  }) async {}
 }

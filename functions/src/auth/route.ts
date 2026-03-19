@@ -17,6 +17,13 @@ router.post("/verify", requirePost, async (request, response) => {
     }
 
     const { email } = validation.data;
+    const isBlacklisted = await new AuthService().blackListCustomer({ email });
+    if (isBlacklisted) {
+      return response.status(400).json({
+        success: false,
+        message: "Email is blocked. Please contact support.",
+      });
+    }
     const hasAccount = await new AuthService().customerHasAccount({ email });
     return response.status(200).json({
       success: true,

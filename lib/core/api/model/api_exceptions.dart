@@ -27,8 +27,12 @@ class ApiExceptions implements Exception {
           return ApiExceptions("File too large for upload");
         } else if (statusCode == 502) {
           return ApiExceptions("502: Server is down. Please try again later.");
-        } else if (statusCode != null && statusCode >= 500 && statusCode < 600) {
-          return ApiExceptions("Server error ($statusCode). Please try again later.");
+        } else if (statusCode != null &&
+            statusCode >= 500 &&
+            statusCode < 600) {
+          return ApiExceptions(
+            "Server error ($statusCode). Please try again later.",
+          );
         }
 
         return _handleResponseError(dioError);
@@ -41,9 +45,7 @@ class ApiExceptions implements Exception {
     }
   }
 
-  static ApiExceptions _handleResponseError(
-    DioException dioError,
-  ) {
+  static ApiExceptions _handleResponseError(DioException dioError) {
     final statusCode = dioError.response?.statusCode;
     final data = dioError.response?.data;
 
@@ -52,7 +54,7 @@ class ApiExceptions implements Exception {
 
     switch (statusCode) {
       case 400:
-        return ApiExceptions('400: Bad request', statusCode: statusCode);
+        return ApiExceptions('400: $errorMessage', statusCode: statusCode);
       case 401:
         return ApiExceptions('401: $errorMessage', statusCode: statusCode);
       case 403:
@@ -62,7 +64,9 @@ class ApiExceptions implements Exception {
       case 409:
         return ApiExceptions('409: $errorMessage', statusCode: statusCode);
       case 422:
-        final errorMessage = dioError.response?.data["message"] as String? ?? "Something went wrong";
+        final errorMessage =
+            dioError.response?.data["message"] as String? ??
+            "Something went wrong";
 
         return ApiExceptions(
           '422: $errorMessage',
@@ -70,7 +74,10 @@ class ApiExceptions implements Exception {
           statusCode: statusCode,
         );
       default:
-        return ApiExceptions('Oops something went wrong', statusCode: statusCode);
+        return ApiExceptions(
+          'Oops something went wrong',
+          statusCode: statusCode,
+        );
     }
   }
 }

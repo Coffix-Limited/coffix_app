@@ -5,6 +5,7 @@ import firebaseRouter from "./firebase/router";
 import webhookRouter from "./webhook/router";
 import coffixCreditRouter from "./coffixCredit/router";
 import authRouter from "./auth/route";
+import orderRouter from "./order/router";
 
 export const api = express();
 // Global middleware
@@ -21,3 +22,4 @@ api.use("/firebase", firebaseRouter);
 api.use("/webhook", webhookRouter);
 api.use("/credit", coffixCreditRouter);
 api.use("/auth", authRouter);
+api.use("/order", orderRouter);

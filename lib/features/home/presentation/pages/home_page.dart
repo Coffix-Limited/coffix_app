@@ -182,9 +182,11 @@ class _HomeViewState extends State<HomeView> {
                                               right: 0,
                                               child: IconButton(
                                                 onPressed: () {
-                                                  context.goNamed(
-                                                    ProfilePage.route,
-                                                  );
+                                                  if (isAuthenticated) {
+                                                    context.goNamed(
+                                                      ProfilePage.route,
+                                                    );
+                                                  }
                                                 },
                                                 icon: Icon(
                                                   Icons.settings,

@@ -61,7 +61,11 @@ class _LoginFormState extends State<LoginForm> {
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 10.0),
-                AppField(hintText: "Email", name: "email"),
+                AppField(
+                  hintText: "Email",
+                  name: "email",
+                  textCapitalization: TextCapitalization.none,
+                ),
                 const SizedBox(height: 14.0),
                 AppField(
                   hintText: "Password",

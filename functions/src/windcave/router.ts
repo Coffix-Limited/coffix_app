@@ -47,11 +47,14 @@ router.post(
           .json({ success: false, message: "Unauthorized" });
       }
 
-      const { total: totalAmount, enrichedItems } = await windcaveService.computeOrderTotal({
-        items: validation.data.items,
-      });
+      const { total: totalAmount, enrichedItems } =
+        await windcaveService.computeOrderTotal({
+          items: validation.data.items,
+        });
 
-      const storeDoc = await firebaseService.findStoreByStoreId(validation.data.storeId);
+      const storeDoc = await firebaseService.findStoreByStoreId(
+        validation.data.storeId,
+      );
       if (!storeDoc) {
         return response
           .status(400)
