@@ -55,9 +55,9 @@ export class CoffixCreditService {
     }
 
     const minTopUp = (globalData.minTopUp ?? 0) as number;
-    const basicDiscount = (globalData.basicDiscount ?? 0) as number;
-    const discountLevel2 = (globalData.discountLevel2 ?? 0) as number;
-    const discountLevel3 = (globalData.discountLevel3 ?? 0) as number;
+    const basicDiscount = ((globalData.basicDiscount ?? 0) / 100) as number;
+    const discountLevel2 = ((globalData.discountLevel2 ?? 0) / 100) as number;
+    const discountLevel3 = ((globalData.discountLevel3 ?? 0) / 100) as number;
     const topupLevel2 = (globalData.topupLevel2 ?? Infinity) as number;
     const topupLevel3 = (globalData.topupLevel3 ?? Infinity) as number;
 
