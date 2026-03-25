@@ -55,43 +55,38 @@ class ProductList extends StatelessWidget {
           const SizedBox(height: AppSizes.md),
 
           // product categories
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              SizedBox(
-                height: AppSizes.chipSizeSmall,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  shrinkWrap: true,
-                  itemCount: allCategories.length,
-                  separatorBuilder: (_, index) =>
-                      const SizedBox(width: AppSizes.md),
-                  itemBuilder: (context, index) {
-                    final category = allCategories[index];
-                    return AppClickable(
-                      showSplash: false,
-                      onPressed: () {
-                        context.read<ProductCubit>().filterProductsByCategory(
-                          category.name!,
-                        );
-                      },
-                      child: AppCard(
-                        borderColor: categoryFilter == category.name
-                            ? AppColors.primary
-                            : AppColors.white,
-                        color: AppColors.lightGrey,
-                        child: Text(
-                          category.name ?? "",
-                          style: AppTypography.labelS,
-                        ),
-                      ),
+          SizedBox(
+            height: AppSizes.chipSizeSmall,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              shrinkWrap: true,
+              itemCount: allCategories.length,
+              separatorBuilder: (_, index) =>
+                  const SizedBox(width: AppSizes.md),
+              itemBuilder: (context, index) {
+                final category = allCategories[index];
+                return AppClickable(
+                  showSplash: false,
+                  onPressed: () {
+                    context.read<ProductCubit>().filterProductsByCategory(
+                      category.name!,
                     );
                   },
-                ),
-              ),
-              const SizedBox(height: AppSizes.md),
-            ],
+                  child: AppCard(
+                    borderColor: categoryFilter == category.name
+                        ? AppColors.primary
+                        : AppColors.white,
+                    color: AppColors.lightGrey,
+                    child: Text(
+                      category.name ?? "",
+                      style: AppTypography.labelS,
+                    ),
+                  ),
+                );
+              },
+            ),
           ),
+          const SizedBox(height: AppSizes.md),
           const SizedBox(height: AppSizes.lg),
           ListView.separated(
             padding: EdgeInsets.zero,

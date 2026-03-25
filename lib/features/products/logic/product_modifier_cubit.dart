@@ -59,10 +59,18 @@ class ProductModifierCubit extends Cubit<ProductModifierState> {
 
   void selectModifiers({required Modifier modifier}) {
     final current = state.modifiers;
-    final updated = [
-      ...current.where((m) => m.groupId != modifier.groupId),
-      modifier,
-    ];
+    final alreadySelected = current.any((m) => m.docId == modifier.docId);
+
+    final List<Modifier> updated;
+    if (alreadySelected) {
+      updated = current.where((m) => m.docId != modifier.docId).toList();
+    } else {
+      updated = [
+        ...current.where((m) => m.groupId != modifier.groupId),
+        modifier,
+      ];
+    }
+
     emit(
       ProductModifierState(
         modifiers: updated,

@@ -195,7 +195,10 @@ class _CreditViewState extends State<CreditView> {
                         padding: const EdgeInsets.only(top: AppSizes.xxxxxl),
                         child: Column(
                           children: [
-                            Text("Please enter the amount you wish to TopUp"),
+                            Text(
+                              "Please enter the amount you wish to TopUp. Minimum top up is \$${global?.minTopUp?.toStringAsFixed(2)}",
+                              textAlign: TextAlign.center,
+                            ),
                             SizedBox(height: AppSizes.md),
                             AppMoneyField(
                               name: 'amount',
@@ -230,6 +233,10 @@ class _CreditViewState extends State<CreditView> {
                     SizedBox(height: AppSizes.xl),
                     Spacer(),
                     AppButton(
+                      disabled:
+                          amount == null ||
+                          amount.isEmpty ||
+                          double.parse(amount ?? '0') < (global?.minTopUp ?? 0),
                       onPressed: () {
                         if (showTopUpField &&
                             formKey.currentState!.validate()) {

@@ -128,6 +128,11 @@ class _CustomizeProductViewState extends State<CustomizeProductView> {
                                               AppSizes.md,
                                             ),
                                             onPressed: () {
+                                              if (isSelected &&
+                                                  bundle.group.required ==
+                                                      true) {
+                                                return;
+                                              }
                                               context
                                                   .read<ProductModifierCubit>()
                                                   .selectModifiers(

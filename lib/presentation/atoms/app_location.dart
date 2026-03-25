@@ -12,7 +12,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 class AppLocation extends StatelessWidget {
-  const AppLocation({super.key});
+  const AppLocation({super.key, this.color});
+
+  final Color? color;
 
   @override
   Widget build(BuildContext context) {
@@ -39,10 +41,10 @@ class AppLocation extends StatelessWidget {
                     Text(
                       "${user.store?.name}",
                       style: theme.textTheme.bodyMedium!.copyWith(
-                        color: AppColors.lightGrey,
+                        color: color,
                         decoration: TextDecoration.underline,
-                        decorationColor: AppColors.lightGrey,
                         decorationThickness: 1,
+                        decorationColor: color,
                       ),
                     ),
                 ],

@@ -97,55 +97,52 @@ class StoreList extends StatelessWidget {
                     updateStore(store.docId);
                   }
                 },
-                child: Opacity(
-                  opacity: isOpen ? 1 : 0.6,
-                  child: Row(
-                    children: [
-                      CircleAvatar(
-                        radius: AppSizes.iconSizeLarge,
-                        backgroundImage: NetworkImage(store.imageUrl ?? ""),
-                      ),
-                      const SizedBox(width: AppSizes.md),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    store.name ?? "",
-                                    style: AppTypography.labelM,
-                                  ),
+                child: Row(
+                  children: [
+                    CircleAvatar(
+                      radius: AppSizes.iconSizeLarge,
+                      backgroundImage: NetworkImage(store.imageUrl ?? ""),
+                    ),
+                    const SizedBox(width: AppSizes.md),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  store.name ?? "",
+                                  style: AppTypography.labelM,
                                 ),
-                              ],
-                            ),
-                            Text(
-                              store.address ?? "",
-                              style: AppTypography.bodyXS.copyWith(
-                                color: AppColors.black,
                               ),
+                            ],
+                          ),
+                          Text(
+                            store.address ?? "",
+                            style: AppTypography.bodyXS.copyWith(
+                              color: AppColors.black,
                             ),
-                            Text(
-                              isOpen
-                                  ? "Closes at ${store.todayCloseFormatted() ?? ''}"
-                                  : () {
-                                      final next = store.nextOpeningFormatted();
-                                      return next != null
-                                          ? "Closed. Opens on ${next.day} ${next.time}"
-                                          : "Closed";
-                                    }(),
-                              style: AppTypography.body2XS.copyWith(
-                                color: AppColors.primary,
-                              ),
+                          ),
+                          Text(
+                            isOpen
+                                ? "Closes at ${store.todayCloseFormatted() ?? ''}"
+                                : () {
+                                    final next = store.nextOpeningFormatted();
+                                    return next != null
+                                        ? "Closed. Opens on ${next.day} ${next.time}"
+                                        : "Closed";
+                                  }(),
+                            style: AppTypography.body2XS.copyWith(
+                              color: AppColors.primary,
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(width: AppSizes.md),
-                      if (isOpen) AppIcon.withIconData(Icons.arrow_forward_ios),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(width: AppSizes.md),
+                    if (isOpen) AppIcon.withIconData(Icons.arrow_forward_ios),
+                  ],
                 ),
               );
             },

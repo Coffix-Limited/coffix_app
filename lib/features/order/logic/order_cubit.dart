@@ -40,6 +40,10 @@ class OrderCubit extends Cubit<OrderState> {
     );
   }
 
+  Future<Order?> getOrderById(String orderId) {
+    return _orderRepository.getOrderById(orderId);
+  }
+
   void sendOrderToEmail({required String orderId}) async {
     emit(OrderState.loading(orders: state.orders));
     try {

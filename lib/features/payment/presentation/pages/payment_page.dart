@@ -72,6 +72,7 @@ class _PaymentViewState extends State<PaymentView> {
 
   @override
   void dispose() {
+    _webViewController = null;
     _navSubscription.cancel();
     _navController.close();
     super.dispose();

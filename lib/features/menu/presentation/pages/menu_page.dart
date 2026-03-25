@@ -9,6 +9,7 @@ import 'package:coffix_app/presentation/atoms/app_loading.dart';
 import 'package:coffix_app/presentation/molecules/app_back_header.dart';
 import 'package:coffix_app/presentation/molecules/app_cart.dart';
 import 'package:coffix_app/presentation/organisms/app_error.dart';
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -53,7 +54,7 @@ class MenuView extends StatelessWidget {
             loading: () => AppLoading(),
             loaded: (products, allCategories, categoryFilter) => ProductList(
               products: products,
-              allCategories: allCategories,
+              allCategories: allCategories.sorted((a, b) => (a.order?.compareTo(b.order ?? "0") ?? 0).toInt()),
               isRoot: true,
               categoryFilter: categoryFilter,
               storeId: user?.user.preferredStoreId ?? '',

@@ -173,7 +173,9 @@ class _HomeViewState extends State<HomeView> {
                                                 ),
                                               ),
                                               if (isAuthenticated)
-                                                const AppLocation(),
+                                                const AppLocation(
+                                                  color: AppColors.white,
+                                                ),
                                             ],
                                           ),
                                           if (isAuthenticated)

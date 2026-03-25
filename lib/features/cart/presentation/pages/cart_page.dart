@@ -94,11 +94,16 @@ class _CartViewState extends State<CartView> {
                         ),
                       )
                     : SingleChildScrollView(
-                        padding: AppSizes.defaultPadding,
+                        padding: EdgeInsets.only(
+                          left: AppSizes.defaultPadding.start,
+                          right: AppSizes.defaultPadding.end,
+                          bottom: AppSizes.defaultPadding.bottom + 100,
+                        ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
                             ListView.separated(
+                              padding: EdgeInsets.zero,
                               shrinkWrap: true,
                               physics: const NeverScrollableScrollPhysics(),
                               itemBuilder: (context, index) {
@@ -121,7 +126,7 @@ class _CartViewState extends State<CartView> {
                                     );
                                 return OrderItemRow(
                                   cartItem: cartItem,
-                                  price: cartItem.lineTotal,
+                                  price: cartItem.unitTotal,
                                   basePrice: cartItem.basePrice,
                                   onRemove: () {
                                     context.read<CartCubit>().removeProduct(

@@ -86,7 +86,7 @@ class _DraftsViewState extends State<DraftsView> {
                   separatorBuilder: (_, _) =>
                       const SizedBox(height: AppSizes.sm),
                   itemBuilder: (context, index) {
-                    return _DraftRow(draft: drafts[index]);
+                    return _DraftCard(draft: drafts[index]);
                   },
                 ),
               );
@@ -98,8 +98,8 @@ class _DraftsViewState extends State<DraftsView> {
   }
 }
 
-class _DraftRow extends StatelessWidget {
-  const _DraftRow({required this.draft});
+class _DraftCard extends StatelessWidget {
+  const _DraftCard({required this.draft});
 
   final DraftItem draft;
 
@@ -118,55 +118,137 @@ class _DraftRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final cart = draft.cart;
-    final description = cart.items
-        .map((item) => '${item.quantity}× ${item.productName}')
-        .join(', ');
+    final items = cart.items;
 
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSizes.md,
-        vertical: AppSizes.sm,
-      ),
+      padding: const EdgeInsets.all(AppSizes.md),
       decoration: BoxDecoration(
         color: AppColors.white,
         borderRadius: BorderRadius.circular(AppSizes.md),
         border: Border.all(color: AppColors.borderColor),
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          IconButton(
-            icon: CircleAvatar(
-              backgroundColor: AppColors.error,
-              child: const Icon(
-                Icons.close,
-                size: AppSizes.iconSizeMedium,
-                color: AppColors.white,
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Draft',
+                      style: theme.textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: AppSizes.xs),
+                    Text(
+                      '${items.length} item${items.length == 1 ? '' : 's'}',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: AppColors.lightGrey,
+                      ),
+                    ),
+                    const SizedBox(height: AppSizes.sm),
+                  ],
+                ),
               ),
-            ),
-            color: AppColors.lightGrey,
-            onPressed: () =>
-                context.read<DraftCubit>().deleteDraft(draftId: draft.id),
-            padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(),
+              Text.rich(
+                cart.subtotal.toCurrencySuperscript(
+                  style: AppTypography.titleS,
+                ),
+              ),
+            ],
           ),
-          const SizedBox(width: AppSizes.sm),
-          Expanded(
-            child: Text(
-              description,
-              style: theme.textTheme.bodyMedium,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-          const SizedBox(width: AppSizes.sm),
-          Text(cart.subtotal.toCurrency(), style: AppTypography.bodyM600),
-          const SizedBox(width: AppSizes.sm),
-          AppButton(
-            height: 24,
-            width: 56,
-            onPressed: () => _loadDraftIntoCart(context, cart),
-            label: 'Order',
-            textStyle: AppTypography.body2XS.copyWith(color: AppColors.white),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Expanded(
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: items.length,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemBuilder: (context, index) {
+                    final item = items[index];
+                    final imageUrl = item.productImageUrl;
+
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: AppSizes.sm),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (imageUrl.isNotEmpty)
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(AppSizes.sm),
+                              child: SizedBox(
+                                width: 48,
+                                height: 48,
+                                child: Image.network(
+                                  imageUrl,
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                            )
+                          else
+                            Container(
+                              width: 48,
+                              height: 48,
+                              decoration: BoxDecoration(
+                                color: AppColors.softGrey,
+                                borderRadius: BorderRadius.circular(
+                                  AppSizes.sm,
+                                ),
+                              ),
+                              child: const Icon(
+                                Icons.coffee,
+                                color: AppColors.lightGrey,
+                                size: AppSizes.iconSizeSmall,
+                              ),
+                            ),
+                          const SizedBox(width: AppSizes.sm),
+                          Expanded(
+                            child: Text(
+                              '${item.productName} x${item.quantity}',
+                              style: AppTypography.bodyM600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    icon: CircleAvatar(
+                      backgroundColor: AppColors.error,
+                      child: const Icon(
+                        Icons.close,
+                        size: AppSizes.iconSizeMedium,
+                        color: AppColors.white,
+                      ),
+                    ),
+                    onPressed: () => context.read<DraftCubit>().deleteDraft(
+                      draftId: draft.id,
+                    ),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                  ),
+                  AppButton(
+                    height: 24,
+                    width: 56,
+                    onPressed: () => _loadDraftIntoCart(context, cart),
+                    label: 'Order',
+                    textStyle: AppTypography.body2XS.copyWith(
+                      color: AppColors.white,
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
         ],
       ),

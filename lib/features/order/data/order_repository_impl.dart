@@ -39,6 +39,13 @@ class OrderRepositoryImpl extends ApiClient implements OrderRepository {
   }
 
   @override
+  Future<Order?> getOrderById(String orderId) async {
+    final doc = await _firestore.collection('orders').doc(orderId).get();
+    if (!doc.exists) return null;
+    return Order.fromJson(doc.data()!);
+  }
+
+  @override
   Future<void> updateOrder({required Map<String, dynamic> data}) async {
     final userId = _auth.currentUser?.uid;
     if (userId == null) {

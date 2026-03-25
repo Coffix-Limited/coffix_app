@@ -1,3 +1,4 @@
+import 'package:coffix_app/core/extensions/order_extensions.dart';
 import 'package:collection/collection.dart';
 import 'package:coffix_app/core/constants/colors.dart';
 import 'package:coffix_app/core/constants/images.dart';
@@ -14,7 +15,6 @@ import 'package:coffix_app/features/cart/presentation/pages/cart_page.dart';
 import 'package:coffix_app/features/modifier/data/model/modifier.dart';
 import 'package:coffix_app/features/order/data/model/order.dart';
 import 'package:coffix_app/features/order/logic/order_cubit.dart';
-import 'package:coffix_app/features/products/data/model/product.dart';
 import 'package:coffix_app/features/products/logic/product_cubit.dart';
 import 'package:coffix_app/features/stores/logic/store_cubit.dart';
 import 'package:coffix_app/presentation/atoms/app_button.dart';
@@ -32,8 +32,6 @@ class OrderCard extends StatelessWidget {
   void _reorder(BuildContext context, {required Order order}) {
     final productCubit = context.read<ProductCubit>();
     final products = productCubit.allProducts;
-    print("order.docId: ${order.items?.map((i) => i.productId).toList()}");
-    print("products: ${products.map((p) => p.product.docId).toList()}");
 
     if (products.isEmpty || order.items == null || order.items!.isEmpty) {
       AppNotification.error(context, 'Unable to reorder at this time');
@@ -44,9 +42,13 @@ class OrderCard extends StatelessWidget {
       AppNotification.error(context, 'Store information missing');
       return;
     }
+
+    // 1. update the preferred store
     context.read<StoreCubit>().updatePreferredStore(storeId: order.storeId!);
 
     final cartCubit = context.read<CartCubit>();
+
+    // 2. reset the cart
     cartCubit.resetCart();
 
     final helper = CartHelper();
@@ -107,7 +109,9 @@ class OrderCard extends StatelessWidget {
       try {
         cartCubit.addProduct(newItem: cartItem);
         addedCount++;
-      } catch (_) {}
+      } catch (e) {
+        print("error: $e");
+      }
     }
 
     if (addedCount == 0) {
@@ -234,7 +238,7 @@ class OrderCard extends StatelessWidget {
                                 ),
                                 if (modifiers.isNotEmpty)
                                   Text(
-                                    modifiers.join(', '),
+                                    modifiers.join(', ').toLarge(),
                                     style: AppTypography.body3XS.copyWith(
                                       color: AppColors.textBlackColor,
                                     ),

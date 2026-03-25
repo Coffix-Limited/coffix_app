@@ -25,6 +25,8 @@ class OrderItemRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final subtotal = price * cartItem.quantity;
+
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -45,10 +47,20 @@ class OrderItemRow extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
-                "${cartItem.productName} x${cartItem.quantity}",
-                style: AppTypography.bodyM600,
+              RichText(
+                text: TextSpan(
+                  style: AppTypography.bodyM600.copyWith(
+                    color: AppColors.textBlackColor,
+                  ),
+                  text: "${cartItem.productName} (x${cartItem.quantity}) ",
+                  children: [
+                    basePrice.toCurrencySuperscript(
+                      style: AppTypography.bodyM600,
+                    ),
+                  ],
+                ),
               ),
+
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: cartItem.selectedByGroup.entries.map((entry) {
@@ -93,7 +105,7 @@ class OrderItemRow extends StatelessWidget {
             Column(
               children: [
                 Text.rich(
-                  basePrice.toCurrencySuperscript(style: AppTypography.titleS),
+                  subtotal.toCurrencySuperscript(style: AppTypography.bodyM600),
                 ),
                 Row(
                   children: [
