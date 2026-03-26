@@ -24,7 +24,6 @@ import 'package:coffix_app/presentation/atoms/app_icon.dart';
 import 'package:coffix_app/presentation/atoms/app_loading.dart';
 import 'package:coffix_app/presentation/atoms/app_location.dart';
 import 'package:coffix_app/presentation/atoms/app_notification.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
@@ -64,7 +63,9 @@ class _HomeViewState extends State<HomeView> {
   @override
   void initState() {
     super.initState();
-    context.read<AppCubit>().getGlobal();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<AppCubit>().getGlobal();
+    });
     context.read<AuthCubit>().listenToUser();
   }
 

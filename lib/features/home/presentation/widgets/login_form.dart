@@ -107,12 +107,11 @@ class _LoginFormState extends State<LoginForm> {
                     ),
 
                     // TODO: FIX THIS ONCE FACEBOOK IS ALREADY IMPLEMENTED
-                    AppIconButton.withSvgPath(
-                      AppImages.facebook,
-                      onPressed: () {},
-                      backgroundColor: Colors.white,
-                    ),
-
+                    // AppIconButton.withSvgPath(
+                    //   AppImages.facebook,
+                    //   onPressed: () {},
+                    //   backgroundColor: Colors.white,
+                    // ),
                     if (Platform.isIOS)
                       AppIconButton.withSvgPath(
                         AppImages.apple,

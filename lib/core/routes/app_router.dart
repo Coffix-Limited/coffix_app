@@ -60,20 +60,20 @@ class AppRouter {
     refreshListenable: _GoRouterRefreshStream(
       FirebaseAuth.instance.authStateChanges(),
     ),
-    // redirect: (context, state) {
-    //   final currentUser = FirebaseAuth.instance.currentUser;
-    //   print('Current state: ${state.uri.path} - ${currentUser?.uid}');
-    //   final isLoggedIn = currentUser != null;
-    //   final isOnAuthRoute = state.matchedLocation.startsWith('/auth');
+    redirect: (context, state) {
+      final currentUser = FirebaseAuth.instance.currentUser;
+      print('Current state: ${state.uri.path} - ${currentUser?.uid}');
+      // final isLoggedIn = currentUser != null;
+      // final isOnAuthRoute = state.matchedLocation.startsWith('/auth');
 
-    //   if (!isLoggedIn) {
-    //     if (!isOnAuthRoute) return '/auth';
-    //     return null;
-    //   }
+      // if (!isLoggedIn) {
+      //   if (!isOnAuthRoute) return '/auth';
+      //   return null;
+      // }
 
-    //   if (isLoggedIn && isOnAuthRoute) return '/';
-    //   return null;
-    // },
+      // if (isLoggedIn && isOnAuthRoute) return '/';
+      return null;
+    },
     routes: [
       GoRoute(
         path: "/",

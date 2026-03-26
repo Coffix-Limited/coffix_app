@@ -7,14 +7,14 @@ class ModifierGroup {
   final String? docId;
   final List<String> modifierIds;
   final String? name;
-  final bool? required;
+  // final bool? required;
   final String? selectionType;
 
   ModifierGroup({
     this.docId,
     this.modifierIds = const [],
     this.name,
-    this.required,
+    // this.required,
     this.selectionType,
   });
 
