@@ -1,16 +1,13 @@
 import { firestore } from "../config/firebaseAdmin";
-import { nzDateKey } from "./nz_time";
 
-// Format: {storeId}{YYMMDD}{runningNumber} e.g. {atdqdUXR8HQjRyBUJjEx}{260224}{000001}
+// Format: {storeId}{runningNumber} e.g. {storeId}{000001}
 export async function generateOrderNumber(storeId: string): Promise<string> {
-  const dateKey = nzDateKey();
-
   return await firestore.runTransaction(async (tx) => {
     const counterRef = firestore
       .collection("stores")
       .doc(storeId)
-      .collection("dailyCounters")
-      .doc(dateKey);
+      .collection("counters")
+      .doc("orders"); // single doc for all time
 
     const counterSnap = await tx.get(counterRef);
 
@@ -22,6 +19,6 @@ export async function generateOrderNumber(storeId: string): Promise<string> {
     tx.set(counterRef, { lastRunningNumber: nextNumber }, { merge: true });
 
     const runningNumber = nextNumber.toString().padStart(6, "0");
-    return `${storeId}${dateKey}${runningNumber}`;
+    return `${storeId}${runningNumber}`;
   });
 }

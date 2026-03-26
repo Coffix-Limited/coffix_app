@@ -1,10 +1,14 @@
 part of 'draft_cubit.dart';
 
 @freezed
-class DraftState with _$DraftState {
-  const factory DraftState.initial() = _Initial;
-  const factory DraftState.loading() = _Loading;
-  const factory DraftState.success() = _Success;
-  const factory DraftState.loaded({required List<DraftItem> drafts}) = _Loaded;
-  const factory DraftState.error({required String message}) = _Error;
+abstract class DraftState with _$DraftState {
+  const factory DraftState.initial({@Default([]) List<Draft> drafts}) =
+      _Initial;
+  const factory DraftState.loading({@Default([]) List<Draft> drafts}) =
+      _Loading;
+  const factory DraftState.loaded({@Default([]) List<Draft> drafts}) = _Loaded;
+  const factory DraftState.error({
+    required String message,
+    @Default([]) List<Draft> drafts,
+  }) = _Error;
 }

@@ -7,24 +7,26 @@ part 'cart.g.dart';
 
 @JsonSerializable(explicitToJson: true)
 class Cart {
-  final String storeId;
-  final List<CartItem> items;
+  final String? storeId;
+  final List<CartItem>? items;
   @DateTimeConverter()
-  final double duration;
+  final double? duration;
   final PaymentMethod? paymentMethod;
 
   Cart({
-    required this.storeId,
+    this.storeId,
     this.items = const [],
-    required this.duration,
+    this.duration,
     this.paymentMethod,
   });
 
   factory Cart.fromJson(Map<String, dynamic> json) => _$CartFromJson(json);
   Map<String, dynamic> toJson() => _$CartToJson(this);
 
-  double get subtotal => items.fold(0.0, (sum, item) => sum + item.lineTotal);
-  int get totalQuantity => items.fold(0, (sum, item) => sum + item.quantity);
+  double get subtotal =>
+      items?.fold(0.0, (sum, item) => sum ?? 0 + item.lineTotal) ?? 0.0;
+  int get totalQuantity =>
+      items?.fold(0, (sum, item) => sum ?? 0 + item.quantity) ?? 0;
 
   Cart copyWith({
     String? storeId,

@@ -13,7 +13,6 @@ import 'package:coffix_app/presentation/atoms/app_field.dart';
 import 'package:coffix_app/presentation/atoms/app_icon_button.dart';
 import 'package:coffix_app/presentation/atoms/app_loading.dart';
 import 'package:coffix_app/presentation/atoms/app_notification.dart';
-import 'package:coffix_app/presentation/atoms/app_snackbar.dart';
 import 'package:coffix_app/presentation/atoms/app_text_button.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';

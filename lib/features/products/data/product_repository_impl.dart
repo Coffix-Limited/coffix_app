@@ -27,11 +27,15 @@ class ProductRepositoryImpl implements ProductRepository {
 
   @override
   Stream<List<ProductCategory>> getProductCategories() {
-    return _firestore.collection('productCategories').snapshots().map((event) {
-      return event.docs
-          .map((doc) => ProductCategory.fromJson(doc.data()))
-          .toList();
-    });
+    return _firestore
+        .collection('productCategories')
+        .orderBy('order', descending: false)
+        .snapshots()
+        .map((event) {
+          return event.docs
+              .map((doc) => ProductCategory.fromJson(doc.data()))
+              .toList();
+        });
   }
 
   @override

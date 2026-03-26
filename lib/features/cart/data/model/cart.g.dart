@@ -7,13 +7,13 @@ part of 'cart.dart';
 // **************************************************************************
 
 Cart _$CartFromJson(Map<String, dynamic> json) => Cart(
-  storeId: json['storeId'] as String,
+  storeId: json['storeId'] as String?,
   items:
       (json['items'] as List<dynamic>?)
           ?.map((e) => CartItem.fromJson(e as Map<String, dynamic>))
           .toList() ??
       const [],
-  duration: (json['duration'] as num).toDouble(),
+  duration: (json['duration'] as num?)?.toDouble(),
   paymentMethod: $enumDecodeNullable(
     _$PaymentMethodEnumMap,
     json['paymentMethod'],
@@ -22,7 +22,7 @@ Cart _$CartFromJson(Map<String, dynamic> json) => Cart(
 
 Map<String, dynamic> _$CartToJson(Cart instance) => <String, dynamic>{
   'storeId': instance.storeId,
-  'items': instance.items.map((e) => e.toJson()).toList(),
+  'items': instance.items?.map((e) => e.toJson()).toList(),
   'duration': instance.duration,
   'paymentMethod': _$PaymentMethodEnumMap[instance.paymentMethod],
 };

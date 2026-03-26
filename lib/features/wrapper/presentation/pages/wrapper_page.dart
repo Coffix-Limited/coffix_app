@@ -67,8 +67,8 @@ class _WrapperViewState extends State<WrapperView> {
 
   @override
   Widget build(BuildContext context) {
-    final global = context.watch<AppCubit>().state.maybeWhen(
-      loaded: (global) => global,
+    final appVersion = context.watch<AppCubit>().state.maybeWhen(
+      loaded: (global, appVersion) => appVersion,
       orElse: () => null,
     );
     return Scaffold(
@@ -90,7 +90,7 @@ class _WrapperViewState extends State<WrapperView> {
           SvgPicture.asset(AppImages.logo, width: 256, height: 256),
           const SizedBox(height: AppSizes.xl),
           Text(
-            "Version ${global?.appVersion ?? '1.0.0'}",
+            "Version ${appVersion ?? '1.0.0'}",
             textAlign: TextAlign.center,
             style: AppTypography.bodyXS.copyWith(color: AppColors.white),
           ),

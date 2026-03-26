@@ -15,7 +15,6 @@ ModifierGroup _$ModifierGroupFromJson(Map<String, dynamic> json) =>
               .toList() ??
           const [],
       name: json['name'] as String?,
-      required: json['required'] as bool?,
       selectionType: json['selectionType'] as String?,
     );
 
@@ -24,6 +23,5 @@ Map<String, dynamic> _$ModifierGroupToJson(ModifierGroup instance) =>
       'docId': instance.docId,
       'modifierIds': instance.modifierIds,
       'name': instance.name,
-      'required': instance.required,
       'selectionType': instance.selectionType,
     };

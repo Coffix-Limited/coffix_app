@@ -1,9 +1,7 @@
 import 'package:coffix_app/core/constants/colors.dart';
 import 'package:coffix_app/core/constants/sizes.dart';
 import 'package:coffix_app/core/theme/typography.dart';
-import 'package:coffix_app/presentation/atoms/app_button.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
 
 class InfoCard extends StatelessWidget {
   const InfoCard({super.key, required this.text, required this.image});
@@ -11,7 +9,6 @@ class InfoCard extends StatelessWidget {
   final String text;
   final String image;
 
-  static const double _avatarSize = 56;
 
   @override
   Widget build(BuildContext context) {

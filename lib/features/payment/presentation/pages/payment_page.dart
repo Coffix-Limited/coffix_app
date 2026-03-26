@@ -72,6 +72,7 @@ class _PaymentViewState extends State<PaymentView> {
 
   @override
   void dispose() {
+    _webViewController = null;
     _navSubscription.cancel();
     _navController.close();
     super.dispose();
@@ -84,7 +85,6 @@ class _PaymentViewState extends State<PaymentView> {
   }
 
   NavigationActionPolicy _handleNavigation(String url) {
-    print("Navigating to $url");
     final uri = Uri.parse(url);
     final isSuccess = uri.path == '/payment/successful';
     final isCancelled = uri.path == '/payment/cancelled';

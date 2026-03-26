@@ -7,12 +7,9 @@ import { WindcaveService } from "./service";
 import { logger } from "firebase-functions";
 import { WindcaveError } from "../utils/windcave.error";
 import FirebaseService from "../firebase/service";
-import {
-  CoffixCreditService,
-  InsufficientCreditError,
-} from "../coffixCredit/service";
+import { InsufficientCreditError } from "../coffixCredit/service";
 import { serializeForJson } from "../utils/serialize";
-import { scheduledAtNZ } from "../utils/nz_time";
+import { ReceiptService } from "../receipt/service";
 
 const router = express.Router();
 
@@ -23,7 +20,7 @@ router.post(
   async (request: AuthenticatedRequest, response: Response) => {
     const firebaseService = new FirebaseService();
     const windcaveService = new WindcaveService();
-    const coffixCreditService = new CoffixCreditService();
+    const receiptService = new ReceiptService();
     const customerId = request.user?.uid;
 
     if (!customerId) {
@@ -75,24 +72,51 @@ router.post(
       });
 
       // handle coffix credit payment
+      // if the payment user is using [coffixCredit] then we need to deduct the credit from the user
       if (validation.data.paymentMethod === "coffixCredit") {
-        await coffixCreditService.deductCredit(customerId, totalAmount);
-
         const duration = validation.data.duration ?? 0;
-        await firebaseService.createTransactionAndMarkOrderPaid({
-          customerId,
-          orderId,
-          amount: totalAmount,
-          duration,
-          orderNumber: orderData.orderNumber,
-        });
 
-        const paidAt = new Date();
+        // Single atomic transaction: deduct credit + create transaction doc + mark order paid
+        const { paidAt, scheduledAt } =
+          await firebaseService.deductCreditAndMarkOrderPaid({
+            customerId,
+            orderId,
+            amount: totalAmount,
+            duration,
+            orderNumber: orderData.orderNumber,
+          });
+
+        // Non-critical path: don't block response
+        void receiptService
+          .createPrintQueue({
+            receiptData: {
+              printerId: storeDoc.printerId,
+              storeName: storeDoc.name,
+              storeAddress: storeDoc.address,
+              orderNumber: orderData.orderNumber,
+              orders: enrichedItems
+                .map((item) => `${item.quantity}x ${item.productName}`)
+                .join("\n"),
+              total: totalAmount,
+              customer: userDoc.firstName,
+              baristaName: "John Doe",
+              duration,
+              paymentMethod: "Coffix Credit",
+            },
+          })
+          .catch((error) => {
+            logger.error("Failed to enqueue receipt print", {
+              orderId,
+              customerId,
+              error,
+            });
+          });
+
         const finalOrderData = {
           ...orderData,
           status: "paid",
           paidAt,
-          scheduledAt: scheduledAtNZ(duration),
+          scheduledAt,
         };
         return response.status(200).json({
           success: true,

@@ -8,7 +8,6 @@ import 'package:coffix_app/features/profile/presentation/pages/personal_info_pag
 import 'package:coffix_app/presentation/atoms/app_button.dart';
 import 'package:coffix_app/presentation/atoms/app_loading.dart';
 import 'package:coffix_app/presentation/atoms/app_notification.dart';
-import 'package:coffix_app/presentation/atoms/app_snackbar.dart';
 import 'package:coffix_app/presentation/atoms/app_text_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';

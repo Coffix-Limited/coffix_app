@@ -16,6 +16,7 @@ export const createReceiptBodySchema = z.object({
   customer: z.string().trim(),
   baristaName: z.string().trim(),
   duration: z.number(),
+  paymentMethod: z.string().trim(),
 });
 
 export type CreateReceiptBodySchema = z.infer<typeof createReceiptBodySchema>;

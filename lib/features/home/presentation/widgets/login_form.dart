@@ -5,10 +5,8 @@ import 'package:coffix_app/core/constants/images.dart';
 import 'package:coffix_app/core/constants/sizes.dart';
 import 'package:coffix_app/core/theme/typography.dart';
 import 'package:coffix_app/features/auth/logic/auth_cubit.dart';
-import 'package:coffix_app/features/home/presentation/widgets/home_action_buttons.dart';
 import 'package:coffix_app/presentation/atoms/app_button.dart';
 import 'package:coffix_app/presentation/atoms/app_field.dart';
-import 'package:coffix_app/presentation/atoms/app_icon.dart';
 import 'package:coffix_app/presentation/atoms/app_icon_button.dart';
 import 'package:coffix_app/presentation/atoms/app_text_button.dart';
 import 'package:flutter/gestures.dart';
@@ -107,12 +105,11 @@ class _LoginFormState extends State<LoginForm> {
                     ),
 
                     // TODO: FIX THIS ONCE FACEBOOK IS ALREADY IMPLEMENTED
-                    AppIconButton.withSvgPath(
-                      AppImages.facebook,
-                      onPressed: () {},
-                      backgroundColor: Colors.white,
-                    ),
-
+                    // AppIconButton.withSvgPath(
+                    //   AppImages.facebook,
+                    //   onPressed: () {},
+                    //   backgroundColor: Colors.white,
+                    // ),
                     if (Platform.isIOS)
                       AppIconButton.withSvgPath(
                         AppImages.apple,

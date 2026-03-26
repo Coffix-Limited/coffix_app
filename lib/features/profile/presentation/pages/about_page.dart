@@ -44,7 +44,11 @@ class AboutView extends StatelessWidget {
       orElse: () => null,
     );
     final global = context.watch<AppCubit>().state.maybeWhen(
-      loaded: (global) => global,
+      loaded: (global, appVersion) => global,
+      orElse: () => null,
+    );
+    final appVersion = context.watch<AppCubit>().state.maybeWhen(
+      loaded: (global, appVersion) => appVersion,
       orElse: () => null,
     );
     return Scaffold(
@@ -75,7 +79,7 @@ class AboutView extends StatelessWidget {
                       children: [
                         _InfoRow(
                           label: 'App version',
-                          value: global?.appVersion ?? '',
+                          value: appVersion ?? '',
                         ),
                         const Divider(height: 1),
                         _InfoRow(

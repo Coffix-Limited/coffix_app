@@ -1,10 +1,7 @@
-import 'package:coffix_app/core/constants/colors.dart';
 import 'package:coffix_app/core/constants/sizes.dart';
 import 'package:coffix_app/features/order/data/model/order.dart';
 import 'package:coffix_app/features/order/presentation/widgets/order_activity_card.dart';
-import 'package:coffix_app/presentation/molecules/status_chip.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 
 class OrderActivity extends StatelessWidget {
   const OrderActivity({super.key, required this.orders, this.maxItems = 3});

@@ -31,17 +31,35 @@ class CartCubit extends Cubit<CartState> {
     }
 
     // 3. merge identical config by cartItemId
-    final index = currentCart.items.indexWhere((item) => item.id == newItem.id);
+    final index =
+        currentCart.items?.indexWhere((item) => item.id == newItem.id) ?? -1;
     if (index == -1) {
       emit(
         state.copyWith(
-          cart: currentCart.copyWith(items: [...currentCart.items, newItem]),
+          cart: currentCart.copyWith(
+            items: [...currentCart.items ?? [], newItem],
+          ),
         ),
       );
       return;
     }
 
-    final CartItem existing = currentCart.items[index];
+    final CartItem existing =
+        currentCart.items?[index] ??
+        CartItem(
+          id: '',
+          storeId: '',
+          productId: '',
+          productName: '',
+          productImageUrl: '',
+          quantity: 0,
+          selectedByGroup: {},
+          basePrice: 0,
+          modifierPriceSnapshot: {},
+          unitTotal: 0,
+          lineTotal: 0,
+          createdAt: DateTime.now(),
+        );
     final int newQuantity = existing.quantity + newItem.quantity;
 
     final updated = existing.copyWith(
@@ -49,7 +67,8 @@ class CartCubit extends Cubit<CartState> {
       lineTotal: existing.unitTotal * newQuantity,
     );
 
-    final updatedItems = [...currentCart.items]..[index] = updated;
+    final List<CartItem> updatedItems = [...currentCart.items ?? []]
+      ..[index] = updated;
 
     emit(state.copyWith(cart: currentCart.copyWith(items: updatedItems)));
   }
@@ -60,22 +79,25 @@ class CartCubit extends Cubit<CartState> {
   }) {
     final Cart? currentCart = state.cart;
     if (currentCart == null) return;
-    final index = currentCart.items.indexWhere((item) => item.id == cartItemId);
+    final index =
+        currentCart.items?.indexWhere((item) => item.id == cartItemId) ?? -1;
     if (index == -1) return;
-    final updatedItems = [...currentCart.items]..[index] = updatedItem;
+    final List<CartItem> updatedItems = [...?currentCart.items]
+      ..[index] = updatedItem;
     emit(state.copyWith(cart: currentCart.copyWith(items: updatedItems)));
   }
 
   void removeProduct({required String cartItemId}) {
     final Cart? currentCart = state.cart;
     if (currentCart == null) return;
-    final newItems = currentCart.items
-        .where((item) => item.id != cartItemId)
-        .toList();
+    final newItems =
+        currentCart.items?.where((item) => item.id != cartItemId) ?? [];
     if (newItems.isEmpty) {
       emit(state.copyWith(cart: null));
     } else {
-      emit(state.copyWith(cart: currentCart.copyWith(items: newItems)));
+      emit(
+        state.copyWith(cart: currentCart.copyWith(items: newItems.toList())),
+      );
     }
   }
 

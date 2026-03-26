@@ -10,12 +10,11 @@ import 'package:coffix_app/features/auth/logic/auth_cubit.dart';
 import 'package:coffix_app/features/home/presentation/pages/home_page.dart';
 import 'package:coffix_app/features/stores/data/model/store.dart';
 import 'package:coffix_app/features/stores/logic/store_cubit.dart';
+import 'package:coffix_app/presentation/atoms/app_cached_network_image.dart';
 import 'package:coffix_app/presentation/atoms/app_clickable.dart';
 import 'package:coffix_app/presentation/atoms/app_icon.dart';
-import 'package:coffix_app/presentation/atoms/app_icon_button.dart';
 import 'package:coffix_app/presentation/atoms/app_notification.dart';
 import 'package:coffix_app/presentation/atoms/app_field.dart';
-import 'package:coffix_app/presentation/molecules/app_back_header.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -97,55 +96,57 @@ class StoreList extends StatelessWidget {
                     updateStore(store.docId);
                   }
                 },
-                child: Opacity(
-                  opacity: isOpen ? 1 : 0.6,
-                  child: Row(
-                    children: [
-                      CircleAvatar(
-                        radius: AppSizes.iconSizeLarge,
-                        backgroundImage: NetworkImage(store.imageUrl ?? ""),
-                      ),
-                      const SizedBox(width: AppSizes.md),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    store.name ?? "",
-                                    style: AppTypography.labelM,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            Text(
-                              store.address ?? "",
-                              style: AppTypography.bodyXS.copyWith(
-                                color: AppColors.black,
-                              ),
-                            ),
-                            Text(
-                              isOpen
-                                  ? "Closes at ${store.todayCloseFormatted() ?? ''}"
-                                  : () {
-                                      final next = store.nextOpeningFormatted();
-                                      return next != null
-                                          ? "Closed. Opens on ${next.day} ${next.time}"
-                                          : "Closed";
-                                    }(),
-                              style: AppTypography.body2XS.copyWith(
-                                color: AppColors.primary,
-                              ),
-                            ),
-                          ],
+                child: Row(
+                  children: [
+                    CircleAvatar(
+                      backgroundColor: Colors.transparent,
+                      radius: AppSizes.iconSizeLarge,
+                      child: ClipOval(
+                        child: AppCachedNetworkImage(
+                          imageUrl: store.imageUrl ?? "",
                         ),
                       ),
-                      const SizedBox(width: AppSizes.md),
-                      if (isOpen) AppIcon.withIconData(Icons.arrow_forward_ios),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(width: AppSizes.md),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  store.name ?? "",
+                                  style: AppTypography.labelM,
+                                ),
+                              ),
+                            ],
+                          ),
+                          Text(
+                            store.address ?? "",
+                            style: AppTypography.bodyXS.copyWith(
+                              color: AppColors.black,
+                            ),
+                          ),
+                          Text(
+                            isOpen
+                                ? "Closes at ${store.todayCloseFormatted() ?? ''}"
+                                : () {
+                                    final next = store.nextOpeningFormatted();
+                                    return next != null
+                                        ? "Closed. Opens on ${next.day} ${next.time}"
+                                        : "Closed";
+                                  }(),
+                            style: AppTypography.body2XS.copyWith(
+                              color: AppColors.primary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: AppSizes.md),
+                    if (isOpen) AppIcon.withIconData(Icons.arrow_forward_ios),
+                  ],
                 ),
               );
             },

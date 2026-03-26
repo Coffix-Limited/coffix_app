@@ -25,9 +25,9 @@ class AppCubit extends Cubit<AppState> {
       final global = results[0] as AppGlobal;
       final packageInfo = results[1] as PackageInfo;
 
-      final appVersion = 'v.${packageInfo.version}+${packageInfo.buildNumber}';
+      final appVersion = '${packageInfo.version}+${packageInfo.buildNumber}';
 
-      emit(AppState.loaded(global: global.copyWith(appVersion: appVersion)));
+      emit(AppState.loaded(global: global, appVersion: appVersion));
     } catch (e) {
       emit(AppState.error(message: e.toString()));
     }

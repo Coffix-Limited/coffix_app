@@ -128,12 +128,12 @@ return error(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  initial,TResult Function()?  loading,TResult Function( AppGlobal global)?  loaded,TResult Function( String message)?  error,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  initial,TResult Function()?  loading,TResult Function( AppGlobal global,  String appVersion)?  loaded,TResult Function( String message)?  error,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Initial() when initial != null:
 return initial();case _Loading() when loading != null:
 return loading();case _Loaded() when loaded != null:
-return loaded(_that.global);case _Error() when error != null:
+return loaded(_that.global,_that.appVersion);case _Error() when error != null:
 return error(_that.message);case _:
   return orElse();
 
@@ -152,12 +152,12 @@ return error(_that.message);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  initial,required TResult Function()  loading,required TResult Function( AppGlobal global)  loaded,required TResult Function( String message)  error,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  initial,required TResult Function()  loading,required TResult Function( AppGlobal global,  String appVersion)  loaded,required TResult Function( String message)  error,}) {final _that = this;
 switch (_that) {
 case _Initial():
 return initial();case _Loading():
 return loading();case _Loaded():
-return loaded(_that.global);case _Error():
+return loaded(_that.global,_that.appVersion);case _Error():
 return error(_that.message);case _:
   throw StateError('Unexpected subclass');
 
@@ -175,12 +175,12 @@ return error(_that.message);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  initial,TResult? Function()?  loading,TResult? Function( AppGlobal global)?  loaded,TResult? Function( String message)?  error,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  initial,TResult? Function()?  loading,TResult? Function( AppGlobal global,  String appVersion)?  loaded,TResult? Function( String message)?  error,}) {final _that = this;
 switch (_that) {
 case _Initial() when initial != null:
 return initial();case _Loading() when loading != null:
 return loading();case _Loaded() when loaded != null:
-return loaded(_that.global);case _Error() when error != null:
+return loaded(_that.global,_that.appVersion);case _Error() when error != null:
 return error(_that.message);case _:
   return null;
 
@@ -257,10 +257,11 @@ String toString() {
 
 
 class _Loaded implements AppState {
-  const _Loaded({required this.global});
+  const _Loaded({required this.global, required this.appVersion});
   
 
  final  AppGlobal global;
+ final  String appVersion;
 
 /// Create a copy of AppState
 /// with the given fields replaced by the non-null parameter values.
@@ -272,16 +273,16 @@ _$LoadedCopyWith<_Loaded> get copyWith => __$LoadedCopyWithImpl<_Loaded>(this, _
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Loaded&&(identical(other.global, global) || other.global == global));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Loaded&&(identical(other.global, global) || other.global == global)&&(identical(other.appVersion, appVersion) || other.appVersion == appVersion));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,global);
+int get hashCode => Object.hash(runtimeType,global,appVersion);
 
 @override
 String toString() {
-  return 'AppState.loaded(global: $global)';
+  return 'AppState.loaded(global: $global, appVersion: $appVersion)';
 }
 
 
@@ -292,7 +293,7 @@ abstract mixin class _$LoadedCopyWith<$Res> implements $AppStateCopyWith<$Res> {
   factory _$LoadedCopyWith(_Loaded value, $Res Function(_Loaded) _then) = __$LoadedCopyWithImpl;
 @useResult
 $Res call({
- AppGlobal global
+ AppGlobal global, String appVersion
 });
 
 
@@ -309,10 +310,11 @@ class __$LoadedCopyWithImpl<$Res>
 
 /// Create a copy of AppState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') $Res call({Object? global = null,}) {
+@pragma('vm:prefer-inline') $Res call({Object? global = null,Object? appVersion = null,}) {
   return _then(_Loaded(
 global: null == global ? _self.global : global // ignore: cast_nullable_to_non_nullable
-as AppGlobal,
+as AppGlobal,appVersion: null == appVersion ? _self.appVersion : appVersion // ignore: cast_nullable_to_non_nullable
+as String,
   ));
 }
 

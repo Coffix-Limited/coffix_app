@@ -52,3 +52,24 @@ class CartHelper {
     return basePrice + extra;
   }
 }
+
+class ParsedVersion {
+  final List<int> numbers; // [major, minor, patch]
+  final int build;
+
+  ParsedVersion(this.numbers, this.build);
+}
+
+ParsedVersion parseVersion(String version) {
+  final parts = version.split('+');
+
+  final numbers = parts[0].split('.').map((e) => int.tryParse(e) ?? 0).toList();
+
+  while (numbers.length < 3) {
+    numbers.add(0);
+  }
+
+  final build = parts.length > 1 ? int.tryParse(parts[1]) ?? 0 : 0;
+
+  return ParsedVersion(numbers, build);
+}

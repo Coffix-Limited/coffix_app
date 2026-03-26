@@ -5,7 +5,6 @@ import 'package:coffix_app/core/errors/auth_exceptions.dart';
 import 'package:coffix_app/core/exceptions/auth_exceptions.dart';
 import 'package:coffix_app/data/repositories/auth_repository.dart';
 import 'package:coffix_app/data/repositories/store_repository.dart';
-import 'package:coffix_app/features/auth/data/model/user.dart';
 import 'package:coffix_app/features/auth/data/model/user_with_store.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
@@ -53,7 +52,7 @@ class AuthCubit extends Cubit<AuthState> {
     }
     return AuthExceptions(
       message: e.message ?? "Unknown error",
-      code: e.code ?? "unknown",
+      code: e.code,
     );
   }
 
@@ -143,7 +142,6 @@ class AuthCubit extends Cubit<AuthState> {
     _userWithStoreSubscription?.cancel();
     _userWithStoreSubscription = stream.listen(
       (AppUserWithStore? user) {
-        print("user: ${user?.user.emailVerified}");
         // if (user?.user.emailVerified != true) {
         //   emit(AuthState.emailNotVerified());
         //   return;

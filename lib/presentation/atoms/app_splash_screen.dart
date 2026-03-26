@@ -13,8 +13,8 @@ class AppSplashScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final global = context.watch<AppCubit>().state.maybeWhen(
-      loaded: (global) => global,
+    final appVersion = context.watch<AppCubit>().state.maybeWhen(
+      loaded: (global, appVersion) => appVersion,
       orElse: () => null,
     );
 
@@ -38,9 +38,9 @@ class AppSplashScreen extends StatelessWidget {
                   AppImages.logo,
                   size: AppSizes.iconSizeXXLarge,
                 ),
-                if (global?.appVersion != null)
+                if (appVersion != null)
                   Text(
-                    "Version ${global?.appVersion}",
+                    "Version $appVersion",
                     textAlign: TextAlign.center,
                     style: AppTypography.bodyXS.copyWith(
                       color: AppColors.white,

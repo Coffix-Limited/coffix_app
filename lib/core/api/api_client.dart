@@ -1,12 +1,9 @@
 import 'dart:convert';
 import 'dart:developer';
-import 'dart:io';
 
 import 'package:coffix_app/core/api/model/endpoints.dart';
 import 'package:coffix_app/core/api/model/api_exceptions.dart';
 import 'package:coffix_app/core/api/model/api_response.dart';
-import 'package:coffix_app/core/di/service_locator.dart';
-import 'package:coffix_app/data/repositories/auth_repository.dart';
 import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 // import 'package:go_gym/client/model/api_interceptors.dart';

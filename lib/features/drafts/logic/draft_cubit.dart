@@ -1,6 +1,6 @@
 import 'package:bloc/bloc.dart';
 import 'package:coffix_app/features/cart/data/model/cart.dart';
-import 'package:coffix_app/features/drafts/data/model/draft_item.dart';
+import 'package:coffix_app/features/drafts/data/model/draft.dart';
 import 'package:coffix_app/features/drafts/domain/draft_repository.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
@@ -13,13 +13,13 @@ class DraftCubit extends Cubit<DraftState> {
     : _draftRepository = draftRepository,
       super(DraftState.initial());
 
-  void createDraft({required Cart cart}) async {
-    emit(DraftState.loading());
+  Future<void> createDraft({required Cart cart}) async {
+    emit(DraftState.loading(drafts: state.drafts));
     try {
       await _draftRepository.createDraft(cart: cart);
-      emit(DraftState.success());
+      await getDrafts();
     } catch (e) {
-      emit(DraftState.error(message: e.toString()));
+      emit(DraftState.error(message: e.toString(), drafts: state.drafts));
     }
   }
 

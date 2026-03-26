@@ -1,6 +1,8 @@
 import { firestore, printerFirestore } from "../config/firebaseAdmin";
 import { generateOrderNumber } from "../utils/generate_order_number";
 import { createOrderBodySchema, CreateOrderBodySchema } from "./schema";
+import { InsufficientCreditError } from "../coffixCredit/service";
+import { scheduledAtNZ } from "../utils/nz_time";
 
 class FirebaseService {
   /**
@@ -112,6 +114,67 @@ class FirebaseService {
     await batch.commit();
 
     return transactionRef.id;
+  }
+
+  async deductCreditAndMarkOrderPaid({
+    customerId,
+    orderId,
+    amount,
+    duration,
+    orderNumber,
+  }: {
+    customerId: string;
+    orderId: string;
+    amount: number;
+    duration: number;
+    orderNumber: string;
+  }): Promise<{ paidAt: Date; scheduledAt: Date }> {
+    const customerRef = firestore.collection("customers").doc(customerId);
+    const orderRef = firestore.collection("orders").doc(orderId);
+    const transactionRef = firestore.collection("transactions").doc();
+
+    const paidAt = new Date();
+    const scheduledAt = scheduledAtNZ(duration);
+
+    await firestore.runTransaction(async (tx) => {
+      // READ phase (all reads before writes — Firestore requirement)
+      const customerSnap = await tx.get(customerRef);
+
+      if (!customerSnap.exists) {
+        throw new Error("Customer not found");
+      }
+
+      const data = customerSnap.data();
+      const creditAvailable = (data?.creditAvailable ?? 0) as number;
+
+      if (creditAvailable < amount) {
+        throw new InsufficientCreditError(creditAvailable, amount);
+      }
+
+      // WRITE phase
+      tx.update(customerRef, { creditAvailable: creditAvailable - amount });
+
+      tx.set(transactionRef, {
+        docId: transactionRef.id,
+        customerId,
+        orderId,
+        amount,
+        status: "approved",
+        createdAt: paidAt,
+        paymentTime: paidAt,
+        paymentMethod: "coffixCredit",
+        sessionId: "coffixCredit",
+        orderNumber,
+      });
+
+      tx.set(
+        orderRef,
+        { status: "paid", paidAt, scheduledAt },
+        { merge: true },
+      );
+    });
+
+    return { paidAt, scheduledAt };
   }
 
   // Transaction Status	Meaning

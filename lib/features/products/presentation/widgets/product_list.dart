@@ -7,6 +7,7 @@ import 'package:coffix_app/features/products/data/model/product_with_category.da
 import 'package:coffix_app/features/products/logic/product_cubit.dart';
 import 'package:coffix_app/features/products/logic/product_modifier_cubit.dart';
 import 'package:coffix_app/features/products/presentation/pages/add_product_page.dart';
+import 'package:coffix_app/presentation/atoms/app_cached_network_image.dart';
 import 'package:coffix_app/presentation/atoms/app_card.dart';
 import 'package:coffix_app/presentation/atoms/app_clickable.dart';
 import 'package:coffix_app/presentation/atoms/app_field.dart';
@@ -55,43 +56,38 @@ class ProductList extends StatelessWidget {
           const SizedBox(height: AppSizes.md),
 
           // product categories
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              SizedBox(
-                height: AppSizes.chipSizeSmall,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  shrinkWrap: true,
-                  itemCount: allCategories.length,
-                  separatorBuilder: (_, index) =>
-                      const SizedBox(width: AppSizes.md),
-                  itemBuilder: (context, index) {
-                    final category = allCategories[index];
-                    return AppClickable(
-                      showSplash: false,
-                      onPressed: () {
-                        context.read<ProductCubit>().filterProductsByCategory(
-                          category.name!,
-                        );
-                      },
-                      child: AppCard(
-                        borderColor: categoryFilter == category.name
-                            ? AppColors.primary
-                            : AppColors.white,
-                        color: AppColors.lightGrey,
-                        child: Text(
-                          category.name ?? "",
-                          style: AppTypography.labelS,
-                        ),
-                      ),
+          SizedBox(
+            height: AppSizes.chipSizeSmall,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              shrinkWrap: true,
+              itemCount: allCategories.length,
+              separatorBuilder: (_, index) =>
+                  const SizedBox(width: AppSizes.md),
+              itemBuilder: (context, index) {
+                final category = allCategories[index];
+                return AppClickable(
+                  showSplash: false,
+                  onPressed: () {
+                    context.read<ProductCubit>().filterProductsByCategory(
+                      category.name!,
                     );
                   },
-                ),
-              ),
-              const SizedBox(height: AppSizes.md),
-            ],
+                  child: AppCard(
+                    borderColor: categoryFilter == category.name
+                        ? AppColors.primary
+                        : AppColors.white,
+                    color: AppColors.lightGrey,
+                    child: Text(
+                      category.name ?? "",
+                      style: AppTypography.labelS,
+                    ),
+                  ),
+                );
+              },
+            ),
           ),
+          const SizedBox(height: AppSizes.md),
           const SizedBox(height: AppSizes.lg),
           ListView.separated(
             padding: EdgeInsets.zero,
@@ -112,8 +108,8 @@ class ProductList extends StatelessWidget {
                   children: [
                     ClipRRect(
                       borderRadius: BorderRadius.circular(AppSizes.md),
-                      child: Image.network(
-                        product.product.imageUrl ?? "",
+                      child: AppCachedNetworkImage(
+                        imageUrl: product.product.imageUrl ?? "",
                         width: AppSizes.iconSizeXLarge,
                         height: AppSizes.iconSizeXLarge,
                         fit: BoxFit.cover,

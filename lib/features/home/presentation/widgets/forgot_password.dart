@@ -2,15 +2,12 @@ import 'package:coffix_app/core/constants/colors.dart';
 import 'package:coffix_app/core/constants/sizes.dart';
 import 'package:coffix_app/core/theme/typography.dart';
 import 'package:coffix_app/features/auth/logic/auth_cubit.dart';
-import 'package:coffix_app/features/home/presentation/pages/home_page.dart';
 import 'package:coffix_app/presentation/atoms/app_button.dart';
 import 'package:coffix_app/presentation/atoms/app_field.dart';
-import 'package:coffix_app/presentation/atoms/app_text_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
-import 'package:go_router/go_router.dart';
 
 class ForgotPassword extends StatefulWidget {
   const ForgotPassword({super.key});

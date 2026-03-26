@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:coffix_app/core/constants/sizes.dart';
 import 'package:coffix_app/core/di/service_locator.dart';
 import 'package:coffix_app/features/cart/logic/cart_cubit.dart';
@@ -67,7 +65,6 @@ class _OrderViewState extends State<OrderView> {
           }
 
           final orders = state.orders;
-          log(orders.map((order) => order.toJson()).toString());
 
           if (orders.isEmpty) {
             return Padding(

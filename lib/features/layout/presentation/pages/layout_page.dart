@@ -1,18 +1,14 @@
 import 'package:coffix_app/core/constants/colors.dart';
 import 'package:coffix_app/core/constants/images.dart';
-import 'package:coffix_app/core/constants/sizes.dart';
 import 'package:coffix_app/core/di/service_locator.dart';
 import 'package:coffix_app/core/theme/typography.dart';
 import 'package:coffix_app/features/app/logic/app_cubit.dart';
 import 'package:coffix_app/features/auth/logic/auth_cubit.dart';
-import 'package:coffix_app/features/auth/presentation/pages/verify_email_page.dart';
 import 'package:coffix_app/features/cart/logic/cart_cubit.dart';
 import 'package:coffix_app/features/credit/logic/credit_cubit.dart';
 import 'package:coffix_app/features/modifier/logic/modifier_cubit.dart';
 import 'package:coffix_app/features/products/logic/product_cubit.dart';
 import 'package:coffix_app/features/stores/logic/store_cubit.dart';
-import 'package:coffix_app/presentation/atoms/app_icon.dart';
-import 'package:coffix_app/presentation/atoms/app_snackbar.dart';
 import 'package:coffix_app/presentation/atoms/app_splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -110,11 +106,6 @@ class _LayoutViewState extends State<LayoutView> {
   @override
   Widget build(BuildContext context) {
     final location = GoRouterState.of(context).uri.path;
-    final user = context.watch<AuthCubit>().state.maybeWhen(
-      authenticated: (user) => user.user,
-      orElse: () => null,
-    );
-    final isEmailVerified = user?.emailVerified ?? false;
 
     const hideTabPages = ['/payment', '/credit-topup-payment'];
     final isHidden = hideTabPages.contains(location);
@@ -192,7 +183,7 @@ class _LayoutViewState extends State<LayoutView> {
                                         .state
                                         .cart
                                         ?.items
-                                        .length ??
+                                        ?.length ??
                                     0;
                                 return BottomNavigationBarItem(
                                   icon: tab == LayoutPageTab.order

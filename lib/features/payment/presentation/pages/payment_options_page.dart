@@ -50,7 +50,7 @@ class _PaymentOptionsPageViewState extends State<PaymentOptionsPageView> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final total =
-        context.watch<CartCubit>().state.cart?.items.fold(
+        context.watch<CartCubit>().state.cart?.items?.fold(
           0.0,
           (sum, item) => sum + item.lineTotal,
         ) ??
@@ -209,17 +209,20 @@ class _PaymentOptionsPageViewState extends State<PaymentOptionsPageView> {
                           onPressed: () {
                             if (cart == null) return;
                             final request = PaymentRequest(
-                              storeId: cart.storeId,
-                              items: cart.items
-                                  .map(
-                                    (item) => PaymentItem(
-                                      productId: item.productId,
-                                      quantity: item.quantity,
-                                      selectedModifiers: item.selectedByGroup,
-                                    ),
-                                  )
-                                  .toList(),
-                              duration: cart.duration,
+                              storeId: cart.storeId ?? "",
+                              items:
+                                  cart.items
+                                      ?.map(
+                                        (item) => PaymentItem(
+                                          productId: item.productId,
+                                          quantity: item.quantity,
+                                          selectedModifiers:
+                                              item.selectedByGroup,
+                                        ),
+                                      )
+                                      .toList() ??
+                                  [],
+                              duration: cart.duration ?? 0,
                               paymentMethod:
                                   cart.paymentMethod ??
                                   PaymentMethod.coffixCredit,

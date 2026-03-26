@@ -254,6 +254,7 @@ export class WebhookService {
           customer: transaction.customer.firstName ?? "",
           baristaName: "John Doe",
           duration: orderDoc?.duration ?? 0,
+          paymentMethod: "Credit Card",
         },
       });
       return;

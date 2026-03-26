@@ -11,6 +11,7 @@ import 'package:coffix_app/features/modifier/logic/modifier_cubit.dart';
 import 'package:coffix_app/features/products/logic/product_modifier_cubit.dart';
 import 'package:coffix_app/features/modifier/presentation/pages/customize_product_page.dart';
 import 'package:coffix_app/presentation/atoms/app_button.dart';
+import 'package:coffix_app/presentation/atoms/app_cached_network_image.dart';
 import 'package:coffix_app/presentation/atoms/app_card.dart';
 import 'package:coffix_app/presentation/atoms/app_clickable.dart';
 import 'package:coffix_app/presentation/atoms/app_icon.dart';
@@ -128,15 +129,12 @@ class _AddProductViewState extends State<AddProductView> {
               children: [
                 widget.product.imageUrl != null &&
                         widget.product.imageUrl!.isNotEmpty
-                    ? ClipRRect(
-                        borderRadius: BorderRadiusGeometry.circular(
-                          AppSizes.md,
-                        ),
-                        child: Image.network(
-                          widget.product.imageUrl!,
-                          fit: BoxFit.fill,
-                          height: 300,
+                    ? ClipOval(
+                        child: AppCachedNetworkImage(
+                          imageUrl: widget.product.imageUrl!,
                           width: 300,
+                          height: 300,
+                          fit: BoxFit.fill,
                         ),
                       )
                     : Container(

@@ -1,5 +1,4 @@
 import 'package:coffix_app/core/constants/colors.dart';
-import 'package:coffix_app/core/constants/sizes.dart';
 import 'package:coffix_app/core/extensions/price_extensions.dart';
 import 'package:coffix_app/core/theme/typography.dart';
 import 'package:flutter/material.dart';
