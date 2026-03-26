@@ -234,9 +234,11 @@ class _CreditViewState extends State<CreditView> {
                     Spacer(),
                     AppButton(
                       disabled:
-                          amount == null ||
-                          amount.isEmpty ||
-                          double.parse(amount ?? '0') < (global?.minTopUp ?? 0),
+                          (showTopUpField &&
+                          (amount == null ||
+                              amount.isEmpty ||
+                              double.parse(amount ?? '0') <
+                                  (global?.minTopUp ?? 0))),
                       onPressed: () {
                         if (showTopUpField &&
                             formKey.currentState!.validate()) {
