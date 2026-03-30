@@ -1,8 +1,0 @@
-interface:
-  display_name: "Create Plan"
-  short_description: "Draft concise, trackable execution plans."
-  default_prompt: "Use $create-plan to draft a concise execution plan with clear steps and statuses."
-
-policy:
-  allow_implicit_invocation: true
-

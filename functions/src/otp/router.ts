@@ -76,9 +76,9 @@ otpRouter.post(
 
       // Send email AFTER db write (or before—either is fine; this is consistent w/ single active OTP)
       const payload = {
-        from: "VentVestPH <onboarding@resend.dev>",
-        // to: [email],
-        to: ["espajunarjr@gmail.com"],
+        from: "Coffix <noreply@coffix.co.nz>",
+        to: [email],
+        // to: ["espajunarjr@gmail.com"],
         subject: "Your OTP Code",
         template: {
           id: RESEND_TEMPLATE_ID,
