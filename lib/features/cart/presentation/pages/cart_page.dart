@@ -12,7 +12,6 @@ import 'package:coffix_app/features/order/logic/order_cubit.dart';
 import 'package:coffix_app/features/order/presentation/pages/schedule_order_page.dart';
 import 'package:coffix_app/features/order/presentation/widgets/order_item.dart';
 import 'package:coffix_app/features/products/data/model/product.dart';
-import 'package:coffix_app/features/products/data/model/product_with_category.dart';
 import 'package:coffix_app/features/products/logic/product_cubit.dart';
 import 'package:coffix_app/features/products/presentation/pages/add_product_page.dart';
 import 'package:coffix_app/presentation/atoms/app_button.dart';
@@ -110,8 +109,9 @@ class _CartViewState extends State<CartView> {
                               itemBuilder: (context, index) {
                                 final CartItem? cartItem =
                                     state.cart?.items?[index];
-                                if (cartItem == null)
+                                if (cartItem == null) {
                                   return const SizedBox.shrink();
+                                }
 
                                 return OrderItemRow(
                                   cartItem: cartItem,

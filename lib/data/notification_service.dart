@@ -3,7 +3,6 @@ import 'dart:io';
 
 import 'package:coffix_app/core/di/service_locator.dart';
 import 'package:coffix_app/features/home/presentation/pages/home_page.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 

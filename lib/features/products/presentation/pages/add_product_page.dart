@@ -12,7 +12,6 @@ import 'package:coffix_app/features/products/logic/product_modifier_cubit.dart';
 import 'package:coffix_app/features/modifier/presentation/pages/customize_product_page.dart';
 import 'package:coffix_app/presentation/atoms/app_button.dart';
 import 'package:coffix_app/presentation/atoms/app_cached_network_image.dart';
-import 'package:coffix_app/presentation/atoms/app_card.dart';
 import 'package:coffix_app/presentation/atoms/app_clickable.dart';
 import 'package:coffix_app/presentation/atoms/app_icon.dart';
 import 'package:coffix_app/presentation/molecules/app_back_header.dart';

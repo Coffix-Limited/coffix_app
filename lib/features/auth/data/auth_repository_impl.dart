@@ -1,12 +1,10 @@
 import 'dart:convert';
 import 'dart:developer';
-import 'dart:io';
 import 'dart:math' hide log;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:coffix_app/core/api/api_client.dart';
 import 'package:coffix_app/core/api/model/endpoints.dart';
-import 'package:coffix_app/core/constants/constants.dart';
 import 'package:coffix_app/core/errors/auth_exceptions.dart';
 import 'package:coffix_app/core/utils/time_utils.dart';
 import 'package:coffix_app/data/repositories/auth_repository.dart';
@@ -15,7 +13,6 @@ import 'package:coffix_app/features/auth/data/model/user.dart';
 import 'package:crypto/crypto.dart';
 import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:http/http.dart' as http;

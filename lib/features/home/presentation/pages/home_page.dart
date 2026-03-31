@@ -2,7 +2,6 @@ import 'package:coffix_app/core/constants/colors.dart';
 import 'package:coffix_app/core/constants/images.dart';
 import 'package:coffix_app/core/constants/sizes.dart';
 import 'package:coffix_app/core/di/service_locator.dart';
-import 'package:coffix_app/data/repositories/auth_repository.dart';
 import 'package:coffix_app/features/app/logic/app_cubit.dart';
 import 'package:coffix_app/features/auth/data/model/user_with_store.dart';
 import 'package:coffix_app/features/auth/logic/auth_cubit.dart';
@@ -18,7 +17,6 @@ import 'package:coffix_app/features/menu/presentation/pages/menu_page.dart';
 import 'package:coffix_app/features/modifier/logic/modifier_cubit.dart';
 import 'package:coffix_app/features/order/logic/order_cubit.dart';
 import 'package:coffix_app/features/order/presentation/pages/order_page.dart';
-import 'package:coffix_app/features/order/presentation/widgets/order_card.dart';
 import 'package:coffix_app/features/products/logic/product_cubit.dart';
 import 'package:coffix_app/features/profile/presentation/pages/personal_info_page.dart';
 import 'package:coffix_app/features/profile/presentation/pages/profile_page.dart';
@@ -292,7 +290,7 @@ class _HomeViewState extends State<HomeView> {
 }
 
 class _HomeContent extends StatelessWidget {
-  const _HomeContent({required this.user, super.key});
+  const _HomeContent({required this.user});
 
   final AppUserWithStore user;
 

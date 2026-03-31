@@ -1,4 +1,3 @@
-import 'package:coffix_app/core/constants/sizes.dart';
 import 'package:flutter/material.dart';
 
 class AppLayoutBody extends StatelessWidget {

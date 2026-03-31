@@ -1,12 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:coffix_app/core/constants/constants.dart';
 import 'package:coffix_app/core/utils/time_utils.dart';
 import 'package:coffix_app/domain/firestore_service.dart';
 import 'package:coffix_app/features/cart/data/model/cart.dart';
 import 'package:coffix_app/features/drafts/data/model/draft.dart';
 import 'package:coffix_app/features/drafts/domain/draft_repository.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 
 class DraftRepositoryImpl implements DraftRepository {
   final FirebaseFirestore _firestore = FirestoreService.instance;

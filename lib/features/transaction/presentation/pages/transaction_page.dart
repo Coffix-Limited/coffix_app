@@ -6,27 +6,19 @@ import 'package:coffix_app/core/extensions/order_extensions.dart';
 import 'package:coffix_app/core/extensions/payment_method_extensions.dart';
 import 'package:coffix_app/core/extensions/price_extensions.dart';
 import 'package:coffix_app/core/theme/typography.dart';
-import 'package:coffix_app/core/utils/time_utils.dart';
-import 'package:coffix_app/features/cart/data/model/cart_item.dart';
-import 'package:coffix_app/features/cart/domain/helper.dart';
 import 'package:coffix_app/features/cart/logic/cart_cubit.dart';
-import 'package:coffix_app/features/cart/presentation/pages/cart_page.dart';
-import 'package:coffix_app/features/modifier/data/model/modifier.dart';
 import 'package:coffix_app/features/order/data/model/order.dart';
 import 'package:coffix_app/features/order/logic/order_cubit.dart';
 import 'package:coffix_app/features/products/logic/product_cubit.dart';
 import 'package:coffix_app/features/stores/logic/store_cubit.dart';
 import 'package:coffix_app/features/transaction/data/model/transaction.dart';
 import 'package:coffix_app/features/transaction/logic/transaction_cubit.dart';
-import 'package:coffix_app/presentation/atoms/app_button.dart';
-import 'package:coffix_app/presentation/atoms/app_notification.dart';
 import 'package:coffix_app/presentation/molecules/app_back_header.dart';
 import 'package:coffix_app/presentation/molecules/empty_state.dart';
 import 'package:coffix_app/presentation/molecules/status_chip.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
 
 (String, Color) _transactionStatusStyle(TransactionStatus? s) {
   return switch (s) {

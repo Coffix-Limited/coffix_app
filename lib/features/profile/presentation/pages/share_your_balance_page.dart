@@ -6,7 +6,6 @@ import 'package:coffix_app/features/auth/logic/auth_cubit.dart';
 import 'package:coffix_app/presentation/atoms/app_button.dart';
 import 'package:coffix_app/presentation/atoms/app_card.dart';
 import 'package:coffix_app/presentation/atoms/app_field.dart';
-import 'package:coffix_app/presentation/atoms/app_money_field.dart';
 import 'package:coffix_app/presentation/molecules/app_back_header.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -132,8 +131,9 @@ class _ShareYourBalanceViewState extends State<ShareYourBalanceView> {
                       validators: [
                         (v) {
                           final n = double.tryParse(v ?? '');
-                          if (n == null || n <= 0 || n < 15)
+                          if (n == null || n <= 0 || n < 15) {
                             return 'Enter a valid amount';
+                          }
                           if (n > balance) return 'Amount exceeds balance';
                           return null;
                         },

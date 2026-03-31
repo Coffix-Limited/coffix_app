@@ -1,13 +1,9 @@
-import 'dart:convert';
-import 'dart:developer';
 
 import 'package:coffix_app/core/api/api_client.dart';
-import 'package:coffix_app/core/api/model/endpoints.dart';
 import 'package:coffix_app/data/repositories/payment_repository.dart';
 import 'package:coffix_app/features/payment/data/model/payment.dart';
 import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:http/http.dart' as http;
 
 class PaymentRepositoryImpl extends ApiClient implements PaymentRepository {
   final FirebaseAuth _auth = FirebaseAuth.instance;

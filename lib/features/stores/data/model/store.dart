@@ -102,9 +102,9 @@ class Store {
     var hour = int.parse(parts[0]);
     final minute = int.parse(parts[1]);
     final period = hour < 12 ? 'am' : 'pm';
-    if (hour == 0)
+    if (hour == 0) {
       hour = 12;
-    else if (hour > 12)
+    } else if (hour > 12)
       hour -= 12;
     final minStr = minute == 0 ? '' : ':${minute.toString().padLeft(2, '0')}';
     return '$hour$minStr$period';

@@ -1,7 +1,6 @@
 import 'package:coffix_app/core/constants/colors.dart';
 import 'package:coffix_app/core/constants/sizes.dart';
 import 'package:coffix_app/presentation/atoms/app_clickable.dart';
-import 'package:coffix_app/presentation/atoms/app_icon.dart';
 import 'package:flutter/material.dart';
 
 class ProfileTile extends StatelessWidget {
