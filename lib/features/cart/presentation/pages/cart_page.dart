@@ -12,6 +12,7 @@ import 'package:coffix_app/features/order/logic/order_cubit.dart';
 import 'package:coffix_app/features/order/presentation/pages/schedule_order_page.dart';
 import 'package:coffix_app/features/order/presentation/widgets/order_item.dart';
 import 'package:coffix_app/features/products/data/model/product.dart';
+import 'package:coffix_app/features/products/data/model/product_with_category.dart';
 import 'package:coffix_app/features/products/logic/product_cubit.dart';
 import 'package:coffix_app/features/products/presentation/pages/add_product_page.dart';
 import 'package:coffix_app/presentation/atoms/app_button.dart';
@@ -56,6 +57,8 @@ class _CartViewState extends State<CartView> {
       orElse: () => null,
     );
     final storeIsOpen = store?.isOpenAt() ?? false;
+    final productCubit = context.watch<ProductCubit>();
+    final products = productCubit.allProducts;
 
     return Scaffold(
       appBar: AppBackHeader(
@@ -109,19 +112,7 @@ class _CartViewState extends State<CartView> {
                                     state.cart?.items?[index];
                                 if (cartItem == null)
                                   return const SizedBox.shrink();
-                                final Product? selectedProduct = context
-                                    .watch<ProductCubit>()
-                                    .state
-                                    .maybeWhen(
-                                      loaded: (products, _, _) => products
-                                          .firstWhereOrNull(
-                                            (p) =>
-                                                p.product.docId ==
-                                                cartItem.productId,
-                                          )
-                                          ?.product,
-                                      orElse: () => null,
-                                    );
+
                                 return OrderItemRow(
                                   cartItem: cartItem,
                                   price: cartItem.unitTotal,
@@ -132,6 +123,16 @@ class _CartViewState extends State<CartView> {
                                     );
                                   },
                                   onEdit: () {
+                                    final Product? selectedProduct = products
+                                        .firstWhereOrNull(
+                                          (p) =>
+                                              p.product.docId ==
+                                              cartItem.productId,
+                                        )
+                                        ?.product;
+                                    print(products.map((e) => e.product.docId));
+                                    print(cartItem.productId);
+                                    print(selectedProduct);
                                     if (selectedProduct == null) return;
                                     context.pushNamed(
                                       AddProductPage.route,
@@ -205,6 +206,7 @@ class _CartViewState extends State<CartView> {
                                   context,
                                   'Draft saved successfully',
                                 );
+                                context.read<CartCubit>().resetCart();
                                 context.goNamed(DraftsPage.route);
                               }
                             },

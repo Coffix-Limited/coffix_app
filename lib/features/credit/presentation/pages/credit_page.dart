@@ -62,11 +62,17 @@ class _CreditViewState extends State<CreditView> {
 
   @override
   Widget build(BuildContext context) {
-    final amount = formKey.currentState?.fields['amount']?.value;
     final global = context.watch<AppCubit>().state.maybeWhen(
       loaded: (global, appVersion) => global,
       orElse: () => null,
     );
+    final minTopUp = global?.minTopUp?.toStringAsFixed(0);
+    final amount = formKey.currentState?.fields['amount']?.value ?? minTopUp;
+
+    final bool minTopUpNotReached =
+        amount != null &&
+        amount.isNotEmpty &&
+        double.parse(amount) < double.parse(minTopUp ?? '0');
 
     return Scaffold(
       appBar: AppBackHeader(
@@ -80,6 +86,7 @@ class _CreditViewState extends State<CreditView> {
 
       body: FormBuilder(
         key: formKey,
+        initialValue: {"amount": minTopUp},
         onChanged: () {
           setState(() {
             formKey.currentState?.save();
@@ -197,7 +204,7 @@ class _CreditViewState extends State<CreditView> {
                         child: Column(
                           children: [
                             Text(
-                              "Please enter the amount you wish to TopUp. Minimum top up is \$${global?.minTopUp?.toStringAsFixed(2)}",
+                              "Please enter the amount you wish to TopUp. Minimum top up is \$${global?.minTopUp?.toStringAsFixed(0)}",
                               textAlign: TextAlign.center,
                             ),
                             SizedBox(height: AppSizes.md),
@@ -223,10 +230,11 @@ class _CreditViewState extends State<CreditView> {
                             //   ],
                             // ),
                             SizedBox(height: AppSizes.sm),
-                            if (amount != null && amount.isNotEmpty)
-                              Text(
-                                "You will receive: \$${calculateTopUp(double.parse(amount ?? '0'), global ?? AppGlobal()).toStringAsFixed(2)} Coffix Credits",
-                              ),
+                            !minTopUpNotReached
+                                ? Text(
+                                    "You will receive: \$${calculateTopUp(double.parse(amount ?? '0'), global ?? AppGlobal()).toStringAsFixed(2)} Coffix Credits",
+                                  )
+                                : Text("Minimum top up is \$$minTopUp"),
                           ],
                         ),
                       ),

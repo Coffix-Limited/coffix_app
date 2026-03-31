@@ -55,7 +55,12 @@ class _StoresViewState extends State<StoresView> {
             initial: () => const SizedBox.shrink(),
             loading: () => AppLoading(),
             loaded: (stores) {
-              return StoreList(stores: stores);
+              return StoreList(
+                stores: stores.where((store) {
+                  final next = store.nextOpeningFormatted();
+                  return next != null;
+                }).toList(),
+              );
             },
             error: (message) =>
                 AppError(title: "Failed getting store", subtitle: message),

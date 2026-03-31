@@ -27,6 +27,7 @@ import 'package:coffix_app/presentation/molecules/app_back_header.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class ProfilePage extends StatelessWidget {
   static String route = 'profile_route';
@@ -217,7 +218,11 @@ class ProfileView extends StatelessWidget {
             const SizedBox(height: AppSizes.xxxl),
             Center(
               child: AppClickable(
-                onPressed: () {},
+                onPressed: () async {
+                  await launchUrl(
+                    Uri.parse('https://www.coffix.co.nz/term-of-use-privacy'),
+                  );
+                },
                 child: Padding(
                   padding: const EdgeInsets.symmetric(vertical: AppSizes.sm),
                   child: Text(

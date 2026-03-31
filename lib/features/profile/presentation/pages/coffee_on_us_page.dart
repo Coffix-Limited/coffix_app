@@ -65,7 +65,7 @@ class _CoffeeOnUsViewState extends State<CoffeeOnUsView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBackHeader(title: 'Coffee On Us'),
+      appBar: AppBackHeader(title: 'Coffee On Us', showLocation: false),
       body: SingleChildScrollView(
         padding: AppSizes.defaultPadding,
         child: Column(

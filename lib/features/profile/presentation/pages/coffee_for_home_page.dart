@@ -29,7 +29,7 @@ class _CoffeeForHomeViewState extends State<CoffeeForHomeView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBackHeader(title: 'Coffee For Home'),
+      appBar: AppBackHeader(title: 'Coffee For Home', showLocation: false),
       body: widget.url.isNotEmpty
           ? InAppWebView(
               initialUrlRequest: URLRequest(url: WebUri(widget.url)),

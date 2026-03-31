@@ -31,7 +31,7 @@ class QrIdView extends StatelessWidget {
     final qrId = userWithStore?.user.qrId;
 
     return Scaffold(
-      appBar: const AppBackHeader(title: "", showLocation: false),
+      appBar: const AppBackHeader(title: "Coffix VIP ID", showLocation: false),
 
       body: qrId == null || qrId.isEmpty
           ? Center(
@@ -45,7 +45,6 @@ class QrIdView extends StatelessWidget {
               child: Column(
                 children: [
                   const SizedBox(height: AppSizes.xxl),
-                  Text("Coffix VIP ID", style: AppTypography.headlineXl),
                   Text(
                     "Please show your VIP ID to your barista",
                     style: AppTypography.bodyM,
@@ -63,7 +62,7 @@ class QrIdView extends StatelessWidget {
                           color: AppColors.background,
                           boxShadow: [AppColors.shadow],
                           child: Text(
-                            userWithStore?.user.nickName ?? "",
+                            "${userWithStore?.user.firstName} ${userWithStore?.user.lastName}",
                             textAlign: TextAlign.center,
                             style: AppTypography.bodyS.copyWith(
                               fontWeight: FontWeight.bold,

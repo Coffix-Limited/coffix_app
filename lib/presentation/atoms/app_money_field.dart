@@ -8,8 +8,15 @@ import 'package:form_builder_validators/form_builder_validators.dart';
 
 class AppMoneyField extends StatelessWidget {
   final String name;
-  const AppMoneyField({super.key, required this.name, this.validators});
+  const AppMoneyField({
+    super.key,
+    required this.name,
+    this.validators,
+    this.initialValue,
+  });
   final List<FormFieldValidator<String>>? validators;
+
+  final String? initialValue;
 
   @override
   Widget build(BuildContext context) {
@@ -21,6 +28,7 @@ class AppMoneyField extends StatelessWidget {
         SizedBox(
           width: 140,
           child: FormBuilderTextField(
+            initialValue: initialValue,
             name: name,
             keyboardType: TextInputType.number,
             decoration: InputDecoration(

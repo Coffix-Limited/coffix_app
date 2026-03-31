@@ -149,13 +149,19 @@ class _TransactionCardState extends State<_TransactionCard> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      widget.transaction.type == "topup"
-                          ? "TopUp"
-                          : "#${widget.transaction.orderNumber?.last6 ?? "N/A"}",
-                      style: theme.textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
+                    Row(
+                      children: [
+                        Text(
+                          widget.transaction.type == "topup"
+                              ? "TopUp"
+                              : "#${widget.transaction.orderNumber?.last6 ?? "N/A"}",
+                          style: theme.textTheme.titleSmall?.copyWith(
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(width: AppSizes.sm),
+                        StatusChip(label: statusLabel, color: statusColor),
+                      ],
                     ),
                     const SizedBox(height: AppSizes.xs),
                     if (widget.transaction.createdAt != null)
@@ -178,27 +184,16 @@ class _TransactionCardState extends State<_TransactionCard> {
                         ) ??
                         0.00.toCurrencySuperscript(style: AppTypography.titleS),
                   ),
+                  if (widget.transaction.paymentMethod != null)
+                    Text(
+                      'via ${widget.transaction.paymentMethod?.label ?? '—'}',
+                      style: theme.textTheme.bodySmall,
+                    ),
                 ],
               ),
             ],
           ),
-          Row(
-            children: [
-              Expanded(
-                child: Row(
-                  children: [
-                    StatusChip(label: statusLabel, color: statusColor),
-                    const SizedBox(width: AppSizes.sm),
-                    if (widget.transaction.paymentMethod != null)
-                      Text(
-                        'via ${widget.transaction.paymentMethod?.label ?? '—'}',
-                        style: theme.textTheme.bodySmall,
-                      ),
-                  ],
-                ),
-              ),
-            ],
-          ),
+
           if (order?.items != null && order!.items!.isNotEmpty) ...[
             const SizedBox(height: AppSizes.sm),
             const Divider(height: 1),

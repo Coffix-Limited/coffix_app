@@ -14,22 +14,26 @@ class TierCard extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text.rich(
-          TextSpan(
-            children: [
-              TextSpan(text: 'TopUp '),
-              amount.toCurrencySuperscript(
-                style: AppTypography.bodyM500.copyWith(
-                  color: AppColors.textBlackColor,
+        Expanded(
+          child: Text.rich(
+            TextSpan(
+              children: [
+                TextSpan(text: 'TopUp '),
+                amount.toCurrencySuperscript(
+                  style: AppTypography.bodyM500.copyWith(
+                    color: AppColors.textBlackColor,
+                  ),
                 ),
-              ),
-              TextSpan(text: "+"),
-            ],
+                TextSpan(text: "+"),
+              ],
+            ),
           ),
         ),
-        Text(
-          'and get $percent more credit',
-          style: AppTypography.labelS.copyWith(),
+        Expanded(
+          child: Text(
+            'and get $percent more credit',
+            style: AppTypography.labelS.copyWith(),
+          ),
         ),
       ],
     );

@@ -47,7 +47,7 @@ class _DraftsViewState extends State<DraftsView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const AppBackHeader(title: 'My Drafts'),
+      appBar: const AppBackHeader(title: 'My Drafts', showLocation: false),
       body: BlocBuilder<DraftCubit, DraftState>(
         builder: (context, state) {
           return state.map(

@@ -116,11 +116,18 @@ class AppDropdown<T, V> extends StatelessWidget {
                   width: 140,
                   child: Padding(
                     padding: EdgeInsets.only(right: AppSizes.md),
-                    child: Row(
-                      children: [
-                        Text(label!, style: AppTypography.bodyXS),
-                        if (isRequired) Text(' *', style: AppTypography.bodyXS),
-                      ],
+                    child: Text.rich(
+                      TextSpan(
+                        children: [
+                          TextSpan(text: label!),
+                          if (isRequired) const TextSpan(text: ' *'),
+                        ],
+                      ),
+                      style: AppTypography.bodyXS.copyWith(
+                        color: AppColors.black,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                 ),

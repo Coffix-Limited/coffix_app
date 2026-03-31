@@ -92,7 +92,7 @@ class _PaymentOptionsPageViewState extends State<PaymentOptionsPageView> {
                   child: Center(
                     child: Text(
                       "Processing your payment...",
-                      style: AppTypography.titleL.copyWith(),
+                      style: AppTypography.bodyXS.copyWith(),
                     ),
                   ),
                 );
