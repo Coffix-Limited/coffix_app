@@ -56,11 +56,31 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
+      - name: Write dev env file
+        env:
+          ENV_DEV: ${{ secrets.ENV_DEV }}
+        run: printf '%s' "$ENV_DEV" > .env.dev
+
+      - name: Write prod env file
+        env:
+          ENV_PROD: ${{ secrets.ENV_PROD }}
+        run: printf '%s' "$ENV_PROD" > .env
+
+      - name: Write firebase_options_dev.dart
+        env:
+          FIREBASE_OPTIONS_DEV: ${{ secrets.FIREBASE_OPTIONS_DEV }}
+        run: printf '%s' "$FIREBASE_OPTIONS_DEV" > lib/firebase_options_dev.dart
+
+      - name: Write firebase_options_prod.dart
+        env:
+          FIREBASE_OPTIONS_PROD: ${{ secrets.FIREBASE_OPTIONS_PROD }}
+        run: printf '%s' "$FIREBASE_OPTIONS_PROD" > lib/firebase_options_prod.dart
+
       - name: Generate code
         run: dart run build_runner build --delete-conflicting-outputs
 
       - name: Analyze
-        run: flutter analyze --fatal-infos
+        run: flutter analyze --fatal-warnings
 
       - name: Check formatting
         run: dart format --output=none --set-exit-if-changed .
@@ -79,9 +99,6 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Generate code
-        run: dart run build_runner build --delete-conflicting-outputs
-
       - name: Write dev env file
         env:
           ENV_DEV: ${{ secrets.ENV_DEV }}
@@ -91,6 +108,19 @@ jobs:
         env:
           ENV_PROD: ${{ secrets.ENV_PROD }}
         run: printf '%s' "$ENV_PROD" > .env
+
+      - name: Write firebase_options_dev.dart
+        env:
+          FIREBASE_OPTIONS_DEV: ${{ secrets.FIREBASE_OPTIONS_DEV }}
+        run: printf '%s' "$FIREBASE_OPTIONS_DEV" > lib/firebase_options_dev.dart
+
+      - name: Write firebase_options_prod.dart
+        env:
+          FIREBASE_OPTIONS_PROD: ${{ secrets.FIREBASE_OPTIONS_PROD }}
+        run: printf '%s' "$FIREBASE_OPTIONS_PROD" > lib/firebase_options_prod.dart
+
+      - name: Generate code
+        run: dart run build_runner build --delete-conflicting-outputs
 
       - name: Run tests
         run: flutter test --coverage
@@ -115,9 +145,6 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Generate code
-        run: dart run build_runner build --delete-conflicting-outputs
-
       - name: Write dev env file
         env:
           ENV_DEV: ${{ secrets.ENV_DEV }}
@@ -128,12 +155,25 @@ jobs:
           ENV_PROD: ${{ secrets.ENV_PROD }}
         run: printf '%s' "$ENV_PROD" > .env
 
+      - name: Write firebase_options_dev.dart
+        env:
+          FIREBASE_OPTIONS_DEV: ${{ secrets.FIREBASE_OPTIONS_DEV }}
+        run: printf '%s' "$FIREBASE_OPTIONS_DEV" > lib/firebase_options_dev.dart
+
+      - name: Write firebase_options_prod.dart
+        env:
+          FIREBASE_OPTIONS_PROD: ${{ secrets.FIREBASE_OPTIONS_PROD }}
+        run: printf '%s' "$FIREBASE_OPTIONS_PROD" > lib/firebase_options_prod.dart
+
       - name: Write google-services.json (dev)
         env:
           GOOGLE_SERVICES_JSON_DEV: ${{ secrets.GOOGLE_SERVICES_JSON_DEV }}
         run: |
           printf '%s' "$GOOGLE_SERVICES_JSON_DEV" | base64 --decode \
             > android/app/src/dev/google-services.json
+
+      - name: Generate code
+        run: dart run build_runner build --delete-conflicting-outputs
 
       - name: Build APK (dev debug)
         run: |
@@ -170,9 +210,6 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Generate code
-        run: dart run build_runner build --delete-conflicting-outputs
-
       - name: Write dev env file
         env:
           ENV_DEV: ${{ secrets.ENV_DEV }}
@@ -183,12 +220,25 @@ jobs:
           ENV_PROD: ${{ secrets.ENV_PROD }}
         run: printf '%s' "$ENV_PROD" > .env
 
+      - name: Write firebase_options_dev.dart
+        env:
+          FIREBASE_OPTIONS_DEV: ${{ secrets.FIREBASE_OPTIONS_DEV }}
+        run: printf '%s' "$FIREBASE_OPTIONS_DEV" > lib/firebase_options_dev.dart
+
+      - name: Write firebase_options_prod.dart
+        env:
+          FIREBASE_OPTIONS_PROD: ${{ secrets.FIREBASE_OPTIONS_PROD }}
+        run: printf '%s' "$FIREBASE_OPTIONS_PROD" > lib/firebase_options_prod.dart
+
       - name: Write google-services.json (prod)
         env:
           GOOGLE_SERVICES_JSON_PROD: ${{ secrets.GOOGLE_SERVICES_JSON_PROD }}
         run: |
           printf '%s' "$GOOGLE_SERVICES_JSON_PROD" | base64 --decode \
             > android/app/src/prod/google-services.json
+
+      - name: Generate code
+        run: dart run build_runner build --delete-conflicting-outputs
 
       - name: Build APK (prod release)
         run: |

@@ -10,4 +10,9 @@ class AppUserWithStore {
   final Store? store;
 
   AppUserWithStore({required this.user, this.store});
+
+  factory AppUserWithStore.fromJson(Map<String, dynamic> json) =>
+      _$AppUserWithStoreFromJson(json);
+
+  Map<String, dynamic> toJson() => _$AppUserWithStoreToJson(this);
 }

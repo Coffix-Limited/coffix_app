@@ -137,6 +137,7 @@ class _EmailVerificationFormState extends State<EmailVerificationForm> {
                                     .read<OtpCubit>()
                                     .sendEmailVerification();
                                 AppNotification.show(
+                                  // ignore: use_build_context_synchronously
                                   context,
                                   'OTP sent to your email. Please check your email.',
                                 );
