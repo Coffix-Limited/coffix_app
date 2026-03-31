@@ -25,10 +25,6 @@ class NotificationService {
       FlutterLocalNotificationsPlugin();
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
 
-  final bool _isInitialized = false;
-
-  bool get isInitialized => _isInitialized;
-
   void handleMessage(RemoteMessage? message) {
     if (message == null) return;
 
@@ -66,17 +62,15 @@ class NotificationService {
 
   // INITIALIZE
   Future<void> initialize() async {
-    if (_isInitialized) return;
-
     // prepare firebase messaging
     await _firebaseMessaging.requestPermission();
 
     // get fcm token
-    final fcmToken = await _firebaseMessaging.getToken();
+    // final fcmToken = await _firebaseMessaging.getToken();
     if (Platform.isIOS) {
       await _firebaseMessaging.getAPNSToken();
     }
-    print("Token: $fcmToken");
+    // print("Token: $fcmToken");
 
     // prepare android init settings
     const initSettingsAndroid = AndroidInitializationSettings(
@@ -105,7 +99,8 @@ class NotificationService {
         final message = RemoteMessage(data: data);
         handleMessage(message);
       },
-      onDidReceiveBackgroundNotificationResponse: _onBackgroundNotificationResponse,
+      onDidReceiveBackgroundNotificationResponse:
+          _onBackgroundNotificationResponse,
     );
     final platform = _notificationsPlugin
         .resolvePlatformSpecificImplementation<
