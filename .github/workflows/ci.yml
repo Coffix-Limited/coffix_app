@@ -142,6 +142,10 @@ jobs:
           channel: stable
           cache: true
 
+
+      - name: Clean dependencies
+        run: flutter clean
+
       - name: Install dependencies
         run: flutter pub get
 
@@ -206,6 +210,9 @@ jobs:
         with:
           channel: stable
           cache: true
+
+      - name: Clean dependencies
+        run: flutter clean
 
       - name: Install dependencies
         run: flutter pub get
