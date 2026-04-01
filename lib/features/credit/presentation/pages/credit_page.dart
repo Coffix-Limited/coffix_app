@@ -139,7 +139,8 @@ class _CreditViewState extends State<CreditView> {
                           ),
                           children: [
                             TextSpan(
-                              text: " \nSAVE 10%- 20%",
+                              text:
+                                  " \nSAVE ${global?.basicDiscount?.toInt()}%- ${global?.discountLevel3?.toInt()}%",
                               style: AppTypography.headlineL.copyWith(
                                 color: AppColors.primary,
                               ),

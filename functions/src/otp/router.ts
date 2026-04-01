@@ -6,6 +6,7 @@ import { sendEmailOTPSchema, verifyEmailOTPSchema } from "./schemas";
 import { firestore } from "../config/firebaseAdmin";
 import { createOTPDocumentWithTransaction } from "./service";
 import { verifyEmail } from "../user/service";
+import { RESEND_FROM_EMAIL } from "../constant/constant";
 
 export const otpRouter = express.Router();
 otpRouter.use(express.json());
@@ -76,9 +77,8 @@ otpRouter.post(
 
       // Send email AFTER db write (or before—either is fine; this is consistent w/ single active OTP)
       const payload = {
-        from: "Coffix <noreply@coffix.co.nz>",
+        from: RESEND_FROM_EMAIL,
         to: [email],
-        // to: ["espajunarjr@gmail.com"],
         subject: "Your OTP Code",
         template: {
           id: RESEND_TEMPLATE_ID,

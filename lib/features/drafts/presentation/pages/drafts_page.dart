@@ -1,6 +1,8 @@
 import 'package:coffix_app/core/constants/colors.dart';
 import 'package:coffix_app/core/constants/sizes.dart';
 import 'package:coffix_app/core/di/service_locator.dart';
+import 'package:coffix_app/core/extensions/order_extensions.dart';
+import 'package:coffix_app/core/extensions/price_extensions.dart';
 import 'package:coffix_app/core/theme/typography.dart';
 import 'package:coffix_app/features/cart/data/model/cart.dart';
 import 'package:coffix_app/features/cart/logic/cart_cubit.dart';
@@ -168,9 +170,10 @@ class _DraftCard extends StatelessWidget {
                         itemBuilder: (context, index) {
                           final item = cart.items?[index];
                           final imageUrl = item?.productImageUrl ?? '';
+                          final modifierPrices =
+                              item?.modifierPriceSnapshot.values.toList() ?? [];
                           final modifierLabels =
-                              item?.modifierLabelSnapshot.values.toList() ??
-                              [] as List<String>;
+                              item?.modifierLabelSnapshot.values.toList() ?? [];
 
                           return Padding(
                             padding: const EdgeInsets.only(bottom: AppSizes.sm),
@@ -213,17 +216,81 @@ class _DraftCard extends StatelessWidget {
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      Text(
-                                        '${item?.productName ?? ''} (x${item?.quantity ?? 0})',
-                                        style: AppTypography.bodyM600,
+                                      Row(
+                                        children: [
+                                          Expanded(
+                                            child: RichText(
+                                              text: TextSpan(
+                                                style: AppTypography.bodyM600
+                                                    .copyWith(
+                                                      color: AppColors
+                                                          .textBlackColor,
+                                                    ),
+                                                text:
+                                                    "${item?.productName} (x${item?.quantity}) ",
+                                                children: [],
+                                              ),
+                                            ),
+                                          ),
+                                          Text.rich(
+                                            item?.lineTotal
+                                                    .toCurrencySuperscript(
+                                                      style: AppTypography
+                                                          .body2XS
+                                                          .copyWith(
+                                                            color: AppColors
+                                                                .textBlackColor,
+                                                          ),
+                                                    ) ??
+                                                0.00.toCurrencySuperscript(
+                                                  style: AppTypography.body2XS,
+                                                ),
+                                          ),
+                                        ],
                                       ),
-                                      if (modifierLabels.isNotEmpty) ...[
+                                      if (modifierPrices.isNotEmpty) ...[
                                         const SizedBox(height: AppSizes.xs),
-                                        Text(
-                                          modifierLabels.join(', '),
-                                          style: AppTypography.body3XS,
-                                          maxLines: 2,
-                                          overflow: TextOverflow.ellipsis,
+
+                                        Column(
+                                          children: modifierPrices
+                                              .asMap()
+                                              .entries
+                                              .map((entry) {
+                                                return Row(
+                                                  children: [
+                                                    Expanded(
+                                                      child: Text(
+                                                        modifierLabels[entry
+                                                                .key]
+                                                            .toLarge(),
+                                                        style: AppTypography
+                                                            .body3XS
+                                                            .copyWith(
+                                                              color: AppColors
+                                                                  .textBlackColor,
+                                                            ),
+                                                      ),
+                                                    ),
+                                                    if (modifierPrices[entry
+                                                            .key] !=
+                                                        0) ...[
+                                                      const SizedBox(
+                                                        width: AppSizes.xs,
+                                                      ),
+                                                      Text.rich(
+                                                        modifierPrices[entry
+                                                                .key]
+                                                            .toCurrencySuperscript(
+                                                              style:
+                                                                  AppTypography
+                                                                      .body3XS,
+                                                            ),
+                                                      ),
+                                                    ],
+                                                  ],
+                                                );
+                                              })
+                                              .toList(),
                                         ),
                                       ],
                                     ],
@@ -238,15 +305,20 @@ class _DraftCard extends StatelessWidget {
                   ],
                 ),
               ),
-              AppButton(
-                height: 24,
-                width: 56,
-                onPressed: () =>
-                    _loadDraftIntoCart(context, draft.cart ?? Cart()),
-                label: 'Order',
-                textStyle: AppTypography.body2XS.copyWith(
-                  color: AppColors.white,
-                ),
+              SizedBox(width: AppSizes.md),
+              Column(
+                children: [
+                  AppButton(
+                    height: 24,
+                    width: 56,
+                    onPressed: () =>
+                        _loadDraftIntoCart(context, draft.cart ?? Cart()),
+                    label: 'Order',
+                    textStyle: AppTypography.body2XS.copyWith(
+                      color: AppColors.white,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),

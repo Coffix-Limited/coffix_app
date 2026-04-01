@@ -11,10 +11,15 @@ class Store {
   final String? gstNumber;
   final String? imageUrl;
   final String? invoiceText;
-  // "-37.683, 176.1665"
   final String? location;
   final String? name;
+
+  /// Weekly recurring hours
   final Map<String, DayHours>? openingHours;
+
+  /// yyyy-MM-dd → HolidayHours (extends DayHours shape)
+  final Map<String, DayHours>? holidayHours;
+
   final String? storeCode;
 
   Store({
@@ -27,51 +32,56 @@ class Store {
     this.location,
     this.name,
     this.openingHours,
+    this.holidayHours,
     this.storeCode,
   });
 
   factory Store.fromJson(Map<String, dynamic> json) => _$StoreFromJson(json);
   Map<String, dynamic> toJson() => _$StoreToJson(this);
 
-  /// Returns how many minutes remain until closing, or null if closed/no hours.
+  /// ------------------------------
+  /// PUBLIC API
+  /// ------------------------------
+
+  /// Returns how many minutes remain until closing, or null if closed.
   int? minutesUntilClose() {
-    if (!isOpenAt()) return null;
     final dt = TimeUtils.now();
-    final key = _weekdayKey(dt.weekday);
-    final hours = openingHours?[key];
-    if (hours == null || hours.close == null) return null;
+    final hours = _effectiveHoursFor(dt);
+
+    if (hours == null || !hours.contains(dt) || hours.close == null) {
+      return null;
+    }
+
     final nowMinutes = dt.hour * 60 + dt.minute;
     final closeMinutes = _parseMinutes(hours.close!);
+
     int diff = closeMinutes - nowMinutes;
-    // Overnight shift: close is next day
+
+    // Overnight shift support
     if (diff < 0) diff += 1440;
+
     return diff;
   }
 
-  int _parseMinutes(String hhmm) {
-    final parts = hhmm.split(':');
-    return int.parse(parts[0]) * 60 + int.parse(parts[1]);
-  }
-
-  // Simple open check
+  /// Simple open check (holiday-aware)
   bool isOpenAt() {
     final dt = TimeUtils.now();
-    final key = _weekdayKey(dt.weekday);
-    final hours = openingHours?[key];
+    final hours = _effectiveHoursFor(dt);
+
     if (hours == null || hours.isOpen == false) return false;
+
     return hours.contains(dt);
   }
 
-  /// Returns today's closing time as a formatted string, e.g. "2:30pm".
-  /// Returns null if no closing time is available.
+  /// Returns today's closing time (formatted)
   String? todayCloseFormatted() {
-    final key = _weekdayKey(TimeUtils.now().weekday);
-    final close = openingHours?[key]?.close;
+    final hours = _effectiveHoursFor(TimeUtils.now());
+    final close = hours?.close;
+
     return close != null ? _formatHhmm(close) : null;
   }
 
-  /// Returns the next open day + time, e.g. ("Mon", "8:00am").
-  /// Looks up to 7 days ahead.
+  /// Returns next opening day + time (holiday-aware)
   ({String day, String time})? nextOpeningFormatted() {
     const dayAbbr = {
       1: 'Mon',
@@ -82,11 +92,13 @@ class Store {
       6: 'Sat',
       7: 'Sun',
     };
+
     final now = TimeUtils.now();
+
     for (int offset = 1; offset <= 7; offset++) {
       final candidate = now.add(Duration(days: offset));
-      final key = _weekdayKey(candidate.weekday);
-      final hours = openingHours?[key];
+      final hours = _effectiveHoursFor(candidate);
+
       if (hours != null && hours.isOpen == true && hours.open != null) {
         return (
           day: dayAbbr[candidate.weekday]!,
@@ -94,20 +106,58 @@ class Store {
         );
       }
     }
+
     return null;
+  }
+
+  /// ------------------------------
+  /// CORE LOGIC (HOLIDAY OVERRIDE)
+  /// ------------------------------
+
+  /// Resolves which hours apply for a given date
+  /// 1. holidayHours (exact date)
+  /// 2. fallback to openingHours (weekday)
+  DayHours? _effectiveHoursFor(DateTime dt) {
+    final holidayKey = _dateKey(dt);
+
+    final holiday = holidayHours?[holidayKey];
+    if (holiday != null) return holiday;
+
+    final weekdayKey = _weekdayKey(dt.weekday);
+    return openingHours?[weekdayKey];
+  }
+
+  /// ------------------------------
+  /// HELPERS
+  /// ------------------------------
+
+  static String _dateKey(DateTime dt) {
+    final y = dt.year.toString().padLeft(4, '0');
+    final m = dt.month.toString().padLeft(2, '0');
+    final d = dt.day.toString().padLeft(2, '0');
+    return '$y-$m-$d';
+  }
+
+  int _parseMinutes(String hhmm) {
+    final parts = hhmm.split(':');
+    return int.parse(parts[0]) * 60 + int.parse(parts[1]);
   }
 
   static String _formatHhmm(String hhmm) {
     final parts = hhmm.split(':');
     var hour = int.parse(parts[0]);
     final minute = int.parse(parts[1]);
+
     final period = hour < 12 ? 'am' : 'pm';
+
     if (hour == 0) {
       hour = 12;
-    } else if (hour > 12)
-      // ignore: curly_braces_in_flow_control_structures
+    } else if (hour > 12) {
       hour -= 12;
+    }
+
     final minStr = minute == 0 ? '' : ':${minute.toString().padLeft(2, '0')}';
+
     return '$hour$minStr$period';
   }
 
@@ -128,15 +178,21 @@ class Store {
 @JsonSerializable()
 class DayHours {
   final bool? isOpen;
-  final String? open; // "06:30"
-  final String? close; // "14:30"
+  final String? open; // "HH:mm"
+  final String? close; // "HH:mm"
 
-  DayHours({this.isOpen, this.open, this.close});
+  /// Used mainly for holidays (optional UI fields)
+  final String? title;
+  final String? description;
+
+  DayHours({this.isOpen, this.open, this.close, this.title, this.description});
 
   factory DayHours.fromJson(Map<String, dynamic> json) =>
       _$DayHoursFromJson(json);
+
   Map<String, dynamic> toJson() => _$DayHoursToJson(this);
 
+  /// Checks if a given DateTime is within this time range
   bool contains(DateTime dt) {
     if (isOpen == false || open == null || close == null) return false;
 
@@ -144,11 +200,12 @@ class DayHours {
     final openMinutes = _toMinutes(open!);
     final closeMinutes = _toMinutes(close!);
 
+    // Normal shift
     if (closeMinutes > openMinutes) {
       return nowMinutes >= openMinutes && nowMinutes < closeMinutes;
     }
 
-    // Overnight shift support
+    // Overnight shift (e.g. 22:00 → 02:00)
     return nowMinutes >= openMinutes || nowMinutes < closeMinutes;
   }
 

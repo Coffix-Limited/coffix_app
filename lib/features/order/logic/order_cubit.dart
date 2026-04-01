@@ -50,7 +50,7 @@ class OrderCubit extends Cubit<OrderState> {
       await _orderRepository.sendOrderToEmail(orderId: orderId);
       emit(
         OrderState.emailSent(
-        message: 'Order sent to email',
+          message: 'Order sent to email',
           orders: state.orders,
         ),
       );

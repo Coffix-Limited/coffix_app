@@ -1,4 +1,3 @@
-
 import 'package:coffix_app/core/constants/colors.dart';
 import 'package:coffix_app/core/constants/images.dart';
 import 'package:coffix_app/core/constants/sizes.dart';
@@ -82,11 +81,12 @@ class ProfileView extends StatelessWidget {
           children: [
             Text(
               "My Coffix Credit Balance",
-              style: AppTypography.bodyL,
+              style: AppTypography.bodyM,
               textAlign: TextAlign.center,
             ),
             SizedBox(height: AppSizes.md),
             AppCard(
+              color: AppColors.primary.withValues(alpha: 0.1),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [

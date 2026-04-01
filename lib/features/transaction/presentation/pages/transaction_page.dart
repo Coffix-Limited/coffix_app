@@ -7,6 +7,7 @@ import 'package:coffix_app/core/extensions/payment_method_extensions.dart';
 import 'package:coffix_app/core/extensions/price_extensions.dart';
 import 'package:coffix_app/core/theme/typography.dart';
 import 'package:coffix_app/features/cart/logic/cart_cubit.dart';
+import 'package:coffix_app/features/modifier/logic/modifier_cubit.dart';
 import 'package:coffix_app/features/order/data/model/order.dart';
 import 'package:coffix_app/features/order/logic/order_cubit.dart';
 import 'package:coffix_app/features/products/logic/product_cubit.dart';
@@ -123,6 +124,12 @@ class _TransactionCardState extends State<_TransactionCard> {
     final order = context.watch<OrderCubit>().state.orders.firstWhereOrNull(
       (order) => order.docId == widget.transaction.orderId,
     );
+    // final modifiers = context.read<ModifierCubit>().state.when(
+    //   initial: () => [],
+    //   loading: () => [],
+    //   loaded: (modifiers) => modifiers,
+    //   error: (error) => [],
+    // );
 
     return Container(
       padding: const EdgeInsets.all(AppSizes.md),
@@ -197,8 +204,7 @@ class _TransactionCardState extends State<_TransactionCard> {
               itemBuilder: (context, index) {
                 final Item item = order.items![index];
                 final imageUrl = item.productImageUrl ?? '';
-                final modifierLabels =
-                    item.selectedModifiers?.values.toList() ?? [];
+                final List<ItemModifier> modifiers = item.modifiers ?? [];
 
                 return Padding(
                   padding: const EdgeInsets.only(bottom: AppSizes.sm),
@@ -233,17 +239,64 @@ class _TransactionCardState extends State<_TransactionCard> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              '${item.productName ?? ''} (x${item.quantity ?? 0})',
-                              style: AppTypography.bodyM600,
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: RichText(
+                                    text: TextSpan(
+                                      style: AppTypography.bodyM600.copyWith(
+                                        color: AppColors.textBlackColor,
+                                      ),
+                                      text:
+                                          "${item.productName} (x${item.quantity}) ",
+                                      children: [],
+                                    ),
+                                  ),
+                                ),
+                                Text.rich(
+                                  item.price?.toCurrencySuperscript(
+                                        style: AppTypography.body2XS.copyWith(
+                                          color: AppColors.textBlackColor,
+                                        ),
+                                      ) ??
+                                      0.00.toCurrencySuperscript(
+                                        style: AppTypography.body2XS,
+                                      ),
+                                ),
+                              ],
                             ),
-                            if (modifierLabels.isNotEmpty) ...[
+                            if (modifiers.isNotEmpty) ...[
                               const SizedBox(height: AppSizes.xs),
-                              Text(
-                                modifierLabels.join(', ').toLarge(),
-                                style: AppTypography.body3XS,
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
+
+                              Column(
+                                children: modifiers.asMap().entries.map((
+                                  entry,
+                                ) {
+                                  return Row(
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          entry.value.modifierId?.toLarge() ??
+                                              '—',
+                                          style: AppTypography.body3XS.copyWith(
+                                            color: AppColors.textBlackColor,
+                                          ),
+                                        ),
+                                      ),
+
+                                      if (entry.value.priceDelta != null &&
+                                          entry.value.priceDelta != 0) ...[
+                                        const SizedBox(width: AppSizes.xs),
+                                        Text.rich(
+                                          entry.value.priceDelta!
+                                              .toCurrencySuperscript(
+                                                style: AppTypography.body3XS,
+                                              ),
+                                        ),
+                                      ],
+                                    ],
+                                  );
+                                }).toList(),
                               ),
                             ],
                           ],

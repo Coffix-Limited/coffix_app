@@ -1,5 +1,6 @@
 import 'package:coffix_app/core/constants/colors.dart';
 import 'package:coffix_app/core/constants/sizes.dart';
+import 'package:coffix_app/core/theme/typography.dart';
 import 'package:coffix_app/presentation/atoms/app_clickable.dart';
 import 'package:flutter/material.dart';
 
@@ -37,7 +38,7 @@ class ProfileTile extends StatelessWidget {
                   SizedBox(width: AppSizes.sm),
                   Text(
                     label,
-                    style: theme.textTheme.bodyLarge?.copyWith(
+                    style: AppTypography.bodyM.copyWith(
                       color: textColor ?? AppColors.black,
                     ),
                   ),

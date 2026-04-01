@@ -4,6 +4,7 @@ import { requirePost } from "../middleware/method";
 import { sendReceiptBodySchema } from "./schema";
 import FirebaseService from "../firebase/service";
 import { orderEmailTemplate } from "../utils/templates/order_email_template";
+import { RESEND_FROM_EMAIL } from "../constant/constant";
 
 const router = express.Router();
 
@@ -142,7 +143,7 @@ router.post(
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          from: "Coffix <noreply@resend.dev>",
+          from: RESEND_FROM_EMAIL,
           to: [email],
           subject: `Your Coffix Order Receipt #${orderNumber}`,
           html,

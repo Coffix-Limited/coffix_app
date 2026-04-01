@@ -1,4 +1,3 @@
-
 import 'package:cloud_firestore/cloud_firestore.dart' hide Order;
 import 'package:coffix_app/core/api/api_client.dart';
 import 'package:coffix_app/core/utils/time_utils.dart';
@@ -9,7 +8,7 @@ import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class OrderRepositoryImpl extends ApiClient implements OrderRepository {
-    final FirebaseFirestore _firestore = FirestoreService.instance;
+  final FirebaseFirestore _firestore = FirestoreService.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   OrderRepositoryImpl() : super(dio: Dio());
@@ -63,8 +62,7 @@ class OrderRepositoryImpl extends ApiClient implements OrderRepository {
     if (email == null) {
       throw Exception('User not found');
     }
-    // TODO: EMAIL TEST FIRST
-    final data = {"email": "espajunarjr@gmail.com", "orderId": orderId};
+    final data = {"email": email, "orderId": orderId};
     await post('/order/send-receipt', data: data);
   }
 }
