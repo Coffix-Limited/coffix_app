@@ -19,7 +19,6 @@ class ProfileTile extends StatelessWidget {
   final String icon;
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     return AppClickable(
       onPressed: onTap,
       borderRadius: BorderRadius.circular(AppSizes.sm),
