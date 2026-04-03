@@ -7,8 +7,6 @@ import 'package:coffix_app/features/app/logic/app_cubit.dart';
 import 'package:coffix_app/features/auth/logic/auth_cubit.dart';
 import 'package:coffix_app/features/cart/logic/cart_cubit.dart';
 import 'package:coffix_app/features/profile/presentation/widgets/confirm_account_deletion.dart';
-import 'package:coffix_app/presentation/atoms/app_button.dart';
-import 'package:coffix_app/presentation/atoms/app_card.dart';
 import 'package:coffix_app/presentation/atoms/app_loading.dart';
 import 'package:coffix_app/presentation/atoms/app_notification.dart';
 import 'package:coffix_app/presentation/atoms/app_text_button.dart';
@@ -39,7 +37,6 @@ class AboutView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final user = context.watch<AuthCubit>().state.maybeWhen(
       authenticated: (user) => user,
       orElse: () => null,
@@ -163,34 +160,6 @@ class AboutView extends StatelessWidget {
             ),
           );
         },
-      ),
-    );
-  }
-}
-
-class _InfoRow extends StatelessWidget {
-  const _InfoRow({required this.label, required this.value});
-
-  final String label;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(AppSizes.sm),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Flexible(child: Text(label, style: AppTypography.bodyXS)),
-          Flexible(
-            flex: 2,
-            child: Text(
-              value,
-              style: AppTypography.bodyXS,
-              textAlign: TextAlign.end,
-            ),
-          ),
-        ],
       ),
     );
   }

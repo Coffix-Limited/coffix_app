@@ -80,7 +80,6 @@ class _HomeViewState extends State<HomeView> {
       orElse: () => null,
     );
     final bool isAuthenticated = user != null;
-    final bool finishedOnboarding = user?.finishedOnboarding ?? false;
 
     return AppChecker(
       child: Scaffold(
