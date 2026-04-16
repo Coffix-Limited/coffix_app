@@ -284,8 +284,8 @@ export class WebhookService {
         this.notificationService
           .sendNotification({
             customerId: customerId ?? "",
-            title: "Order Successful",
-            message: `A payment for order ${orderDoc?.transactionNumber} has been accepted`,
+            title: "Order Payment Successful",
+            message: `A payment for order #${orderDoc?.transactionNumber} has been accepted`,
           })
           .catch((err) => logger.error("Notification failed:", err));
         this.referralService
@@ -360,8 +360,8 @@ export class WebhookService {
       this.notificationService
         .sendNotification({
           customerId,
-          title: "Top-up Successful",
-          message: "Your top-up has been successful",
+          title: "Top-up Payment Successful",
+          message: `A payment for top-up #${transactionDoc?.transactionNumber} has been accepted`,
         })
         .catch((err) => logger.error("Notification failed:", err));
       return;

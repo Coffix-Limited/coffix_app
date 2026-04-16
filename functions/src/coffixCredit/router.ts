@@ -67,9 +67,13 @@ router.post(
         transactionNumber,
       });
 
+      const data = { paymentSessionUrl, transaction };
+
+      logger.info("Transaction created:", data);
+
       return response.status(200).json({
         success: true,
-        data: { paymentSessionUrl, transaction },
+        data,
       });
     } catch (error) {
       if (error instanceof WindcaveError) {
@@ -122,7 +126,8 @@ router.post(
 
       if (
         senderDoc.email &&
-        (senderDoc.email as string).toLowerCase() === recipientEmail.toLowerCase()
+        (senderDoc.email as string).toLowerCase() ===
+          recipientEmail.toLowerCase()
       ) {
         return response.status(400).json({
           success: false,
