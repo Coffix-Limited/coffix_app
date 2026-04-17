@@ -56,7 +56,7 @@ jobs:
         run: npm ci --prefix functions
 
       - name: Type-check
-        run: npx --prefix functions tsc --noEmit
+        run: cd functions && npx tsc --noEmit
 
       - name: Install Firebase CLI
         run: npm i -g firebase-tools
