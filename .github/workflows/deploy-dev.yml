@@ -1,17 +1,11 @@
 name: Deploy App (dev)
 
 on:
-  push:
-    branches:
-      - dev
-    paths:
-      - "lib/**"
-      - "android/**"
-      - "ios/**"
-      - "assets/**"
-      - "pubspec.yaml"
-      - "pubspec.lock"
-      - ".github/workflows/deploy-dev.yml"
+  workflow_run:
+    workflows: ["Deploy Functions (dev)"]
+    branches: [dev]
+    types: [completed]
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -23,6 +17,7 @@ concurrency:
 jobs:
   build-android-dev:
     name: Build & Distribute Android (dev)
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
     environment: dev
     steps:
@@ -99,6 +94,7 @@ jobs:
 
   build-ios-dev:
     name: Build & Distribute iOS (dev)
+    needs: build-android-dev
     runs-on: macos-14
     environment: dev
     steps:

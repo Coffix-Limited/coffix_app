@@ -20,7 +20,6 @@ class PaymentRepositoryImpl extends ApiClient implements PaymentRepository {
     final response = await post("/credit/topup", data: {'amount': amount});
 
     final data = response.data as Map<String, dynamic>;
-    print(data);
     final paymentSessionUrl = data['paymentSessionUrl'] as String?;
     if (paymentSessionUrl == null || paymentSessionUrl.isEmpty) {
       throw Exception('No paymentSessionUrl in response');

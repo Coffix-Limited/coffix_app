@@ -1,14 +1,10 @@
 name: Deploy Functions (prod)
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - "functions/**"
-      - "firebase.json"
-      - ".firebaserc"
-      - ".github/workflows/deploy-prod-functions.yml"
+  workflow_run:
+    workflows: ["CI"]
+    branches: [main]
+    types: [completed]
   workflow_dispatch:
 
 permissions:
@@ -21,6 +17,7 @@ concurrency:
 jobs:
   deploy:
     name: Deploy to prod
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
     environment: prod
     steps:
