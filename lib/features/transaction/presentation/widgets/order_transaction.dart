@@ -246,9 +246,15 @@ class OrderTransactionState extends State<OrderTransaction> {
                 children: [
                   Text.rich(
                     widget.transaction.amount?.toCurrencySuperscript(
-                          style: AppTypography.titleS,
+                          style: AppTypography.titleS.copyWith(
+                            color: AppColors.error,
+                          ),
                         ) ??
-                        0.00.toCurrencySuperscript(style: AppTypography.titleS),
+                        0.00.toCurrencySuperscript(
+                          style: AppTypography.titleS.copyWith(
+                            color: AppColors.error,
+                          ),
+                        ),
                   ),
                   Text(widget.transaction.paymentMethod?.label ?? ''),
                   StatusChip(label: statusLabel, color: statusColor),

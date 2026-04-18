@@ -292,7 +292,10 @@ export class WebhookService {
           .sendNotification({
             customerId: customerId ?? "",
             title: "Order Payment Successful",
-            message: `A payment for order #${orderDoc?.transactionNumber} has been accepted`,
+            message:
+              orderDoc.paymentMethod === "coffixCredit"
+                ? `A payment for order #${orderDoc?.transactionNumber} has been accepted`
+                : `A payment for order #${orderDoc?.transactionNumber} has been made from Coffix Credit`,
           })
           .catch((err) => logger.error("Notification failed:", err));
 
@@ -305,7 +308,7 @@ export class WebhookService {
           .catch((err) =>
             logger.error("Referral first-purchase check failed:", err),
           );
-          
+
         this.firebaseService
           .findUserByCustomerId(customerId ?? "")
           .then((customer) => {
@@ -337,7 +340,7 @@ export class WebhookService {
           .sendNotification({
             customerId: customerId ?? "",
             title: "Order Failed",
-            message: "Your order has been failed",
+            message: `A payment for order #${orderDoc?.transactionNumber} has been declined`,
           })
           .catch((err) => logger.error("Notification failed:", err));
       }

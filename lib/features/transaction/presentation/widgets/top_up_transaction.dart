@@ -105,29 +105,72 @@ class TopUpTransactionState extends State<TopUpTransaction> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          "You received ${widget.transaction.totalAmount?.toCurrency() ?? 'N/A'} credits (${widget.transaction.amount?.toCurrency() ?? 'N/A'} + ${bonus.toCurrency()} bonus)",
-                        ),
-                      ],
+                    Text(
+                      widget.transaction.status == TransactionStatus.failed
+                          ? "We canceled order ${widget.transaction.transactionNumber}"
+                          : "You paid",
+                      style: AppTypography.body2XS.copyWith(
+                        color: AppColors.textBlackColor,
+                      ),
                     ),
+                    Text.rich(
+                      widget.transaction.amount?.toCurrencySuperscript(
+                            style: AppTypography.titleS.copyWith(
+                              color:
+                                  widget.transaction.status ==
+                                      TransactionStatus.failed
+                                  ? AppColors.error
+                                  : AppColors.textBlackColor,
+                            ),
+                          ) ??
+                          0.00.toCurrencySuperscript(
+                            style: AppTypography.titleS.copyWith(
+                              color:
+                                  widget.transaction.status ==
+                                      TransactionStatus.failed
+                                  ? AppColors.error
+                                  : AppColors.textBlackColor,
+                            ),
+                          ),
+                    ),
+                    Text(widget.transaction.paymentMethod?.label ?? ''),
                   ],
                 ),
               ),
               SizedBox(width: AppSizes.md),
-              Column(
-                children: [
-                  Text.rich(
-                    widget.transaction.amount?.toCurrencySuperscript(
-                          style: AppTypography.titleS,
-                        ) ??
-                        0.00.toCurrencySuperscript(style: AppTypography.titleS),
+              if (widget.transaction.status != TransactionStatus.failed)
+                Text(
+                  "${widget.transaction.amount?.toCurrency() ?? "N/A"} + ${bonus.toCurrency()} bonus",
+                  style: AppTypography.body2XS.copyWith(
+                    color: AppColors.textBlackColor,
                   ),
-                  Text(widget.transaction.paymentMethod?.label ?? ''),
-                  StatusChip(label: statusLabel, color: statusColor),
-                ],
+                ),
+              SizedBox(width: AppSizes.md),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      "You received",
+                      style: AppTypography.body2XS.copyWith(
+                        color: AppColors.textBlackColor,
+                      ),
+                    ),
+                    Text.rich(
+                      widget.transaction.amount?.toCurrencySuperscript(
+                            style: AppTypography.titleS.copyWith(
+                              color: AppColors.success,
+                            ),
+                          ) ??
+                          0.00.toCurrencySuperscript(
+                            style: AppTypography.titleS.copyWith(
+                              color: AppColors.success,
+                            ),
+                          ),
+                    ),
+                    Text(widget.transaction.paymentMethod?.label ?? ''),
+                  ],
+                ),
               ),
             ],
           ),
