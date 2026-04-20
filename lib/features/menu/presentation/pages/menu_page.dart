@@ -1,4 +1,5 @@
 import 'package:coffix_app/core/di/service_locator.dart';
+import 'package:coffix_app/core/extensions/product_extensions.dart';
 import 'package:coffix_app/features/auth/logic/auth_cubit.dart';
 import 'package:coffix_app/features/cart/logic/cart_cubit.dart';
 import 'package:coffix_app/features/home/presentation/pages/home_page.dart';
@@ -37,7 +38,7 @@ class MenuView extends StatelessWidget {
     final user = context.watch<AuthCubit>().state.maybeWhen(
       authenticated: (user) => user,
       orElse: () => null,
-  );
+    );
     return Scaffold(
       appBar: AppBackHeader(
         title: "Products",
@@ -52,8 +53,13 @@ class MenuView extends StatelessWidget {
             initial: () => const SizedBox.shrink(),
             loading: () => AppLoading(),
             loaded: (products, allCategories, categoryFilter) => ProductList(
-              products: products,
-              allCategories: allCategories.sorted((a, b) => (a.order?.compareTo(b.order ?? "0") ?? 0).toInt()),
+              products: products.productsByStore(
+                storeId: user?.user.preferredStoreId ?? '',
+                preferredStoreId: user?.user.preferredStoreId ?? '',
+              ),
+              allCategories: allCategories.sorted(
+                (a, b) => (a.order?.compareTo(b.order ?? "0") ?? 0).toInt(),
+              ),
               isRoot: true,
               categoryFilter: categoryFilter,
               storeId: user?.user.preferredStoreId ?? '',

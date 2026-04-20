@@ -90,6 +90,7 @@ class FirebaseService {
       duration: validation.data.duration,
       paymentMethod: validation.data.paymentMethod,
       transactionNumber: validation.data.transactionNumber,
+      scheduledAt: scheduledAtNZ(validation.data.duration),
     };
     await orderRef.set(orderData);
 
@@ -226,6 +227,14 @@ class FirebaseService {
     const scheduledAt = scheduledAtNZ(duration);
     const now = new Date();
 
+    const [globalDoc, orderSnap] = await Promise.all([
+      this.getGlobal(),
+      firestore.collection("orders").doc(orderId).get(),
+    ]);
+    const gst = (globalDoc.GST ?? 0) as number;
+    const gstNumber = (orderSnap.data()?.storeGst as string) ?? "";
+    const gstAmount = (gst / 100) * amount;
+
     // Fetch eligible coupons outside the transaction (reads before transaction opens)
     const couponSnap = await firestore
       .collection("coupons")
@@ -328,9 +337,13 @@ class FirebaseService {
         createdAt: paidAt,
         paymentTime: paidAt,
         paymentMethod: "coffixCredit",
-        sessionId: "coffixCredit",
+        sessionId: "",
         orderNumber,
         transactionNumber,
+        type: "order",
+        gst,
+        gstNumber,
+        gstAmount,
       });
 
       tx.set(
@@ -526,6 +539,7 @@ class FirebaseService {
       docId: transactionRef.id,
       customerId: senderId,
       type: "gift",
+      paymentMethod: "coffixCredit",
       senderFirstName,
       senderLastName,
       recipientEmail: recipientEmail.toLowerCase(),

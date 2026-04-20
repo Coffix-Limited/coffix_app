@@ -3,6 +3,7 @@ import 'package:coffix_app/core/constants/sizes.dart';
 import 'package:coffix_app/core/di/service_locator.dart';
 import 'package:coffix_app/core/extensions/price_extensions.dart';
 import 'package:coffix_app/core/theme/typography.dart';
+import 'package:coffix_app/features/app/logic/app_cubit.dart';
 import 'package:coffix_app/features/auth/logic/auth_cubit.dart';
 import 'package:coffix_app/features/profile/logic/profile_cubit.dart';
 import 'package:coffix_app/presentation/atoms/app_button.dart';
@@ -49,6 +50,10 @@ class _ShareYourBalanceViewState extends State<ShareYourBalanceView> {
     final isLoading = context.watch<ProfileCubit>().state.maybeWhen(
       loading: () => true,
       orElse: () => false,
+    );
+    final global = context.watch<AppCubit>().state.maybeWhen(
+      loaded: (global, appVersion) => global,
+      orElse: () => null,
     );
     return Scaffold(
       appBar: const AppBackHeader(title: 'My Coffix Credit Balance'),
@@ -187,10 +192,20 @@ class _ShareYourBalanceViewState extends State<ShareYourBalanceView> {
                               Row(
                                 children: [
                                   SizedBox(width: 140.0),
-                                  Text(
-                                    "Minimum of \$15",
-                                    style: theme.textTheme.bodyMedium
-                                        ?.copyWith(),
+                                  Text.rich(
+                                    textAlign: TextAlign.center,
+                                    style: AppTypography.bodyXS.copyWith(),
+                                    TextSpan(
+                                      children: [
+                                        TextSpan(text: 'Minimum of '),
+                                        global?.minCreditToShare
+                                                ?.toCurrencySuperscript(
+                                                  style: AppTypography.bodyXS
+                                                      .copyWith(),
+                                                ) ??
+                                            TextSpan(text: ''),
+                                      ],
+                                    ),
                                   ),
                                 ],
                               ),

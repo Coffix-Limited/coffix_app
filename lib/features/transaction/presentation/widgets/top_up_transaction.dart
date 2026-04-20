@@ -8,7 +8,6 @@ import 'package:coffix_app/core/theme/typography.dart';
 import 'package:coffix_app/features/order/logic/order_cubit.dart';
 import 'package:coffix_app/features/transaction/data/model/transaction.dart';
 import 'package:coffix_app/presentation/atoms/app_clickable.dart';
-import 'package:coffix_app/presentation/molecules/status_chip.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -133,7 +132,12 @@ class TopUpTransactionState extends State<TopUpTransaction> {
                             ),
                           ),
                     ),
-                    Text(widget.transaction.paymentMethod?.label ?? ''),
+                    Text(
+                      widget.transaction.paymentMethod?.label ?? '',
+                      style: AppTypography.body2XS.copyWith(
+                        color: AppColors.textBlackColor,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -157,7 +161,7 @@ class TopUpTransactionState extends State<TopUpTransaction> {
                       ),
                     ),
                     Text.rich(
-                      widget.transaction.amount?.toCurrencySuperscript(
+                      widget.transaction.totalAmount?.toCurrencySuperscript(
                             style: AppTypography.titleS.copyWith(
                               color: AppColors.success,
                             ),
@@ -168,7 +172,12 @@ class TopUpTransactionState extends State<TopUpTransaction> {
                             ),
                           ),
                     ),
-                    Text(widget.transaction.paymentMethod?.label ?? ''),
+                    Text(
+                      "Coffix Credit",
+                      style: AppTypography.body2XS.copyWith(
+                        color: AppColors.textBlackColor,
+                      ),
+                    ),
                   ],
                 ),
               ),

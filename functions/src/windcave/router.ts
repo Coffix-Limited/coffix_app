@@ -15,6 +15,8 @@ import FirebaseService from "../firebase/service";
 import { generateTransactionNumber } from "../utils/generate_order_number";
 import { paymentLimiter } from "../middleware/rateLimiter";
 import { formatNzTime } from "../utils/nz_time";
+import { buildAndSendOrderInvoice } from "../order/router";
+import { EmailService } from "../email/service";
 
 const router = express.Router();
 
@@ -80,7 +82,9 @@ router.post(
         paymentMethod: validation.data.paymentMethod,
         transactionNumber,
       });
- 
+
+      const customerName = `${userDoc.firstName} ${userDoc.lastName}`;
+
       // handle coffix credit payment
       // if the payment user is using [coffixCredit] then we need to deduct the credit from the user
       if (validation.data.paymentMethod === "coffixCredit") {
@@ -97,8 +101,6 @@ router.post(
             transactionNumber,
           });
 
-        const customerName = `${userDoc.firstName} ${userDoc.lastName}`;
-
         // Non-critical path: don't block response
         void receiptService
           .createPrintQueue({
@@ -107,8 +109,13 @@ router.post(
               storeName: storeDoc.name,
               storeAddress: storeDoc.address,
               transactionNumber: orderData.transactionNumber,
-              orders: enrichedItems
-                .map((item) => `${item.quantity}x ${item.productName}`)
+              orders: (orderData.items ?? [])
+                .map((item: any) => {
+                  const itemModifiers = (item.modifiers ?? [])
+                    .map((m: any) => m.modifierId)
+                    .join(", ");
+                  return `${item.quantity}x ${item.productName} | ${itemModifiers} | $${item.price.toFixed(2)}`;
+                })
                 .join("\n"),
               total: totalAmount,
               customer: customerName,
@@ -130,12 +137,25 @@ router.post(
         notificationService
           .sendNotification({
             customerId,
-            title: "Payment Successful",
-            message: `A payment for order #${orderData.transactionNumber} has been accepted`,
+            title: "Order Payment Successful",
+            message: `A payment for order #${orderData?.transactionNumber} has been made from Coffix Credit`,
           })
           .catch((error) => {
             logger.error("Failed to send notification", { customerId, error });
           });
+
+        firebaseService
+          .findUserByCustomerId(customerId)
+          .then((customer) => {
+            if (!customer?.allowWinACoffee) return;
+            return buildAndSendOrderInvoice(
+              firebaseService,
+              new EmailService(),
+              customerId,
+              orderData.transactionNumber as string,
+            );
+          })
+          .catch((err) => logger.error("Invoice email failed:", err));
 
         const finalOrderData = {
           ...orderData,
@@ -143,6 +163,7 @@ router.post(
           paidAt,
           scheduledAt,
         };
+
         return response.status(200).json({
           success: true,
           data: {

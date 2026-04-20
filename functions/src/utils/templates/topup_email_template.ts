@@ -1,9 +1,9 @@
 export const topupEmailTemplate = `
-<h2 style="margin:0 0 16px;font-size:18px;font-weight:700;color:#1a1a1a;">Top-Up Receipt</h2>
+<h2 style="margin:0 0 16px;font-size:18px;font-weight:700;color:#1a1a1a;">TopUp Invoice #{{transactionNumber}}</h2>
 <p style="margin:0 0 16px;font-size:14px;color:#333333;">Hi {{customerName}},</p>
 <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;border:1px solid #e0e0e0;">
   <tr style="border-bottom:1px solid #e0e0e0;">
-    <td style="padding:10px 12px;font-size:13px;color:#555555;">Top-Up Amount</td>
+    <td style="padding:10px 12px;font-size:13px;color:#555555;">TopUp Amount</td>
     <td style="padding:10px 12px;font-size:13px;font-weight:700;color:#1a1a1a;text-align:right;">{{amount}}</td>
   </tr>
   <tr style="border-bottom:1px solid #e0e0e0;">

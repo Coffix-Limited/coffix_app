@@ -11,6 +11,7 @@ import { wrapInEmailShell } from "../utils/emailShell";
 import { formatNzTime } from "../utils/nz_time";
 import * as admin from "firebase-admin";
 import FirebaseService from "../firebase/service";
+import { getPaymentMethod } from "./service";
 
 const router = express.Router();
 
@@ -27,7 +28,7 @@ function buildItemsHtml(items: Array<Record<string, any>>): string {
           : "";
       return `<div class="item-row">
             <div class="item-left">
-              <div class="item-name">${item.productName}</div>
+              <div class="item-name">${item.productName} (${item.quantity}x)</div>
               ${modifierHtml}
             </div>
             <div class="item-right">$${(item.price as number).toFixed(2)}</div>
@@ -58,7 +59,8 @@ export async function buildAndSendOrderInvoice(
 ): Promise<void> {
   const order =
     await firebaseService.findOrderByTransactionNumber(transactionNumber);
-  if (!order) throw new Error(`Order not found for transaction: ${transactionNumber}`);
+  if (!order)
+    throw new Error(`Order not found for transaction: ${transactionNumber}`);
 
   const [transaction, customer] = await Promise.all([
     firebaseService.findTransactionByTransactionNumber(transactionNumber),
@@ -78,6 +80,7 @@ export async function buildAndSendOrderInvoice(
   const gstAmount = (transaction?.gstAmount as number) ?? 0;
   const gstLine = `${gst}% GST Included in the total: $${gstAmount.toFixed(2)}`;
 
+  const paymentMethod = getPaymentMethod(order.paymentMethod as string);
   const invoice = invoiceEmailTemplate
     .replace("{{storeName}}", r(order.storeName as string))
     .replace("{{storeAddress}}", r((order.storeAddress as string) ?? ""))
@@ -86,7 +89,7 @@ export async function buildAndSendOrderInvoice(
     .replace("{{items}}", r(itemsHtml))
     .replace("{{total}}", r(`$${(order.amount as number).toFixed(2)}`))
     .replace("{{gstLine}}", r(gstLine))
-    .replace("{{paymentMethod}}", r(order.paymentMethod as string))
+    .replace("{{paymentMethod}}", r(paymentMethod))
     .replace("{{createdAt}}", r(createdAt))
     .replace("{{serviceTimeLine}}", r(serviceTimeLine));
 
@@ -113,7 +116,12 @@ async function sendOrderInvoice(
       .status(404)
       .json({ success: false, message: "Order not found" });
   }
-  await buildAndSendOrderInvoice(firebaseService, emailService, customerId, transactionNumber);
+  await buildAndSendOrderInvoice(
+    firebaseService,
+    emailService,
+    customerId,
+    transactionNumber,
+  );
   return response.status(200).json({ success: true, message: "Invoice sent" });
 }
 
@@ -196,7 +204,11 @@ async function sendTopupInvoice(
       .replace("{{amount}}", r(`$${amount.toFixed(2)}`))
       .replace("{{bonusAmount}}", r(`$${bonusAmount.toFixed(2)}`))
       .replace("{{totalAmount}}", r(`$${totalAmount.toFixed(2)}`))
-      .replace("{{createdAt}}", r(createdAt)),
+      .replace("{{createdAt}}", r(createdAt))
+      .replace(
+        "{{transactionNumber}}",
+        r(transaction.transactionNumber as string),
+      ),
   );
 
   await emailService.sendInvoice({

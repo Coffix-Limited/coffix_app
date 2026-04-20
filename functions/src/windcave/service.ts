@@ -61,8 +61,9 @@ export class WindcaveService {
     merchantReference: string;
     userDoc: DocumentData;
   }) {
-    const nickName = userDoc.nickName ?? userDoc.firstName;
     const customerEmail = userDoc.email;
+    const firstName = userDoc.firstName;
+    const lastName = userDoc.lastName;
     const response = await fetch(`${this.windcaveApiUrl}/api/v1/sessions`, {
       method: "POST",
       headers: {
@@ -83,8 +84,8 @@ export class WindcaveService {
         },
         notificationUrl: `${process.env.BASE_URL}/webhook`,
         customer: {
-          firstName: nickName ?? "",
-          lastName: "",
+          firstName: firstName ?? "",
+          lastName: lastName ?? "",
           email: customerEmail,
         },
       }),
