@@ -15,6 +15,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:timezone/timezone.dart' as tz;
 
 class PaymentSuccessfulPage extends StatelessWidget {
   static String route = 'payment_successful_route';
@@ -46,7 +47,8 @@ class PaymentSuccessfulView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final timeText = DateFormat.jm().format(pickupAt);
+    final nzTime = tz.TZDateTime.from(pickupAt, tz.local);
+    final timeText = DateFormat.jm().format(nzTime);
     final Order? orderCreated = context.read<PaymentCubit>().state.maybeWhen(
       loaded: (_, order) => order,
       success: (order) => order,

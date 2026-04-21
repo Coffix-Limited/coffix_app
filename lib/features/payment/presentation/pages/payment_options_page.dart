@@ -74,10 +74,7 @@ class _PaymentOptionsPageViewState extends State<PaymentOptionsPageView> {
       loaded: (coupons) => coupons,
       orElse: () => <Coupon>[],
     );
-    final totalCoupon = coupons.fold(
-      0.0,
-      (sum, c) => sum + (c.amount ?? 0.0),
-    );
+    final totalCoupon = coupons.fold(0.0, (sum, c) => sum + (c.amount ?? 0.0));
     final totalBalance = creditAvailable + totalCoupon;
     final insufficientCredit =
         paymentMethod == PaymentMethod.coffixCredit && totalBalance < total;

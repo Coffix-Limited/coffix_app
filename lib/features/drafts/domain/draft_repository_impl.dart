@@ -38,13 +38,14 @@ class DraftRepositoryImpl implements DraftRepository {
       final snapshot = _firestore
           .collection('drafts')
           .where('userId', isEqualTo: userId)
+          .orderBy('createdAt', descending: true)
           .snapshots()
           .map((event) {
             return event.docs.map((doc) {
               return Draft.fromJson(doc.data());
             }).toList();
           });
-          return snapshot;
+      return snapshot;
     } catch (e) {
       throw Exception('Failed to get drafts');
     }

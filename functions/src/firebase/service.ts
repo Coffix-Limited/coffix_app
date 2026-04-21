@@ -211,6 +211,7 @@ class FirebaseService {
     duration,
     orderNumber,
     transactionNumber,
+    scheduledAt,
   }: {
     customerId: string;
     orderId: string;
@@ -218,13 +219,13 @@ class FirebaseService {
     duration: number;
     orderNumber: string;
     transactionNumber: string;
-  }): Promise<{ paidAt: Date; scheduledAt: Date }> {
+    scheduledAt: Date;
+  }): Promise<{ paidAt: Date }> {
     const customerRef = firestore.collection("customers").doc(customerId);
     const orderRef = firestore.collection("orders").doc(orderId);
     const transactionRef = firestore.collection("transactions").doc();
 
     const paidAt = new Date();
-    const scheduledAt = scheduledAtNZ(duration);
     const now = new Date();
 
     const [globalDoc, orderSnap] = await Promise.all([
@@ -353,7 +354,7 @@ class FirebaseService {
       );
     });
 
-    return { paidAt, scheduledAt };
+    return { paidAt };
   }
 
   // Transaction Status	Meaning
@@ -371,6 +372,7 @@ class FirebaseService {
     transactionNumber,
     type,
     gstNumber,
+    paymentMethod,
   }: {
     customerId: string;
     orderId: string;
@@ -379,6 +381,7 @@ class FirebaseService {
     transactionNumber: string;
     type: string;
     gstNumber: string;
+    paymentMethod: string;
   }): Promise<string> {
     const transactionRef = firestore.collection("transactions").doc();
 
@@ -399,6 +402,7 @@ class FirebaseService {
       gst,
       gstNumber,
       gstAmount,
+      paymentMethod,
     });
     return transactionRef.id;
   }

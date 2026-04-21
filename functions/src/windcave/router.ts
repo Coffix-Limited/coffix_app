@@ -14,7 +14,7 @@ import { getOrderMerchantReference } from "../coffixCredit/utils";
 import FirebaseService from "../firebase/service";
 import { generateTransactionNumber } from "../utils/generate_order_number";
 import { paymentLimiter } from "../middleware/rateLimiter";
-import { formatNzTime } from "../utils/nz_time";
+import { formatNzTime, scheduledAtNZ } from "../utils/nz_time";
 import { buildAndSendOrderInvoice } from "../order/router";
 import { EmailService } from "../email/service";
 
@@ -84,6 +84,7 @@ router.post(
       });
 
       const customerName = `${userDoc.firstName} ${userDoc.lastName}`;
+      const scheduledAt = scheduledAtNZ(validation.data.duration);
 
       // handle coffix credit payment
       // if the payment user is using [coffixCredit] then we need to deduct the credit from the user
@@ -91,7 +92,7 @@ router.post(
         const duration = validation.data.duration ?? 0;
 
         // Single atomic transaction: deduct credit + create transaction doc + mark order paid
-        const { paidAt, scheduledAt } =
+        const { paidAt } =
           await firebaseService.deductCouponsThenCreditAndMarkOrderPaid({
             customerId,
             orderId,
@@ -99,6 +100,7 @@ router.post(
             duration,
             orderNumber: orderData.orderNumber,
             transactionNumber,
+            scheduledAt,
           });
 
         // Non-critical path: don't block response
@@ -193,6 +195,7 @@ router.post(
         transactionNumber,
         type: "order",
         gstNumber: orderData.storeGst,
+        paymentMethod: validation.data.paymentMethod,
       });
 
       return response.status(200).json({
