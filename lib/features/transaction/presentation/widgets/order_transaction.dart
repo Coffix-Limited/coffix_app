@@ -8,6 +8,7 @@ import 'package:coffix_app/core/extensions/price_extensions.dart';
 import 'package:coffix_app/core/theme/typography.dart';
 import 'package:coffix_app/features/order/data/model/order.dart';
 import 'package:coffix_app/features/order/logic/order_cubit.dart';
+import 'package:coffix_app/features/payment/data/model/payment.dart';
 import 'package:coffix_app/features/transaction/data/model/transaction.dart';
 import 'package:coffix_app/presentation/atoms/app_clickable.dart';
 import 'package:coffix_app/presentation/molecules/status_chip.dart';
@@ -244,7 +245,13 @@ class OrderTransactionState extends State<OrderTransaction> {
                 children: [
                   Text.rich(
                     widget.transaction.amount?.toCurrencySuperscript(
-                          style: AppTypography.titleS.copyWith(),
+                          style: AppTypography.titleS.copyWith(
+                            color:
+                                widget.transaction.paymentMethod ==
+                                    PaymentMethod.coffixCredit
+                                ? AppColors.error
+                                : AppColors.textBlackColor,
+                          ),
                         ) ??
                         0.00.toCurrencySuperscript(
                           style: AppTypography.titleS.copyWith(),

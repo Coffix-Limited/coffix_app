@@ -72,15 +72,13 @@ export class WebhookService {
       const amount = transaction.amount as number;
       const totalAmount = transaction.totalAmount as number;
       const bonusAmount = totalAmount - amount;
-      invoiceHtml = wrapInEmailShell(
-        topupEmailTemplate
-          .replace("{{customerName}}", customerName)
-          .replace("{{amount}}", `$${amount.toFixed(2)}`)
-          .replace("{{bonusAmount}}", `$${bonusAmount.toFixed(2)}`)
-          .replace("{{totalAmount}}", `$${totalAmount.toFixed(2)}`)
-          .replace("{{createdAt}}", createdAt)
-          .replace("{{transactionNumber}}", transactionNumber),
-      );
+      invoiceHtml = topupEmailTemplate
+        .replace("{{customerName}}", customerName)
+        .replace("{{amount}}", `$${amount.toFixed(2)}`)
+        .replace("{{bonusAmount}}", `$${bonusAmount.toFixed(2)}`)
+        .replace("{{totalAmount}}", `$${totalAmount.toFixed(2)}`)
+        .replace("{{createdAt}}", createdAt)
+        .replace("{{transactionNumber}}", transactionNumber);
     } else {
       const amount = transaction.amount as number;
       invoiceHtml = wrapInEmailShell(

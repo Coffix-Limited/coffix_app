@@ -198,18 +198,16 @@ async function sendTopupInvoice(
   const totalAmount = transaction.totalAmount as number;
   const bonusAmount = totalAmount - amount;
 
-  const invoice = wrapInEmailShell(
-    topupEmailTemplate
-      .replace("{{customerName}}", r(customerName))
-      .replace("{{amount}}", r(`$${amount.toFixed(2)}`))
-      .replace("{{bonusAmount}}", r(`$${bonusAmount.toFixed(2)}`))
-      .replace("{{totalAmount}}", r(`$${totalAmount.toFixed(2)}`))
-      .replace("{{createdAt}}", r(createdAt))
-      .replace(
-        "{{transactionNumber}}",
-        r(transaction.transactionNumber as string),
-      ),
-  );
+  const invoice = topupEmailTemplate
+    .replace("{{customerName}}", r(customerName))
+    .replace("{{amount}}", r(`$${amount.toFixed(2)}`))
+    .replace("{{bonusAmount}}", r(`$${bonusAmount.toFixed(2)}`))
+    .replace("{{totalAmount}}", r(`$${totalAmount.toFixed(2)}`))
+    .replace("{{createdAt}}", r(createdAt))
+    .replace(
+      "{{transactionNumber}}",
+      r(transaction.transactionNumber as string),
+    );
 
   await emailService.sendInvoice({
     to: customer?.email as string,
