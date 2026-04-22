@@ -14,7 +14,9 @@ import 'package:coffix_app/features/network/presentation/widgets/no_internet_con
 import 'package:coffix_app/features/home/presentation/widgets/email_forgot_password_sent.dart';
 import 'package:coffix_app/features/home/presentation/widgets/email_verification_form.dart';
 import 'package:coffix_app/features/home/presentation/widgets/forgot_password.dart';
+import 'package:coffix_app/features/home/presentation/widgets/guest_home_content.dart';
 import 'package:coffix_app/features/home/presentation/widgets/login_form.dart';
+import 'package:coffix_app/presentation/atoms/app_guest_bottom_sheet.dart';
 import 'package:coffix_app/features/menu/presentation/pages/menu_page.dart';
 import 'package:coffix_app/features/modifier/logic/modifier_cubit.dart';
 import 'package:coffix_app/features/order/logic/order_cubit.dart';
@@ -67,6 +69,7 @@ class HomeView extends StatefulWidget {
 class _HomeViewState extends State<HomeView> {
   final formKey = GlobalKey<FormBuilderState>();
   bool _isNoInternetDialogShowing = false;
+  bool _showLogin = false;
 
   @override
   void initState() {
@@ -75,6 +78,15 @@ class _HomeViewState extends State<HomeView> {
       context.read<AppCubit>().getGlobal();
     });
     context.read<AuthCubit>().listenToUser();
+  }
+
+  void _showGuestSignInSheet(BuildContext context, String feature) {
+    AppGuestBottomSheet.show(
+      context,
+      message: 'Sign in to access $feature',
+      onSignIn: () => setState(() => _showLogin = true),
+      onCreateAccount: () => setState(() => _showLogin = true),
+    );
   }
 
   @override
@@ -105,9 +117,7 @@ class _HomeViewState extends State<HomeView> {
       },
       child: AppChecker(
         child: Scaffold(
-          backgroundColor: AppColors.black.withValues(
-            alpha: isAuthenticated ? 1 : 0.7,
-          ),
+          backgroundColor: AppColors.black,
           body: FormBuilder(
             key: formKey,
             onChanged: () {
@@ -166,8 +176,10 @@ class _HomeViewState extends State<HomeView> {
                                       'Password reset email sent. Please check your email.',
                                     );
                                   },
-                                  unauthenticated: () =>
-                                      context.goNamed(HomePage.route),
+                                  unauthenticated: () {
+                                    setState(() => _showLogin = false);
+                                    context.goNamed(HomePage.route);
+                                  },
                                   error: (message) =>
                                       AppNotification.error(context, message),
                                 );
@@ -190,8 +202,14 @@ class _HomeViewState extends State<HomeView> {
                                       userWithStore.user.emailVerified == true
                                       ? _HomeContent(user: userWithStore)
                                       : EmailVerificationForm(),
-                                  unauthenticated: () =>
-                                      LoginForm(formKey: formKey),
+                                  unauthenticated: () => _showLogin
+                                      ? LoginForm(formKey: formKey)
+                                      : GuestHomeContent(
+                                          onSignIn: () =>
+                                              setState(() => _showLogin = true),
+                                          onCreateAccount: () =>
+                                              setState(() => _showLogin = true),
+                                        ),
                                   error: (message) =>
                                       LoginForm(formKey: formKey),
                                 );
@@ -207,15 +225,10 @@ class _HomeViewState extends State<HomeView> {
                                             children: [
                                               Column(
                                                 children: [
-                                                  Opacity(
-                                                    opacity: isAuthenticated
-                                                        ? 1
-                                                        : 0.3,
-                                                    child: SvgPicture.asset(
-                                                      AppImages.nameLogo,
-                                                      width: 124.0,
-                                                      height: 64.0,
-                                                    ),
+                                                  SvgPicture.asset(
+                                                    AppImages.nameLogo,
+                                                    width: 124.0,
+                                                    height: 64.0,
                                                   ),
                                                   if (isAuthenticated)
                                                     const AppLocation(
@@ -240,8 +253,8 @@ class _HomeViewState extends State<HomeView> {
                                                     icon: Icon(
                                                       Icons.settings,
                                                       color: Colors.white,
-                                                      size:
-                                                          AppSizes.iconSizeLarge,
+                                                      size: AppSizes
+                                                          .iconSizeLarge,
                                                     ),
                                                   ),
                                                 ),
@@ -251,68 +264,78 @@ class _HomeViewState extends State<HomeView> {
                                           mainContent,
                                           SizedBox(height: AppSizes.xl),
                                           Spacer(),
-                                          Opacity(
-                                            opacity: isAuthenticated ? 1 : 0.6,
-                                            child: Column(
-                                              children: [
-                                                AppButton.primary(
-                                                  color: AppColors.lightGrey,
-                                                  onPressed: () {
-                                                    context
-                                                        .read<ProductCubit>()
-                                                        .initDefaultCategory();
-                                                    context.goNamed(
-                                                      MenuPage.route,
-                                                    );
-                                                  },
-                                                  label: "New Order",
-                                                  disabled:
-                                                      isAuthenticated &&
-                                                          user.emailVerified ==
-                                                              true
-                                                      ? false
-                                                      : true,
+                                          Column(
+                                            children: [
+                                              AppButton.primary(
+                                                color: AppColors.lightGrey,
+                                                onPressed: () {
+                                                  context
+                                                      .read<ProductCubit>()
+                                                      .initDefaultCategory();
+                                                  context.goNamed(
+                                                    MenuPage.route,
+                                                  );
+                                                },
+                                                label: "New Order",
+                                                disabled: state.maybeWhen(
+                                                  initial: () => true,
+                                                  loading: () => true,
+                                                  emailNotVerified: () => true,
+                                                  authenticated: (u) =>
+                                                      u.user.emailVerified !=
+                                                      true,
+                                                  orElse: () => false,
                                                 ),
-                                                const SizedBox(
-                                                  height: AppSizes.md,
-                                                ),
-                                                Row(
-                                                  children: [
-                                                    Expanded(
-                                                      child: AppButton.primary(
-                                                        onPressed: () async {
-                                                          if (isAuthenticated &&
-                                                              user.emailVerified ==
-                                                                  true) {
-                                                            context.pushNamed(
-                                                              OrderPage.route,
-                                                            );
-                                                          }
-                                                        },
-                                                        label: "ReOrder",
-                                                      ),
+                                              ),
+                                              const SizedBox(
+                                                height: AppSizes.md,
+                                              ),
+                                              Row(
+                                                children: [
+                                                  Expanded(
+                                                    child: AppButton.primary(
+                                                      onPressed: () async {
+                                                        if (isAuthenticated &&
+                                                            user.emailVerified ==
+                                                                true) {
+                                                          context.pushNamed(
+                                                            OrderPage.route,
+                                                          );
+                                                        } else {
+                                                          _showGuestSignInSheet(
+                                                            context,
+                                                            'your orders',
+                                                          );
+                                                        }
+                                                      },
+                                                      label: "ReOrder",
                                                     ),
-                                                    const SizedBox(
-                                                      width: AppSizes.md,
+                                                  ),
+                                                  const SizedBox(
+                                                    width: AppSizes.md,
+                                                  ),
+                                                  Expanded(
+                                                    child: AppButton.primary(
+                                                      onPressed: () {
+                                                        if (isAuthenticated &&
+                                                            user.emailVerified ==
+                                                                true) {
+                                                          context.pushNamed(
+                                                            DraftsPage.route,
+                                                          );
+                                                        } else {
+                                                          _showGuestSignInSheet(
+                                                            context,
+                                                            'your drafts',
+                                                          );
+                                                        }
+                                                      },
+                                                      label: "My Drafts",
                                                     ),
-                                                    Expanded(
-                                                      child: AppButton.primary(
-                                                        onPressed: () {
-                                                          if (isAuthenticated &&
-                                                              user.emailVerified ==
-                                                                  true) {
-                                                            context.pushNamed(
-                                                              DraftsPage.route,
-                                                            );
-                                                          }
-                                                        },
-                                                        label: "My Drafts",
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ],
-                                            ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ],
                                           ),
                                         ],
                                       );

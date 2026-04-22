@@ -26,7 +26,7 @@ class AppLocation extends StatelessWidget {
               onPressed: () {
                 if (user.user.emailVerified == true) {
                   context.pushNamed(StoresPage.route);
-              }
+                }
               },
               child: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -54,10 +54,10 @@ class AppLocation extends StatelessWidget {
             return Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                AppIcon.withSvgPath(
-                  AppImages.location,
-                  size: AppSizes.iconSizeMedium,
-                ),
+                // AppIcon.withSvgPath(
+                //   AppImages.location,
+                //   size: AppSizes.iconSizeMedium,
+                // ),
               ],
             );
           },

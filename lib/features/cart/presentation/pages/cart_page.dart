@@ -15,6 +15,7 @@ import 'package:coffix_app/features/products/data/model/product.dart';
 import 'package:coffix_app/features/products/logic/product_cubit.dart';
 import 'package:coffix_app/features/products/presentation/pages/add_product_page.dart';
 import 'package:coffix_app/presentation/atoms/app_button.dart';
+import 'package:coffix_app/presentation/atoms/app_guest_bottom_sheet.dart';
 import 'package:coffix_app/presentation/atoms/app_notification.dart';
 import 'package:coffix_app/presentation/molecules/app_back_header.dart';
 import 'package:coffix_app/presentation/molecules/empty_state.dart';
@@ -48,12 +49,26 @@ class CartView extends StatefulWidget {
 }
 
 class _CartViewState extends State<CartView> {
+  void _showGuestSignInSheet(BuildContext context) {
+    AppGuestBottomSheet.show(
+      context,
+      message: 'Sign in to place your order',
+      onSignIn: () => context.goNamed(HomePage.route),
+      onCreateAccount: () => context.goNamed(HomePage.route),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final store = context.watch<AuthCubit>().state.maybeWhen(
+    final authState = context.watch<AuthCubit>().state;
+    final store = authState.maybeWhen(
       authenticated: (user) => user.store,
       orElse: () => null,
+    );
+    final bool isGuest = authState.maybeWhen(
+      authenticated: (_) => false,
+      orElse: () => true,
     );
     final storeIsOpen = store?.isOpenAt() ?? false;
     final productCubit = context.watch<ProductCubit>();
@@ -184,11 +199,17 @@ class _CartViewState extends State<CartView> {
                             child: AppButton.primary(
                               disabled:
                                   (state.cart?.items?.isEmpty ?? true) ||
-                                  !storeIsOpen,
+                                  (!isGuest && !storeIsOpen),
                               onPressed: () {
-                                context.pushNamed(ScheduleOrderPage.route);
+                                if (isGuest) {
+                                  _showGuestSignInSheet(context);
+                                } else {
+                                  context.pushNamed(ScheduleOrderPage.route);
+                                }
                               },
-                              label: storeIsOpen ? 'Pay' : 'Store is closed',
+                              label: isGuest
+                                  ? 'Pay'
+                                  : (storeIsOpen ? 'Pay' : 'Store is closed'),
                             ),
                           ),
                           const SizedBox(width: AppSizes.md),
@@ -218,11 +239,14 @@ class _CartViewState extends State<CartView> {
                                       (state.cart?.items?.isEmpty ?? true) ||
                                       isLoading,
                                   onPressed: () async {
+                                    if (isGuest) {
+                                      _showGuestSignInSheet(context);
+                                      return;
+                                    }
                                     if (state.cart == null) return;
                                     context.read<DraftCubit>().createDraft(
                                       cart: state.cart!,
                                     );
-                                    // context.goNamed(DraftsPage.route);
                                   },
                                   label: isLoading
                                       ? 'Saving...'
