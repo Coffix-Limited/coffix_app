@@ -244,6 +244,7 @@ class _CreditViewState extends State<CreditView> {
                                   global?.minTopUp ?? 0,
                                 ),
                               ],
+                              maxLength: 5,
                             ),
 
                             // AppField<String>(
@@ -279,7 +280,6 @@ class _CreditViewState extends State<CreditView> {
                           AppGuestBottomSheet.show(
                             context,
                             message: "Please sign in to continue",
-                          
                           );
                         } else if (showTopUpField &&
                             formKey.currentState!.validate()) {

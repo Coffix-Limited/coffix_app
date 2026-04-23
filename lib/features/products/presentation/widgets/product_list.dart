@@ -13,6 +13,7 @@ import 'package:coffix_app/presentation/atoms/app_card.dart';
 import 'package:coffix_app/presentation/atoms/app_clickable.dart';
 import 'package:coffix_app/presentation/atoms/app_field.dart';
 import 'package:coffix_app/presentation/molecules/app_guest_bottom_sheet.dart';
+import 'package:coffix_app/presentation/molecules/empty_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -69,65 +70,74 @@ class ProductList extends StatelessWidget {
           ),
           const SizedBox(height: AppSizes.md),
           const SizedBox(height: AppSizes.lg),
-          ListView.separated(
-            padding: EdgeInsets.zero,
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemBuilder: (context, index) {
-              final product = products[index];
-              return AppClickable(
-                showSplash: false,
-                onPressed: () {
-                  if (!isAuthenticated) {
-                    AppGuestBottomSheet.show(
-                      context,
-                      message: "Please sign in to continue",
-                    );
-                  } else {
-                    context.read<ProductModifierCubit>().resetModifiers();
-                    context.pushNamed(
-                      AddProductPage.route,
-                      extra: {"product": product.product, "storeId": storeId},
-                    );
-                  }
-                },
-                child: Row(
-                  children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(AppSizes.md),
-                      child: AppCachedNetworkImage(
-                        imageUrl: product.product.imageUrl ?? "",
-                        width: AppSizes.iconSizeXLarge,
-                        height: AppSizes.iconSizeXLarge,
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                    const SizedBox(width: AppSizes.md),
-                    Expanded(
-                      child: Text(
-                        product.product.name ?? "",
-                        style: AppTypography.labelS,
-                      ),
-                    ),
-                    Text.rich(
-                      product.product.price?.toCurrencySuperscript(
-                            style: AppTypography.labelL.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ) ??
-                          0.00.toCurrencySuperscript(
-                            style: AppTypography.labelL.copyWith(
-                              fontWeight: FontWeight.bold,
+          products.isEmpty
+              ? const EmptyState(
+                  icon: Icons.production_quantity_limits_outlined,
+                  title: "No products found",
+                  subtitle: "Please try again later",
+                )
+              : ListView.separated(
+                  padding: EdgeInsets.zero,
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemBuilder: (context, index) {
+                    final product = products[index];
+                    return AppClickable(
+                      showSplash: false,
+                      onPressed: () {
+                        if (!isAuthenticated) {
+                          AppGuestBottomSheet.show(
+                            context,
+                            message: "Please sign in to continue",
+                          );
+                        } else {
+                          context.read<ProductModifierCubit>().resetModifiers();
+                          context.pushNamed(
+                            AddProductPage.route,
+                            extra: {
+                              "product": product.product,
+                              "storeId": storeId,
+                            },
+                          );
+                        }
+                      },
+                      child: Row(
+                        children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(AppSizes.md),
+                            child: AppCachedNetworkImage(
+                              imageUrl: product.product.imageUrl ?? "",
+                              width: AppSizes.iconSizeXLarge,
+                              height: AppSizes.iconSizeXLarge,
+                              fit: BoxFit.cover,
                             ),
                           ),
-                    ),
-                  ],
+                          const SizedBox(width: AppSizes.md),
+                          Expanded(
+                            child: Text(
+                              product.product.name ?? "",
+                              style: AppTypography.labelS,
+                            ),
+                          ),
+                          Text.rich(
+                            product.product.price?.toCurrencySuperscript(
+                                  style: AppTypography.labelL.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ) ??
+                                0.00.toCurrencySuperscript(
+                                  style: AppTypography.labelL.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                  separatorBuilder: (_, _) => const Divider(),
+                  itemCount: products.length,
                 ),
-              );
-            },
-            separatorBuilder: (_, _) => const Divider(),
-            itemCount: products.length,
-          ),
         ],
       ),
     );

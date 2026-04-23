@@ -343,13 +343,19 @@ class _HomeContent extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final screenHeight = MediaQuery.of(context).size.height;
+    String displayName =
+        user.user.firstName ?? user.user.nickName?.toUpperCase() ?? "";
+
+    if (displayName.length > 15) {
+      displayName = '${displayName.substring(0, 15)}...';
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         SizedBox(height: screenHeight * 0.1),
         Text(
-          "Welcome ${user.user.firstName ?? user.user.nickName ?? ""}",
+          "Welcome $displayName",
           textAlign: TextAlign.center,
           style: theme.textTheme.titleLarge!.copyWith(
             fontWeight: FontWeight.bold,

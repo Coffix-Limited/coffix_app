@@ -18,6 +18,16 @@ class Modifier {
     this.priceDelta,
   });
 
+  Modifier copyWith({String? groupId}) {
+    return Modifier(
+      docId: docId,
+      groupId: groupId ?? this.groupId,
+      isDefault: isDefault,
+      label: label,
+      priceDelta: priceDelta,
+    );
+  }
+
   factory Modifier.fromJson(Map<String, dynamic> json) =>
       _$ModifierFromJson(json);
   Map<String, dynamic> toJson() => _$ModifierToJson(this);

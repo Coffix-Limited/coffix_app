@@ -107,82 +107,67 @@ class _CustomizeProductViewState extends State<CustomizeProductView> {
                                           ),
                                     ),
                                     const SizedBox(height: AppSizes.md),
-                                    SizedBox(
-                                      height: 40,
-                                      child: ListView.separated(
-                                        separatorBuilder: (_, _) =>
-                                            SizedBox(width: AppSizes.sm),
-                                        scrollDirection: Axis.horizontal,
-                                        shrinkWrap: true,
-                                        itemCount: bundle.modifiers.length,
-                                        itemBuilder: (context, index) {
-                                          final mod = bundle.modifiers[index];
-                                          final isSelected =
-                                              productModifierState.modifiers
-                                                  .any(
-                                                    (m) => m.docId == mod.docId,
-                                                  );
+                                    _HorizontalScrollableList(
+                                      itemCount: bundle.modifiers.length,
+                                      separatorBuilder: (_, _) =>
+                                          SizedBox(width: AppSizes.sm),
+                                      itemBuilder: (context, index) {
+                                        final mod = bundle.modifiers[index];
+                                        final isSelected = productModifierState
+                                            .modifiers
+                                            .any((m) => m.docId == mod.docId);
 
-                                          return AppClickable(
-                                            borderRadius: BorderRadius.circular(
-                                              AppSizes.md,
+                                        return AppClickable(
+                                          borderRadius: BorderRadius.circular(
+                                            AppSizes.md,
+                                          ),
+                                          onPressed: () {
+                                            context
+                                                .read<ProductModifierCubit>()
+                                                .selectModifiers(
+                                                  modifier: mod,
+                                                  bundleGroupId:
+                                                      bundle.group.docId ?? '',
+                                                );
+                                          },
+                                          child: AppCard(
+                                            color: isSelected
+                                                ? AppColors.primary.withValues(
+                                                    alpha: AppSizes
+                                                        .opacityDisabled,
+                                                  )
+                                                : null,
+                                            borderColor: isSelected
+                                                ? AppColors.primary.withValues()
+                                                : null,
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: AppSizes.md,
+                                              vertical: AppSizes.sm,
                                             ),
-                                            onPressed: () {
-                                              // if (isSelected &&
-                                              //     bundle.group.required ==
-                                              //         true) {
-                                              //   return;
-                                              // }
-                                              context
-                                                  .read<ProductModifierCubit>()
-                                                  .selectModifiers(
-                                                    modifier: mod,
-                                                  );
-                                            },
-                                            child: AppCard(
-                                              color: isSelected
-                                                  ? AppColors.primary
-                                                        .withValues(
-                                                          alpha: AppSizes
-                                                              .opacityDisabled,
-                                                        )
-                                                  : null,
-                                              borderColor: isSelected
-                                                  ? AppColors.primary
-                                                        .withValues()
-                                                  : null,
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                    horizontal: AppSizes.md,
-                                                    vertical: AppSizes.sm,
+                                            child: Text.rich(
+                                              TextSpan(
+                                                children: [
+                                                  TextSpan(
+                                                    text:
+                                                        mod.isDefault == true &&
+                                                            !isSelected
+                                                        ? '*${mod.label} '
+                                                        : '${mod.label} ',
                                                   ),
-                                              child: Text.rich(
-                                                TextSpan(
-                                                  children: [
-                                                    TextSpan(
-                                                      text:
-                                                          mod.isDefault ==
-                                                                  true &&
-                                                              !isSelected
-                                                          ? '*${mod.label} '
-                                                          : '${mod.label} ',
-                                                    ),
-                                                    mod.priceDelta
-                                                            ?.toCurrencySuperscript(
-                                                              style:
-                                                                  AppTypography
-                                                                      .bodyXS,
-                                                            ) ??
-                                                        TextSpan(text: ''),
-                                                  ],
-                                                ),
-                                                style: AppTypography.bodyXS
-                                                    .copyWith(),
+                                                  mod.priceDelta
+                                                          ?.toCurrencySuperscript(
+                                                            style: AppTypography
+                                                                .bodyXS,
+                                                          ) ??
+                                                      TextSpan(text: ''),
+                                                ],
                                               ),
+                                              style: AppTypography.bodyXS
+                                                  .copyWith(),
                                             ),
-                                          );
-                                        },
-                                      ),
+                                          ),
+                                        );
+                                      },
                                     ),
                                   ],
                                 ),
@@ -206,6 +191,125 @@ class _CustomizeProductViewState extends State<CustomizeProductView> {
           );
         },
       ),
+    );
+  }
+}
+
+class _HorizontalScrollableList extends StatefulWidget {
+  const _HorizontalScrollableList({
+    required this.itemCount,
+    required this.itemBuilder,
+    required this.separatorBuilder,
+  });
+
+  final int itemCount;
+  final Widget Function(BuildContext, int) itemBuilder;
+  final Widget Function(BuildContext, int) separatorBuilder;
+
+  @override
+  State<_HorizontalScrollableList> createState() =>
+      _HorizontalScrollableListState();
+}
+
+class _HorizontalScrollableListState extends State<_HorizontalScrollableList> {
+  final ScrollController _scrollController = ScrollController();
+  bool _showLeft = false;
+  bool _showRight = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+    WidgetsBinding.instance.addPostFrameCallback((_) => _onScroll());
+  }
+
+  void _onScroll() {
+    if (!_scrollController.hasClients) return;
+    final pos = _scrollController.position;
+    setState(() {
+      _showLeft = pos.pixels > 0;
+      _showRight = pos.pixels < pos.maxScrollExtent;
+    });
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        SizedBox(
+          height: 40,
+          child: ListView.separated(
+            controller: _scrollController,
+            scrollDirection: Axis.horizontal,
+            shrinkWrap: true,
+            itemCount: widget.itemCount,
+            separatorBuilder: widget.separatorBuilder,
+            itemBuilder: widget.itemBuilder,
+          ),
+        ),
+        if (_showLeft)
+          Positioned(
+            left: 0,
+            top: 0,
+            bottom: 0,
+            child: IgnorePointer(
+              child: Container(
+                width: AppSizes.xxxl,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      Theme.of(context).scaffoldBackgroundColor,
+                      Theme.of(
+                        context,
+                      ).scaffoldBackgroundColor.withValues(alpha: 0),
+                    ],
+                  ),
+                ),
+                child: const Align(
+                  alignment: Alignment.centerLeft,
+                  child: Icon(
+                    Icons.chevron_left,
+                    size: AppSizes.iconSizeMedium,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        if (_showRight)
+          Positioned(
+            right: 0,
+            top: 0,
+            bottom: 0,
+            child: IgnorePointer(
+              child: Container(
+                width: AppSizes.xxxl,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      Theme.of(
+                        context,
+                      ).scaffoldBackgroundColor.withValues(alpha: 0),
+                      Theme.of(context).scaffoldBackgroundColor,
+                    ],
+                  ),
+                ),
+                child: const Align(
+                  alignment: Alignment.centerRight,
+                  child: Icon(
+                    Icons.chevron_right,
+                    size: AppSizes.iconSizeMedium,
+                  ),
+                ),
+              ),
+            ),
+          ),
+      ],
     );
   }
 }

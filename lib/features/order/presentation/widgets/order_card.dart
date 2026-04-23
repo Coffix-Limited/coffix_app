@@ -144,7 +144,7 @@ class OrderCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final date = order.scheduledAt ?? order.createdAt;
+    final date = order.createdAt;
     final dateStr = date != null ? date.formatDate() : '—';
     final items = order.items ?? [];
 
