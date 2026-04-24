@@ -173,6 +173,11 @@ class _LayoutViewState extends State<LayoutView> {
                                       builder: (_) =>
                                           AppAboutUrlDialog(url: aboutUrl),
                                     );
+                                  } else {
+                                    widget.shell.goBranch(
+                                      index,
+                                      initialLocation: true,
+                                    );
                                   }
                                 } else {
                                   if (index ==
