@@ -136,9 +136,9 @@ router.post(
 
       await creditService.shareCredit({
         senderId,
-        senderFirstName: senderDoc.firstName ?? "",
-        senderLastName: senderDoc.lastName ?? "",
-        recipientFullName: `${recipientFirstName} ${recipientLastName}`,
+        senderFullName: `${senderDoc.firstName ?? ""} ${senderDoc.lastName ?? ""}`,
+        recipientFullName: `${recipientFirstName ?? ""} ${recipientLastName ?? ""}`,
+        senderEmail: senderDoc.email ?? "",
         recipientEmail,
         amount,
       });

@@ -81,6 +81,7 @@ router.post(
         duration: validation.data.duration,
         paymentMethod: validation.data.paymentMethod,
         transactionNumber,
+        storeInvoiceText: storeDoc.invoiceText,
       });
 
       const customerName = `${userDoc.firstName} ${userDoc.lastName}`;
@@ -116,7 +117,7 @@ router.post(
                   const itemModifiers = (item.modifiers ?? [])
                     .map((m: any) => m.name)
                     .join(", ");
-                  return `${item.quantity}x ${item.productName} | ${itemModifiers} | $${item.price.toFixed(2)}`;
+                  return `<b>${item.quantity}x ${item.productName}</b> | ${itemModifiers} | <b>$${item.price.toFixed(2)}</b>`;
                 })
                 .join("\n"),
               total: totalAmount,

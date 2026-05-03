@@ -28,6 +28,8 @@ class GiftTransaction extends StatefulWidget {
     TransactionStatus.approved => ('Approved', AppColors.success),
     TransactionStatus.failed => ('Failed', AppColors.error),
     TransactionStatus.completed => ('Completed', AppColors.success),
+    TransactionStatus.sent => ('Sent', AppColors.success),
+    TransactionStatus.claimed => ('Claimed', AppColors.success),
     _ => ('—', AppColors.lightGrey),
   };
 }
@@ -42,6 +44,24 @@ class GiftTransactionState extends State<GiftTransaction> {
     final order = context.watch<OrderCubit>().state.orders.firstWhereOrNull(
       (order) => order.docId == widget.transaction.orderId,
     );
+
+    Color amountColor() {
+      if (widget.transaction.status == TransactionStatus.sent) {
+        return AppColors.error;
+      } else if (widget.transaction.status == TransactionStatus.claimed) {
+        return AppColors.success;
+      }
+      return AppColors.textBlackColor;
+    }
+
+    String label() {
+      if (widget.transaction.status == TransactionStatus.sent) {
+        return "Gift to: ${widget.transaction.recipientEmail ?? 'N/A'} (${widget.transaction.recipientEmail ?? 'N/A'})";
+      } else if (widget.transaction.status == TransactionStatus.claimed) {
+        return "Gift from: ${widget.transaction.senderFullName ?? 'N/A'} (${widget.transaction.senderEmail ?? 'N/A'})";
+      }
+      return "Gift from: ${widget.transaction.senderFullName ?? 'N/A'} (${widget.transaction.senderEmail ?? 'N/A'})";
+    }
 
     return Container(
       padding: const EdgeInsets.all(AppSizes.md),
@@ -99,11 +119,7 @@ class GiftTransactionState extends State<GiftTransaction> {
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      "Gift to: ${widget.transaction.recipientFullName ?? 'N/A'} (${widget.transaction.recipientEmail ?? 'N/A'})",
-                    ),
-                  ],
+                  children: [Text(label())],
                 ),
               ),
 
@@ -112,7 +128,9 @@ class GiftTransactionState extends State<GiftTransaction> {
                 children: [
                   Text.rich(
                     widget.transaction.amount?.toCurrencySuperscript(
-                          style: AppTypography.titleS,
+                          style: AppTypography.titleS.copyWith(
+                            color: amountColor(),
+                          ),
                         ) ??
                         0.00.toCurrencySuperscript(style: AppTypography.titleS),
                   ),

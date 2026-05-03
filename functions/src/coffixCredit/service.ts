@@ -57,7 +57,8 @@ export class CoffixCreditService {
     const discountLevel3 = ((globalData.discountLevel3 ?? 0) / 100) as number;
     const topupLevel2 = (globalData.topupLevel2 ?? Infinity) as number;
     const topupLevel3 = (globalData.topupLevel3 ?? Infinity) as number;
-    const creditExpiryDuration = (globalData.creditExpiryDuration ?? 0) as number;
+    const creditExpiryDuration = (globalData.creditExpiryDuration ??
+      0) as number;
 
     if (amount < minTopUp) {
       throw new Error(`Top-up amount is below the minimum of ${minTopUp}`);
@@ -79,7 +80,9 @@ export class CoffixCreditService {
         ? ((customerSnap.data()?.creditAvailable ?? 0) as number)
         : 0;
 
-      const expiryDate = new Date(Date.now() + creditExpiryDuration * 24 * 60 * 60 * 1000);
+      const expiryDate = new Date(
+        Date.now() + creditExpiryDuration * 24 * 60 * 60 * 1000,
+      );
       tx.set(
         customerRef,
         { creditAvailable: current + totalAmount, creditExpiry: expiryDate },
@@ -92,15 +95,15 @@ export class CoffixCreditService {
 
   async shareCredit({
     senderId,
-    senderFirstName,
-    senderLastName,
+    senderFullName,
+    senderEmail,
     recipientFullName,
     recipientEmail,
     amount,
   }: {
     senderId: string;
-    senderFirstName: string;
-    senderLastName: string;
+    senderFullName: string;
+    senderEmail: string;
     recipientFullName: string;
     recipientEmail: string;
     amount: number;
@@ -159,8 +162,8 @@ export class CoffixCreditService {
         );
         firebaseService.createGiftTransaction(tx, {
           senderId,
-          senderFirstName,
-          senderLastName,
+          senderFullName,
+          senderEmail,
           recipientEmail,
           recipientFullName,
           recipientCustomerId: recipient.customerId,
@@ -180,8 +183,8 @@ export class CoffixCreditService {
         tx.update(senderRef, { creditAvailable: senderCredit - amount });
         firebaseService.createGiftTransaction(tx, {
           senderId,
-          senderFirstName,
-          senderLastName,
+          senderFullName,
+          senderEmail,
           recipientEmail,
           recipientFullName,
           amount,
@@ -190,16 +193,33 @@ export class CoffixCreditService {
       });
     }
 
-    // 5. Send gift notification email (non-fatal)
-    try {
-      await new EmailService().sendGift({
-        to: recipientEmail,
-        userId: senderId,
-        amount,
-        transactionNumber,
-      });
-    } catch (emailError) {
-      logger.error("Error sending gift notification email", { emailError });
-    }
+    // 5. Send gift notification emails (non-fatal)
+    const emailService = new EmailService();
+    await Promise.allSettled([
+      emailService
+        .sendGift({
+          to: recipientEmail,
+          userId: senderId,
+          amount,
+          transactionNumber,
+        })
+        .catch((emailError) =>
+          logger.error("Error sending gift notification email to recipient", {
+            emailError,
+          }),
+        ),
+      emailService
+        .sendGift({
+          to: senderSnap.data()!.email as string,
+          userId: senderId,
+          amount,
+          transactionNumber,
+        })
+        .catch((emailError) =>
+          logger.error("Error sending gift sent email to sender", {
+            emailError,
+          }),
+        ),
+    ]);
   }
 }

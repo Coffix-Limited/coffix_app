@@ -82,8 +82,7 @@ export async function buildAndSendOrderInvoice(
 
   const paymentMethod = getPaymentMethod(order.paymentMethod as string);
   const invoice = invoiceEmailTemplate
-    .replace("{{storeName}}", r(order.storeName as string))
-    .replace("{{storeAddress}}", r((order.storeAddress as string) ?? ""))
+    .replace("{{invoiceText}}", r((order.storeInvoiceText as string) ?? ""))
     .replace("{{gst}}", r(String(gstNumber)))
     .replace("{{transactionNumber}}", r(order.transactionNumber as string))
     .replace("{{items}}", r(itemsHtml))

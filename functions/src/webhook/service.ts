@@ -340,7 +340,7 @@ export class WebhookService {
                 const itemModifiers = (item.modifiers ?? [])
                   .map((m: any) => m.name)
                   .join(", ");
-                return `${item.quantity}x ${item.productName} | ${itemModifiers} | $${item.price.toFixed(2)}`;
+                return `<b>${item.quantity}x ${item.productName}</b> | ${itemModifiers} | <b>$${item.price.toFixed(2)}</b>`;
               })
               .join("\n"),
             total: Number((orderDoc.amount ?? 0).toFixed(2)),

@@ -19,6 +19,10 @@ enum TransactionStatus {
   completed,
   @JsonValue('expired')
   expired,
+  @JsonValue('sent')
+  sent,
+  @JsonValue('claimed')
+  claimed,
 }
 
 @JsonSerializable()
@@ -41,8 +45,8 @@ class Transaction {
   String? recipientCustomerId;
   String? recipientEmail;
   String? recipientFullName;
-  String? senderFirstName;
-  String? senderLastName;
+  String? senderFullName;
+  String? senderEmail;
   String? transactionNumber;
   double? totalAmount;
   double? gst;
@@ -64,8 +68,8 @@ class Transaction {
     this.recipientCustomerId,
     this.recipientEmail,
     this.recipientFullName,
-    this.senderFirstName,
-    this.senderLastName,
+    this.senderFullName,
+    this.senderEmail,
     this.transactionNumber,
     this.totalAmount,
     this.gst,

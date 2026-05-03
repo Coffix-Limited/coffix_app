@@ -91,6 +91,7 @@ class FirebaseService {
       paymentMethod: validation.data.paymentMethod,
       transactionNumber: validation.data.transactionNumber,
       scheduledAt: scheduledAtNZ(validation.data.duration),
+      storeInvoiceText: storeDoc.invoiceText,
     };
     await orderRef.set(orderData);
 
@@ -521,8 +522,8 @@ class FirebaseService {
     tx: admin.firestore.Transaction,
     {
       senderId,
-      senderFirstName,
-      senderLastName,
+      senderFullName,
+      senderEmail,
       recipientEmail,
       recipientFullName,
       recipientCustomerId,
@@ -530,8 +531,8 @@ class FirebaseService {
       transactionNumber,
     }: {
       senderId: string;
-      senderFirstName: string;
-      senderLastName: string;
+      senderFullName: string;
+      senderEmail: string;
       recipientEmail: string;
       recipientFullName: string;
       recipientCustomerId?: string;
@@ -539,25 +540,42 @@ class FirebaseService {
       transactionNumber: string;
     },
   ): void {
-    const transactionRef = firestore.collection("transactions").doc();
-    const doc: Record<string, any> = {
-      docId: transactionRef.id,
-      customerId: senderId,
+    const now = new Date();
+    const baseFields = {
       type: "gift",
       paymentMethod: "coffixCredit",
-      senderFirstName,
-      senderLastName,
+      senderFullName,
+      senderEmail,
       recipientEmail: recipientEmail.toLowerCase(),
       recipientFullName,
       amount,
-      status: "completed",
-      createdAt: new Date(),
       transactionNumber,
+      createdAt: now,
+    };
+
+    const senderTxRef = firestore.collection("transactions").doc();
+    tx.set(senderTxRef, {
+      ...baseFields,
+      docId: senderTxRef.id,
+      customerId: senderId,
+      role: "sender",
+      status: "sent",
+    });
+
+    const recipientTxRef = firestore.collection("transactions").doc();
+    const recipientStatus =
+      recipientCustomerId !== undefined ? "claimed" : "pending";
+    const recipientDoc: Record<string, any> = {
+      ...baseFields,
+      docId: recipientTxRef.id,
+      role: "recipient",
+      status: recipientStatus,
+      recipientCustomerId: recipientCustomerId ?? null,
     };
     if (recipientCustomerId !== undefined) {
-      doc.recipientCustomerId = recipientCustomerId;
+      recipientDoc.customerId = recipientCustomerId;
     }
-    tx.set(transactionRef, doc);
+    tx.set(recipientTxRef, recipientDoc);
   }
 
   async applyPendingGifts(newUserId: string, email: string): Promise<void> {
@@ -569,7 +587,9 @@ class FirebaseService {
       .where("createdAt", ">=", thirtyDaysAgo)
       .get();
 
-    const pending = snap.docs.filter((d) => !d.data().recipientCustomerId);
+    const pending = snap.docs.filter(
+      (d) => d.data().recipientCustomerId === null,
+    );
     if (pending.length === 0) return;
 
     const totalAmount = pending.reduce(
@@ -589,7 +609,11 @@ class FirebaseService {
         { merge: true },
       );
       for (const doc of pending) {
-        tx.update(doc.ref, { recipientCustomerId: newUserId });
+        tx.update(doc.ref, {
+          recipientCustomerId: newUserId,
+          customerId: newUserId,
+          status: "claimed",
+        });
       }
     });
   }

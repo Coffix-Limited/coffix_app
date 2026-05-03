@@ -135,8 +135,8 @@ export const invoiceEmailTemplate = `<!doctype html>
   <body>
     <div class="wrapper">
       <div class="store-header">
-        <p class="store-name">{{storeName}}</p>
-        <p class="store-address">{{storeAddress}}</p>
+        <p class="store-name">Coffix</p>
+        <p class="store-address">{{invoiceText}}</p>
         <p class="store-gst">GST: {{gst}}</p>
       </div>
 
