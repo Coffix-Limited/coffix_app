@@ -1,6 +1,7 @@
 import 'package:coffix_app/core/constants/colors.dart';
 import 'package:coffix_app/core/constants/sizes.dart';
 import 'package:coffix_app/core/di/service_locator.dart';
+import 'package:coffix_app/core/services/log_service.dart';
 import 'package:coffix_app/core/extensions/price_extensions.dart';
 import 'package:coffix_app/features/auth/logic/auth_cubit.dart';
 import 'package:coffix_app/features/cart/logic/cart_cubit.dart';
@@ -152,6 +153,7 @@ class _PaymentOptionsPageViewState extends State<PaymentOptionsPageView> {
                               selected:
                                   paymentMethod == PaymentMethod.coffixCredit,
                               onTap: () {
+                                LogService().selectPaymentMethod();
                                 context.read<CartCubit>().setPaymentMethod(
                                   PaymentMethod.coffixCredit,
                                 );
@@ -203,6 +205,7 @@ class _PaymentOptionsPageViewState extends State<PaymentOptionsPageView> {
                             PaymentOption(
                               selected: paymentMethod == PaymentMethod.card,
                               onTap: () {
+                                LogService().selectPaymentMethod();
                                 context.read<CartCubit>().setPaymentMethod(
                                   PaymentMethod.card,
                                 );
@@ -227,6 +230,7 @@ class _PaymentOptionsPageViewState extends State<PaymentOptionsPageView> {
                               insufficientCredit,
                           onPressed: () {
                             if (cart == null) return;
+                            LogService().openPaymentSession();
                             final request = PaymentRequest(
                               storeId: cart.storeId ?? "",
                               items:

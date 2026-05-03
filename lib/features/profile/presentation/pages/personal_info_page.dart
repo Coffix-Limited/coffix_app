@@ -1,6 +1,7 @@
 import 'package:coffix_app/core/constants/colors.dart';
 import 'package:coffix_app/core/constants/sizes.dart';
 import 'package:coffix_app/core/di/service_locator.dart';
+import 'package:coffix_app/core/services/log_service.dart';
 import 'package:coffix_app/core/theme/typography.dart';
 import 'package:coffix_app/core/utils/time_utils.dart';
 import 'package:coffix_app/features/auth/data/model/user.dart';
@@ -52,6 +53,7 @@ class _PersonalInfoViewState extends State<PersonalInfoView> {
   void _onSave() {
     if (_formKey.currentState?.saveAndValidate() ?? false) {
       final formValues = _formKey.currentState?.value;
+      LogService().updateProfile();
       context.read<ProfileCubit>().updateProfile(
         firstName: formValues?['firstName'],
         lastName: formValues?['lastName'],

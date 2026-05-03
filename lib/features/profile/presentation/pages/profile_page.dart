@@ -2,6 +2,7 @@ import 'package:coffix_app/core/constants/colors.dart';
 import 'package:coffix_app/core/constants/images.dart';
 import 'package:coffix_app/core/constants/sizes.dart';
 import 'package:coffix_app/core/di/service_locator.dart';
+import 'package:coffix_app/core/services/log_service.dart';
 import 'package:coffix_app/core/extensions/price_extensions.dart';
 import 'package:coffix_app/core/theme/typography.dart';
 import 'package:coffix_app/features/app/logic/app_cubit.dart';
@@ -247,6 +248,7 @@ class _ProfileViewState extends State<ProfileView> {
             ProfileTile(
               label: 'Logout',
               onTap: () {
+                LogService().logout();
                 context.read<AuthCubit>().signOut();
                 context.read<CartCubit>().resetCart();
               },

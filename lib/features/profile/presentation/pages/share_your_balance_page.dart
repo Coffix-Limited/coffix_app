@@ -1,6 +1,7 @@
 import 'package:coffix_app/core/constants/colors.dart';
 import 'package:coffix_app/core/constants/sizes.dart';
 import 'package:coffix_app/core/di/service_locator.dart';
+import 'package:coffix_app/core/services/log_service.dart';
 import 'package:coffix_app/core/extensions/price_extensions.dart';
 import 'package:coffix_app/core/theme/typography.dart';
 import 'package:coffix_app/features/app/logic/app_cubit.dart';
@@ -225,6 +226,15 @@ class _ShareYourBalanceViewState extends State<ShareYourBalanceView> {
                         onPressed: () {
                           if (_formKey.currentState?.saveAndValidate() ??
                               false) {
+                            final recipientEmail =
+                                _formKey.currentState!.value['email'] ?? '';
+                            final amount = double.parse(
+                              _formKey.currentState!.value['amount'] ?? '0',
+                            );
+                            LogService().giftCoffixCredit(
+                              recipientEmail: recipientEmail,
+                              amount: amount,
+                            );
                             context.read<ProfileCubit>().sendGift(
                               recipientFirstName:
                                   _formKey.currentState!.value['firstName'] ??
@@ -232,11 +242,8 @@ class _ShareYourBalanceViewState extends State<ShareYourBalanceView> {
                               recipientLastName:
                                   _formKey.currentState!.value['lastName'] ??
                                   '',
-                              recipientEmail:
-                                  _formKey.currentState!.value['email'] ?? '',
-                              amount: double.parse(
-                                _formKey.currentState!.value['amount'] ?? '0',
-                              ),
+                              recipientEmail: recipientEmail,
+                              amount: amount,
                             );
                           }
                         },

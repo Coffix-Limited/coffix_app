@@ -1,6 +1,7 @@
 import 'package:coffix_app/core/constants/colors.dart';
 import 'package:coffix_app/core/constants/sizes.dart';
 import 'package:coffix_app/core/di/service_locator.dart';
+import 'package:coffix_app/core/services/log_service.dart';
 import 'package:coffix_app/core/extensions/price_extensions.dart';
 import 'package:coffix_app/core/theme/typography.dart';
 import 'package:coffix_app/features/cart/data/model/cart_item.dart';
@@ -313,6 +314,10 @@ class _AddProductViewState extends State<AddProductView> {
                             quantity: quantity,
                             storeId: storeId,
                             modifiers: modifierState.modifiers,
+                          );
+                          LogService().addProductToCart(
+                            product: widget.product,
+                            quantity: quantity,
                           );
                           if (widget.cartItem != null) {
                             final updated = widget.cartItem!.copyWith(

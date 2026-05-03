@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:coffix_app/core/constants/colors.dart';
+import 'package:coffix_app/core/services/log_service.dart';
 import 'package:coffix_app/core/constants/images.dart';
 import 'package:coffix_app/core/constants/sizes.dart';
 import 'package:coffix_app/core/di/service_locator.dart';
@@ -47,6 +48,7 @@ class _LoginViewState extends State<LoginView> {
 
   void _onLogin() {
     if (_formKey.currentState?.saveAndValidate() ?? false) {
+      LogService().checkAccount();
       context.read<AuthCubit>().signInWithEmailAndPassword(
         email: _formKey.currentState!.value['email'] as String,
         password: _formKey.currentState!.value['password'] as String,
@@ -67,7 +69,10 @@ class _LoginViewState extends State<LoginView> {
               listener: (context, state) {
                 state.whenOrNull(
                   authenticated: (_) => context.goNamed(WrapperPage.route),
-                  error: (message) => AppNotification.error(context, message),
+                  error: (message) {
+                    LogService().authError(action: message);
+                    AppNotification.error(context, message);
+                  },
                 );
               },
               builder: (context, state) {
@@ -147,6 +152,7 @@ class _LoginViewState extends State<LoginView> {
                         AppIconButton.withSvgPath(
                           AppImages.google,
                           onPressed: () {
+                            LogService().loginGoogleSSO();
                             context.read<AuthCubit>().signInWithGoogle();
                           },
                         ),
@@ -161,6 +167,7 @@ class _LoginViewState extends State<LoginView> {
                           AppIconButton.withSvgPath(
                             AppImages.apple,
                             onPressed: () {
+                              LogService().loginAppleSSO();
                               context.read<AuthCubit>().signInWithApple();
                             },
                           ),

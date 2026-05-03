@@ -1,6 +1,7 @@
 import 'package:coffix_app/core/constants/colors.dart';
 import 'package:coffix_app/core/constants/sizes.dart';
 import 'package:coffix_app/core/di/service_locator.dart';
+import 'package:coffix_app/core/services/log_service.dart';
 import 'package:coffix_app/core/extensions/price_extensions.dart';
 import 'package:coffix_app/core/theme/typography.dart';
 import 'package:coffix_app/features/products/data/model/product.dart';
@@ -177,7 +178,15 @@ class _CustomizeProductViewState extends State<CustomizeProductView> {
                         AppButton.primary(
                           label:
                               "Update \$${((widget.product.price ?? 0) + productModifierState.totalPrice).toStringAsFixed(2)}",
-                          onPressed: () => context.pop(),
+                          onPressed: () {
+                            LogService().customiseProduct(
+                              selectedModifiers: {
+                                for (final m in productModifierState.modifiers)
+                                  (m.docId ?? ''): (m.label ?? ''),
+                              },
+                            );
+                            context.pop();
+                          },
                         ),
                         const SizedBox(height: AppSizes.xxl),
                       ],

@@ -1,5 +1,6 @@
 import 'package:coffix_app/core/constants/colors.dart';
 import 'package:coffix_app/core/constants/sizes.dart';
+import 'package:coffix_app/core/services/log_service.dart';
 import 'package:coffix_app/core/extensions/order_extensions.dart';
 import 'package:coffix_app/core/theme/typography.dart';
 import 'package:coffix_app/core/utils/time_utils.dart';
@@ -147,9 +148,12 @@ class DraftCard extends StatelessWidget {
                           color: AppColors.white,
                         ),
                       ),
-                      onPressed: () => context.read<DraftCubit>().deleteDraft(
-                        draftId: draft.id ?? '',
-                      ),
+                      onPressed: () {
+                        LogService().removeProductFromDraft();
+                        context.read<DraftCubit>().deleteDraft(
+                          draftId: draft.id ?? '',
+                        );
+                      },
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(),
                     ),

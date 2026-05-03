@@ -1,5 +1,6 @@
 import 'package:coffix_app/core/constants/sizes.dart';
 import 'package:coffix_app/core/di/service_locator.dart';
+import 'package:coffix_app/core/services/log_service.dart';
 import 'package:coffix_app/features/credit/logic/credit_cubit.dart';
 import 'package:coffix_app/features/credit/presentation/pages/credit_topup_payment_page.dart';
 import 'package:coffix_app/presentation/atoms/app_button.dart';
@@ -111,6 +112,7 @@ class _CreditTopupViewState extends State<CreditTopupView> {
                           if (_formKey.currentState?.validate() ?? false) {
                             final amount =
                                 double.tryParse(_amountController.text) ?? 0;
+                            LogService().topUp(amount: amount);
                             context.read<CreditCubit>().topup(amount: amount);
                           }
                         },

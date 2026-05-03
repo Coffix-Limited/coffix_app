@@ -1,4 +1,5 @@
 import 'package:coffix_app/core/extensions/order_extensions.dart';
+import 'package:coffix_app/core/services/log_service.dart';
 import 'package:coffix_app/core/utils/time_utils.dart';
 import 'package:coffix_app/features/cart/data/model/cart_item.dart';
 import 'package:coffix_app/features/cart/domain/helper.dart';
@@ -27,6 +28,7 @@ class OrderCard extends StatelessWidget {
   final Order order;
 
   void _reorder(BuildContext context, {required Order order}) {
+    LogService().reOrder();
     final productCubit = context.read<ProductCubit>();
     final products = productCubit.allProducts;
 

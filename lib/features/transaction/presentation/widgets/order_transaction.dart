@@ -1,6 +1,7 @@
 import 'package:coffix_app/core/constants/colors.dart';
 import 'package:coffix_app/core/constants/images.dart';
 import 'package:coffix_app/core/constants/sizes.dart';
+import 'package:coffix_app/core/services/log_service.dart';
 import 'package:coffix_app/core/extensions/date_extensions.dart';
 import 'package:coffix_app/core/extensions/payment_method_extensions.dart';
 import 'package:coffix_app/core/extensions/price_extensions.dart';
@@ -63,6 +64,10 @@ class OrderTransactionState extends State<OrderTransaction> {
                   children: [
                     AppClickable(
                       onPressed: () {
+                        LogService().emailTransaction(
+                          transactionNumber:
+                              widget.transaction.transactionNumber ?? '',
+                        );
                         context.read<OrderCubit>().sendOrderToEmail(
                           transactionNumber:
                               widget.transaction.transactionNumber ?? '',
