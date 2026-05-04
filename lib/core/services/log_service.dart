@@ -47,6 +47,19 @@ class LogService {
     );
   }
 
+  Future<void> forgotPassword() async {
+    write(
+      Log(
+        page: "forgot_password_page",
+        category: "auth",
+        severityLevel: "info",
+        action:
+            "User clicked `Forgot Password` CTA button on forgot password page.",
+        notes: "User requested forgot password.",
+      ),
+    );
+  }
+
   Future<void> deleteAccount() async {
     write(
       Log(

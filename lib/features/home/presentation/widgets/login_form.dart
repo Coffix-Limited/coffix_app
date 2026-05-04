@@ -26,6 +26,7 @@ class _LoginFormState extends State<LoginForm> {
   void handleLogin() async {
     if (widget.formKey.currentState?.saveAndValidate() ?? false) {
       final fields = widget.formKey.currentState!.value;
+      widget.formKey.currentState?.reset();
       await context.read<AuthCubit>().createOrLoginAccount(
         email: fields['email'] as String,
         password: fields['password'] as String,

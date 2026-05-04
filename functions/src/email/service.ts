@@ -29,8 +29,9 @@ function toDate(value: unknown): Date {
 
 function buildUserVariables(
   user: AppUser | null,
+  fallbackEmail?: string,
 ): Record<string, string | number | boolean> {
-  if (!user) return {};
+  if (!user) return fallbackEmail ? { email: fallbackEmail } : {};
   return {
     first_name: user.firstName ?? "",
     last_name: user.lastName ?? "",
@@ -107,6 +108,7 @@ export class EmailService {
 
     const userVariables = buildUserVariables(
       userSnap?.exists ? (userSnap.data() as AppUser) : null,
+      params.email,
     );
     const now = nowNZ();
     const templateData = templateSnap.data() as EmailTemplate;

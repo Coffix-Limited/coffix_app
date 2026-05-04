@@ -7,7 +7,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class EmailForgotPasswordSent extends StatelessWidget {
-  const EmailForgotPasswordSent({super.key});
+  const EmailForgotPasswordSent({super.key, required this.message});
+  final String message;
 
   @override
   Widget build(BuildContext context) {

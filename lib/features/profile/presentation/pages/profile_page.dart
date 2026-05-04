@@ -86,7 +86,9 @@ class _ProfileViewState extends State<ProfileView> {
       loaded: (global, appVersion) => global,
       orElse: () => null,
     );
-    final fullName = "${user?.firstName} ${user?.lastName}".length > 20
+    final String fullName = user?.firstName == null || user?.lastName == null
+        ? ""
+        : "${user?.firstName} ${user?.lastName}".length > 20
         ? "${"${user?.firstName} ${user?.lastName}".substring(0, 20)}..."
         : "${user?.firstName} ${user?.lastName}";
 

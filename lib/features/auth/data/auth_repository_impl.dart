@@ -262,7 +262,7 @@ class AuthRepositoryImpl extends ApiClient implements AuthRepository {
         'email': email,
         'createdAt': TimeUtils.now(),
         'qrId': generateQrId(docId),
-      });
+      }, SetOptions(merge: true));
     }
   }
 
@@ -342,9 +342,10 @@ class AuthRepositoryImpl extends ApiClient implements AuthRepository {
     if (uid == null) {
       throw Exception('No user found');
     }
-    await _firestore.collection("customers").doc(uid).set({
-      "disabled": true,
-    }, SetOptions(merge: true));
+    final response = await delete("/auth/account");
+    if (response.statusCode != 200) {
+      throw Exception('Failed to delete account');
+    }
     await signOut();
   }
 
@@ -364,8 +365,15 @@ class AuthRepositoryImpl extends ApiClient implements AuthRepository {
   }
 
   @override
-  Future<void> sendPasswordResetEmail({required String email}) async {
-    await _auth.sendPasswordResetEmail(email: email);
+  Future<String> sendPasswordResetEmail({required String email}) async {
+    final response = await post(
+      '/auth/forgot-password',
+      data: {'email': email},
+    );
+    if (response.statusCode != 200) {
+      throw Exception('Failed to send password reset email');
+    }
+    return response.message as String;
   }
 
   @override
@@ -390,6 +398,7 @@ class AuthRepositoryImpl extends ApiClient implements AuthRepository {
       "email": user?.email,
       "qrId": generateQrId(uid),
       "updatedAt": TimeUtils.now(),
+      "createdAt": TimeUtils.now(),
     }, SetOptions(merge: true));
   }
 }

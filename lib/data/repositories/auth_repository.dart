@@ -10,7 +10,7 @@ abstract class AuthRepository {
     required String email,
     required String password,
   });
-Future<void> signOut();
+  Future<void> signOut();
   Future<void> signInWithGoogle();
   Future<void> signInWithFacebook();
   Future<void> signInWithApple();
@@ -23,7 +23,7 @@ Future<void> signOut();
   Future<void> deleteAccount();
   Future<String> getFirebaseToken();
   Future<bool> customerHasAccount({required String email});
-  Future<void> sendPasswordResetEmail({required String email});
+  Future<String> sendPasswordResetEmail({required String email});
   Future<void> updateFcmToken();
   Future<void> updateUser({required String uid});
 }

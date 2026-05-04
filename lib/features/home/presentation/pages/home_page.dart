@@ -160,11 +160,8 @@ class _HomeViewState extends State<HomeView> {
                                       );
                                     }
                                   },
-                                  passwordResetEmailSent: () {
-                                    AppNotification.show(
-                                      context,
-                                      'Password reset email sent. Please check your email.',
-                                    );
+                                  passwordResetEmailSent: (message) {
+                                    AppNotification.show(context, message);
                                   },
                                   unauthenticated: () {
                                     context.goNamed(HomePage.route);
@@ -182,8 +179,8 @@ class _HomeViewState extends State<HomeView> {
                                   otpSent: (email) =>
                                       LoginForm(formKey: formKey),
                                   forgotPassword: () => ForgotPassword(),
-                                  passwordResetEmailSent: () =>
-                                      EmailForgotPasswordSent(),
+                                  passwordResetEmailSent: (message) =>
+                                      EmailForgotPasswordSent(message: message),
                                   initial: () => AppLoading(),
                                   loading: () =>
                                       const Center(child: AppLoading()),

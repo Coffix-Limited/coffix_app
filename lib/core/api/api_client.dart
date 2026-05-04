@@ -82,6 +82,7 @@ abstract class ApiClient {
       return ApiResponse<T>.fromJson(
         response.data,
         fromJsonT: (json) => json as T,
+        statusCode: response.statusCode,
       );
     } on DioException catch (e) {
       if (e.type == DioExceptionType.cancel) {
@@ -119,6 +120,7 @@ abstract class ApiClient {
       );
       return ApiResponse<T>.fromJson(
         response.data,
+        statusCode: response.statusCode,
         fromJsonT: (json) => json as T,
       );
     } on DioException catch (e) {
@@ -155,6 +157,7 @@ abstract class ApiClient {
       return ApiResponse<T>.fromJson(
         response.data,
         fromJsonT: (json) => json as T,
+        statusCode: response.statusCode,
       );
     } on DioException catch (e) {
       throw ApiExceptions.fromDioError(e);
@@ -182,6 +185,7 @@ abstract class ApiClient {
       );
       return ApiResponse<T>.fromJson(
         response.data,
+        statusCode: response.statusCode,
         fromJsonT: (json) => json as T,
       );
     } on DioException catch (e) {

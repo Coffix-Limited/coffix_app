@@ -144,7 +144,6 @@ class AuthCubit extends Cubit<AuthState> {
         if (user.user.qrId == null || user.user.email == null) {
           _authRepository.updateUser(uid: user.user.docId!);
         }
-      
       },
       onError: (error) {
         emit(AuthState.error(message: error.toString()));
@@ -193,7 +192,6 @@ class AuthCubit extends Cubit<AuthState> {
         );
       }
       getUser();
-      // getUserWithStore();
     } catch (e) {
       emit(AuthState.error(message: e.toString()));
     }
@@ -206,8 +204,10 @@ class AuthCubit extends Cubit<AuthState> {
   Future<void> forgotPasswordWithEmail({required String email}) async {
     emit(AuthState.loading());
     try {
-      await _authRepository.sendPasswordResetEmail(email: email);
-      emit(AuthState.passwordResetEmailSent());
+      final message = await _authRepository.sendPasswordResetEmail(
+        email: email,
+      );
+      emit(AuthState.passwordResetEmailSent(message: message));
     } catch (e) {
       emit(AuthState.error(message: e.toString()));
     }
