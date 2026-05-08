@@ -2,6 +2,7 @@ import 'package:coffix_app/core/constants/colors.dart';
 import 'package:coffix_app/core/constants/images.dart';
 import 'package:coffix_app/core/constants/sizes.dart';
 import 'package:coffix_app/core/di/service_locator.dart';
+import 'package:coffix_app/core/extensions/date_extensions.dart';
 import 'package:coffix_app/core/services/log_service.dart';
 import 'package:coffix_app/core/extensions/price_extensions.dart';
 import 'package:coffix_app/core/theme/typography.dart';
@@ -26,6 +27,8 @@ import 'package:coffix_app/domain/usecases/use_case.dart';
 import 'package:coffix_app/presentation/atoms/app_button.dart';
 import 'package:coffix_app/presentation/atoms/app_card.dart';
 import 'package:coffix_app/presentation/atoms/app_clickable.dart';
+import 'package:coffix_app/presentation/atoms/app_loading.dart';
+import 'package:coffix_app/presentation/atoms/app_notification.dart';
 import 'package:coffix_app/presentation/molecules/app_back_header.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -66,6 +69,8 @@ class _ProfileViewState extends State<ProfileView> {
       context.read<CouponCubit>().streamCoupons();
     });
   }
+
+  bool sendingTransactionEmail = false;
 
   @override
   Widget build(BuildContext context) {
@@ -145,6 +150,12 @@ class _ProfileViewState extends State<ProfileView> {
                     },
                   ),
                   const SizedBox(height: AppSizes.md),
+                  if (user?.creditExpiry != null)
+                    Text(
+                      "Expiration Date: ${user?.creditExpiry?.formatDate()}",
+                      textAlign: TextAlign.center,
+                    ),
+
                   AppButton.primary(
                     onPressed: () {
                       context.read<CreditCubit>().showTopUpField(false);
@@ -172,17 +183,38 @@ class _ProfileViewState extends State<ProfileView> {
                 context.pushNamed(TransactionPage.route);
               },
               icon: AppImages.transaction,
-              trailingIcon: AppClickable(
-                onPressed: () async {
-                  await getIt<DownloadTransaction>().call(const NoParams());
-                },
-                showSplash: false,
-                child: Image.asset(
-                  AppImages.transactionDownload,
-                  width: AppSizes.iconSizeMedium,
-                  height: AppSizes.iconSizeMedium,
-                ),
-              ),
+              trailingIcon: sendingTransactionEmail
+                  ? AppLoading()
+                  : AppClickable(
+                      onPressed: () async {
+                        try {
+                          setState(() {
+                            sendingTransactionEmail = true;
+                          });
+                          await getIt<DownloadTransaction>().call(
+                            const NoParams(),
+                          );
+                          setState(() {
+                            sendingTransactionEmail = false;
+                          });
+                          AppNotification.show(
+                            context,
+                            'Transaction email sent successfully',
+                          );
+                        } catch (e) {
+                          setState(() {
+                            sendingTransactionEmail = false;
+                          });
+                          AppNotification.error(context, e.toString());
+                        }
+                      },
+                      showSplash: false,
+                      child: Image.asset(
+                        AppImages.transactionDownload,
+                        width: AppSizes.iconSizeMedium,
+                        height: AppSizes.iconSizeMedium,
+                      ),
+                    ),
             ),
             Divider(height: 0, color: AppColors.textBlackColor),
 

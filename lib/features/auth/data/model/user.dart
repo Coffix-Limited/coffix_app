@@ -30,6 +30,8 @@ class AppUser {
   final String? qrId;
   final String? fcmToken;
   final bool? finishedOnboarding;
+  @DateTimeConverter()
+  final DateTime? creditExpiry;
 
   AppUser({
     this.creditAvailable,
@@ -54,6 +56,7 @@ class AppUser {
     this.qrId,
     this.fcmToken,
     this.finishedOnboarding,
+    this.creditExpiry,
   });
 
   factory AppUser.fromJson(Map<String, dynamic> json) =>

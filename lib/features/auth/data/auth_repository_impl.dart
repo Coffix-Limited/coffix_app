@@ -255,15 +255,15 @@ class AuthRepositoryImpl extends ApiClient implements AuthRepository {
     required String email,
   }) async {
     final ref = _firestore.collection('customers').doc(docId);
-    final existing = await ref.get();
-    if (!existing.exists) {
-      await ref.set({
-        'docId': docId,
-        'email': email,
-        'createdAt': TimeUtils.now(),
-        'qrId': generateQrId(docId),
-      }, SetOptions(merge: true));
-    }
+    // final existing = await ref.get();
+    // if (!existing.exists) {
+    await ref.set({
+      'docId': docId,
+      'email': email,
+      'createdAt': TimeUtils.now(),
+      'qrId': generateQrId(docId),
+    }, SetOptions(merge: true));
+    // }
   }
 
   @override

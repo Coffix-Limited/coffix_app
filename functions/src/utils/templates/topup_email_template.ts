@@ -10,9 +10,13 @@ export const topupEmailTemplate = `
     <td style="padding:10px 12px;font-size:13px;color:#555555;">Bonus Amount</td>
     <td style="padding:10px 12px;font-size:13px;font-weight:700;color:#1a1a1a;text-align:right;">{{bonusAmount}}</td>
   </tr>
-  <tr>
+  <tr style="border-bottom:1px solid #e0e0e0;">
     <td style="padding:10px 12px;font-size:14px;font-weight:700;color:#1a1a1a;">Total Amount Added</td>
     <td style="padding:10px 12px;font-size:14px;font-weight:700;color:#1a1a1a;text-align:right;">{{totalAmount}}</td>
+  </tr>
+  <tr>
+    <td style="padding:10px 12px;font-size:13px;color:#555555;">Paid by</td>
+    <td style="padding:10px 12px;font-size:13px;font-weight:700;color:#1a1a1a;text-align:right;">{{paidBy}}</td>
   </tr>
 </table>
 <p style="margin:16px 0 0;font-size:12px;color:#666666;">Date: {{createdAt}}</p>

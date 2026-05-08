@@ -20,11 +20,7 @@ class ReferralCubit extends Cubit<ReferralState> {
       );
       emit(ReferralState.success(message: message));
     } on ApiExceptions catch (e) {
-      emit(
-        ReferralState.error(
-          message: e.message.substring(e.statusCode.toString().length + 1),
-        ),
-      );
+      emit(ReferralState.error(message: e.message));
     } catch (e) {
       emit(ReferralState.error(message: e.toString()));
     }

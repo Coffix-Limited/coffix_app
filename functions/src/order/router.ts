@@ -80,7 +80,10 @@ export async function buildAndSendOrderInvoice(
   const gstAmount = (transaction?.gstAmount as number) ?? 0;
   const gstLine = `${gst}% GST Included in the total: $${gstAmount.toFixed(2)}`;
 
-  const paymentMethod = getPaymentMethod(order.paymentMethod as string);
+  const paymentMethod = getPaymentMethod(
+    order.paymentMethod as string,
+    (transaction?.card as any)?.cardNumber ?? null,
+  );
   const invoice = invoiceEmailTemplate
     .replace("{{invoiceText}}", r((order.storeInvoiceText as string) ?? ""))
     .replace("{{gst}}", r(String(gstNumber)))

@@ -8,6 +8,7 @@ import { createOTPDocumentWithTransaction } from "./service";
 import { verifyEmail } from "../user/service";
 import { RESEND_FROM_EMAIL } from "../constant/constant";
 import FirebaseService from "../firebase/service";
+import { ReferralService } from "../referrals/service";
 import { otpSendLimiter } from "../middleware/rateLimiter";
 import { renderTemplate } from "../utils/renderEmailTemplate";
 import { wrapInEmailShell } from "../utils/emailShell";
@@ -191,6 +192,10 @@ otpRouter.post(
       const firebaseService = new FirebaseService();
       await firebaseService.applyPendingGifts(uid, email).catch((err) => {
         console.error("Error applying pending gifts:", err);
+      });
+
+      await new ReferralService().activateReferral(uid, email).catch((err) => {
+        console.error("Error activating referral:", err);
       });
 
       return response.status(200).json({

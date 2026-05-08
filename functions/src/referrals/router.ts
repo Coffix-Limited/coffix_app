@@ -7,20 +7,12 @@ import { AuthService } from "../auth/service";
 import { logger } from "firebase-functions/v1";
 import { ReferralService } from "./service";
 import { EmailService } from "../email/service";
+import { sendReferralSchema } from "./schemas";
 
 const referralsRouter = express.Router();
 referralsRouter.use(express.json());
 
-const sendReferralSchema = z.object({
-  recipients: z
-    .array(
-      z.object({
-        email: z.email(),
-        name: z.string().min(1),
-      }),
-    )
-    .min(1),
-});
+
 
 referralsRouter.post(
   "/send",

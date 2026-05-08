@@ -3,6 +3,7 @@ import { requirePost } from "../middleware/method";
 import { requiredAuth, type AuthenticatedRequest } from "../middleware/auth";
 import { EmailService } from "./service";
 import { sendGiftEmailSchema } from "./schema";
+import { logger } from "firebase-functions";
 
 const router = express.Router();
 const emailService = new EmailService();
@@ -45,6 +46,7 @@ router.get(
         .status(200)
         .json({ success: true, message: "Credit transactions email sent" });
     } catch (e: any) {
+      logger.error(`Failed to send credit transactions email: ${e.message}`);
       return response.status(500).json({
         success: false,
         message: e.message ?? "Failed to send credit transactions email",

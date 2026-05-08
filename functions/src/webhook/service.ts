@@ -72,12 +72,17 @@ export class WebhookService {
       const amount = transaction.amount as number;
       const totalAmount = transaction.totalAmount as number;
       const bonusAmount = totalAmount - amount;
+      const cardNumber = (transaction.card as any)?.cardNumber ?? null;
+      const paidBy = cardNumber
+        ? `Credit Card ${(cardNumber as string).replace(/\./g, "").slice(-4)}`
+        : "Credit Card";
       invoiceHtml = topupEmailTemplate
         .replace("{{customerName}}", customerName)
         .replace("{{amount}}", `$${amount.toFixed(2)}`)
         .replace("{{bonusAmount}}", `$${bonusAmount.toFixed(2)}`)
         .replace("{{totalAmount}}", `$${totalAmount.toFixed(2)}`)
         .replace("{{createdAt}}", createdAt)
+        .replace("{{paidBy}}", paidBy)
         .replace("{{transactionNumber}}", transactionNumber);
     } else {
       const amount = transaction.amount as number;
@@ -275,6 +280,7 @@ export class WebhookService {
     const authorised = transaction.authorised === true;
     const amount = Number(transaction.amount ?? 0) || transactionDoc.amount;
     const paymentMethod = transaction.method ?? transaction.cardType ?? "card";
+    const card = transaction.card ?? {};
 
     // MERCHANT REFERENCE IF TOPUP: topup:<customerId>
     // MERCHANT REFERENCE IF ORDER: order:<customerId>:<orderId>
@@ -290,6 +296,7 @@ export class WebhookService {
         paymentMethod,
         responseText: transaction.responseText,
         authorised,
+        card,
       });
     } else {
       // if the user buys a product this function will be called
@@ -326,6 +333,7 @@ export class WebhookService {
           paymentId: transaction.id,
           responseText: transaction.responseText,
           orderNumber: orderDoc?.orderNumber,
+          card,
         });
 
         // Non-critical path: don't block response
@@ -411,6 +419,7 @@ export class WebhookService {
     paymentMethod,
     responseText,
     authorised,
+    card,
   }: {
     customerId: string;
     amount: number;
@@ -420,6 +429,7 @@ export class WebhookService {
     paymentMethod: string;
     responseText: string;
     authorised: boolean;
+    card: Record<string, any>;
   }) {
     if (authorised) {
       const totalAmount = await this.coffixCreditService.addCredit(
@@ -435,6 +445,7 @@ export class WebhookService {
         paymentId: transaction.id,
         responseText: transaction.responseText,
         totalAmount,
+        card,
       });
 
       this.notificationService

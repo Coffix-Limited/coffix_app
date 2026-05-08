@@ -1,8 +1,5 @@
 import { firestore } from "../config/firebaseAdmin";
-import FirebaseService from "../firebase/service";
-import { RESEND_FROM_EMAIL, GLOBAL_COLLECTION_ID } from "../constant/constant";
-import { renderTemplate } from "../utils/renderEmailTemplate";
-import { wrapInEmailShell } from "../utils/emailShell";
+import { GLOBAL_COLLECTION_ID } from "../constant/constant";
 import { logger } from "firebase-functions/v1";
 import { generateCouponCode } from "../utils/generateCouponCode";
 
@@ -18,7 +15,8 @@ export class ReferralService {
       .collection("global")
       .doc(GLOBAL_COLLECTION_ID)
       .get();
-    const referralExpiryDays = (globalSnap.data()?.referralExpiryDays ?? 7) as number;
+    const referralExpiryDays = (globalSnap.data()?.referralExpiryDays ??
+      7) as number;
 
     const referralTime = new Date();
     const validTime = new Date(
@@ -30,7 +28,7 @@ export class ReferralService {
       docId: referralRef.id,
       referralTime,
       referrer: referrerUid,
-      referee: referee.email,
+      referee: referee.email.toLowerCase(),
       refereeUid: null,
       signupTime: null,
       validTime,
@@ -48,7 +46,10 @@ export class ReferralService {
       .limit(1)
       .get();
 
-    if (snap.empty) return;
+    if (snap.empty) {
+      logger.info(`No pending referral found for referee: ${refereeUid}`);
+      return;
+    }
 
     const referralDoc = snap.docs[0];
     const signupTime = new Date();
@@ -71,11 +72,13 @@ export class ReferralService {
     logger.info(`Referral activated for referee: ${refereeUid}`);
   }
 
+  // this function is called when a customer makes their first topUp
   async handleFirstPurchase({
     customerId,
   }: {
     customerId: string;
   }): Promise<void> {
+    logger.info(`Handling first purchase for customer: ${customerId}`);
     // 1. Find active referral for this referee
     const referralSnap = await firestore
       .collection("referrals")
@@ -105,8 +108,10 @@ export class ReferralService {
       .collection("global")
       .doc(GLOBAL_COLLECTION_ID)
       .get();
-    const couponAmount = (globalSnap.data()?.couponDefaultAmount ?? 5) as number;
-    const couponExpiryDays = (globalSnap.data()?.couponExpiryDays ?? 30) as number;
+    const couponAmount = (globalSnap.data()?.couponDefaultAmount ??
+      5) as number;
+    const couponExpiryDays = (globalSnap.data()?.couponExpiryDays ??
+      30) as number;
 
     // 4. Generate unique coupon codes
     const referrerCode = await this.generateUniqueCode();
@@ -121,6 +126,7 @@ export class ReferralService {
     const refereeCouponRef = firestore.collection("coupons").doc();
 
     const baseCoupon = {
+      createdAt: now,
       type: "fixed",
       amount: couponAmount,
       usageLimit: 1,
@@ -175,6 +181,4 @@ export class ReferralService {
     }
     throw new Error("Failed to generate a unique coupon code after 5 attempts");
   }
-
-  
 }

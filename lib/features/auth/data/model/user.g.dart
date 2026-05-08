@@ -29,6 +29,7 @@ AppUser _$AppUserFromJson(Map<String, dynamic> json) => AppUser(
   qrId: json['qrId'] as String?,
   fcmToken: json['fcmToken'] as String?,
   finishedOnboarding: json['finishedOnboarding'] as bool?,
+  creditExpiry: const DateTimeConverter().fromJson(json['creditExpiry']),
 );
 
 Map<String, dynamic> _$AppUserToJson(AppUser instance) => <String, dynamic>{
@@ -54,4 +55,5 @@ Map<String, dynamic> _$AppUserToJson(AppUser instance) => <String, dynamic>{
   'qrId': instance.qrId,
   'fcmToken': instance.fcmToken,
   'finishedOnboarding': instance.finishedOnboarding,
+  'creditExpiry': const DateTimeConverter().toJson(instance.creditExpiry),
 };

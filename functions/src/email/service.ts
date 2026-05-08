@@ -190,6 +190,7 @@ export class EmailService {
   }
 
   async sendCreditTransactions(customerId: string): Promise<void> {
+    logger.info(`Sending credit transactions to customer: ${customerId}`);
     const customerSnap = await firestore
       .collection("customers")
       .doc(customerId)
@@ -205,19 +206,35 @@ export class EmailService {
     const snap = await firestore
       .collection("transactions")
       .where("customerId", "==", customerId)
-      .where("paymentMethod", "==", "coffixCredit")
-      .where("status", "in", ["paid", "approved", "completed"])
       .orderBy("createdAt", "asc")
       .get();
 
-    const transactions = snap.docs.map((d) => d.data());
+    const transactions = snap.docs
+      .map((d) => d.data())
+      .filter((tx) => {
+        const type = (tx.type as string | undefined) ?? "";
+        const status = (tx.status as string | undefined) ?? "";
+        const paymentMethod = (tx.paymentMethod as string | undefined) ?? "";
+        if (type === "topup") return status === "approved";
+        if (type === "gift" && paymentMethod === "coffixCredit")
+          return status === "sent" || status === "claimed";
+        if (type === "order" && paymentMethod === "coffixCredit")
+          return (
+            status === "approved" || status === "paid" || status === "completed"
+          );
+        return false;
+      });
 
     let runningBalance = 0;
     const rows = transactions.map((tx) => {
       const type = (tx.type as string | undefined) ?? "order";
+      const status = (tx.status as string | undefined) ?? "";
       const amount = (tx.amount as number | undefined) ?? 0;
       const totalAmount = (tx.totalAmount as number | undefined) ?? amount;
-      if (type === "topup" || type === "gift") {
+      const isCredit =
+        (type === "topup" && status === "approved") ||
+        (type === "gift" && status === "claimed");
+      if (isCredit) {
         runningBalance += totalAmount;
       } else {
         runningBalance -= amount;
@@ -225,7 +242,9 @@ export class EmailService {
       return {
         time: formatNzTime(toDate(tx.createdAt)),
         transaction: `#${tx.transactionNumber ?? ""} ${type.charAt(0).toUpperCase() + type.slice(1)}`,
-        amount: `$${amount.toFixed(2)}`,
+        amount: isCredit
+          ? `$${totalAmount.toFixed(2)}`
+          : `-$${amount.toFixed(2)}`,
         balance: `$${runningBalance.toFixed(2)}`,
       };
     });
