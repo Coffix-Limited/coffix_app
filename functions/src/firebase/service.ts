@@ -427,6 +427,16 @@ class FirebaseService {
     transactionNumber: string;
   }): Promise<Record<string, any>> {
     const transactionRef = firestore.collection("transactions").doc();
+    const [globalDoc, userDoc] = await Promise.all([
+      this.getGlobal(),
+      this.findUserByCustomerId(customerId),
+    ]);
+    const storeDoc = userDoc?.preferredStoreId
+      ? await this.findStoreByStoreId(userDoc.preferredStoreId)
+      : null;
+    const gst = (globalDoc?.GST ?? 0) as number;
+    const gstNumber = (storeDoc?.gstNumber ?? "") as string;
+    const gstAmount = amount - amount / (1 + gst / 100);
     const transactionDoc = {
       docId: transactionRef.id,
       customerId,
@@ -437,6 +447,9 @@ class FirebaseService {
       type: "topup",
       paymentMethod: "coffixCredit",
       transactionNumber,
+      gst,
+      gstNumber,
+      gstAmount,
     };
     await transactionRef.set(transactionDoc, { merge: true });
     return transactionDoc;
@@ -452,6 +465,17 @@ class FirebaseService {
       .get();
     if (snap.empty) return null;
     return snap.docs[0].data();
+  }
+
+  async findTransactionById(
+    transactionId: string,
+  ): Promise<Record<string, any> | null> {
+    const snap = await firestore
+      .collection("transactions")
+      .doc(transactionId)
+      .get();
+    if (!snap.exists) return null;
+    return snap.data() ?? null;
   }
 
   async findTransactionBySessionId(sessionId: string) {

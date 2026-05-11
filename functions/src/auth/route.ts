@@ -51,7 +51,7 @@ router.post("/verify", requirePost, authLimiter, async (request, response) => {
 router.post(
   "/forgot-password",
   requirePost,
-  forgotPasswordLimiter,
+  // forgotPasswordLimiter,
   async (request, response) => {
     try {
       const validation = forgotPasswordSchema.safeParse(request.body);
@@ -91,7 +91,7 @@ router.post(
 router.post(
   "/verify-reset-token",
   requirePost,
-  authLimiter,
+  // authLimiter,
   async (request, response) => {
     try {
       const validation = verifyResetTokenSchema.safeParse(request.body);
@@ -127,7 +127,7 @@ router.post(
 router.post(
   "/reset-password",
   requirePost,
-  authLimiter,
+  // authLimiter,
   async (request, response) => {
     try {
       const validation = resetPasswordSchema.safeParse(request.body);

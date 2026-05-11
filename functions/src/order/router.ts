@@ -2,7 +2,6 @@ import express, { Response } from "express";
 import { requiredAuth, type AuthenticatedRequest } from "../middleware/auth";
 import { requirePost } from "../middleware/method";
 import { invoiceSchema } from "./schema";
-import { orderEmailTemplate } from "../utils/templates/order_email_template";
 import { invoiceEmailTemplate } from "../utils/templates/invoice_email_template";
 import { giftEmailTemplate } from "../utils/templates/gift_email_template";
 import { topupEmailTemplate } from "../utils/templates/topup_email_template";
@@ -76,9 +75,16 @@ export async function buildAndSendOrderInvoice(
     : `<p class="meta-line">Service Time: ${createdAt} ${order.storeName}</p>`;
 
   const gst = (transaction?.gst as number) ?? 15;
-  const gstNumber = (transaction?.gstNumber as string) ?? "";
   const gstAmount = (transaction?.gstAmount as number) ?? 0;
-  const gstLine = `${gst}% GST Included in the total: $${gstAmount.toFixed(2)}`;
+
+  const isCoffixCredit = (order.paymentMethod as string) === "coffixCredit";
+  const invoiceLabel = isCoffixCredit ? "Coffix Credit Claim" : "Tax Invoice";
+  const displayGstNumberLine = isCoffixCredit
+    ? ""
+    : `<p class="store-gst">GST: ${(transaction?.gstNumber as string) ?? ""}</p>`;
+  const displayGstLineSection = isCoffixCredit
+    ? ""
+    : `<span class="gst-text">${gst}% GST Included in the total: $${gstAmount.toFixed(2)}</span>`;
 
   const paymentMethod = getPaymentMethod(
     order.paymentMethod as string,
@@ -86,11 +92,12 @@ export async function buildAndSendOrderInvoice(
   );
   const invoice = invoiceEmailTemplate
     .replace("{{invoiceText}}", r((order.storeInvoiceText as string) ?? ""))
-    .replace("{{gst}}", r(String(gstNumber)))
+    .replace("{{gstNumberLine}}", r(displayGstNumberLine))
+    .replace("{{invoiceLabel}}", r(invoiceLabel))
     .replace("{{transactionNumber}}", r(order.transactionNumber as string))
     .replace("{{items}}", r(itemsHtml))
     .replace("{{total}}", r(`$${(order.amount as number).toFixed(2)}`))
-    .replace("{{gstLine}}", r(gstLine))
+    .replace("{{gstLineSection}}", r(displayGstLineSection))
     .replace("{{paymentMethod}}", r(paymentMethod))
     .replace("{{createdAt}}", r(createdAt))
     .replace("{{serviceTimeLine}}", r(serviceTimeLine));
@@ -127,19 +134,15 @@ async function sendOrderInvoice(
   return response.status(200).json({ success: true, message: "Invoice sent" });
 }
 
-async function sendGiftInvoice(
+export async function buildAndSendGiftInvoice(
   firebaseService: FirebaseService,
   emailService: EmailService,
   transactionNumber: string,
-  response: Response,
-) {
+): Promise<void> {
   const transaction =
     await firebaseService.findTransactionByTransactionNumber(transactionNumber);
-  if (!transaction) {
-    return response
-      .status(404)
-      .json({ success: false, message: "Transaction not found" });
-  }
+  if (!transaction)
+    throw new Error(`Transaction not found: ${transactionNumber}`);
 
   const sender = await firebaseService.findUserByCustomerId(
     transaction.customerId as string,
@@ -171,8 +174,72 @@ async function sendGiftInvoice(
     storeName: "Coffix",
     transactionNumber: transaction.transactionNumber as string,
   });
+}
 
+async function sendGiftInvoice(
+  firebaseService: FirebaseService,
+  emailService: EmailService,
+  transactionNumber: string,
+  response: Response,
+) {
+  const transaction =
+    await firebaseService.findTransactionByTransactionNumber(transactionNumber);
+  if (!transaction) {
+    return response
+      .status(404)
+      .json({ success: false, message: "Transaction not found" });
+  }
+  await buildAndSendGiftInvoice(firebaseService, emailService, transactionNumber);
   return response.status(200).json({ success: true, message: "Invoice sent" });
+}
+
+export async function buildAndSendTopupInvoice(
+  firebaseService: FirebaseService,
+  emailService: EmailService,
+  customerId: string,
+  transactionNumber: string,
+): Promise<void> {
+  const [transaction, customer] = await Promise.all([
+    firebaseService.findTransactionByTransactionNumber(transactionNumber),
+    firebaseService.findUserByCustomerId(customerId),
+  ]);
+  if (!transaction)
+    throw new Error(`Transaction not found: ${transactionNumber}`);
+  if (!customer?.email)
+    throw new Error(`Customer email not found for: ${customerId}`);
+
+  const createdAt = formatNzTime(toDate(transaction.createdAt));
+  const amount = transaction.amount as number;
+  const gst = (transaction.gst as number) ?? 0;
+  const gstNumber = (transaction.gstNumber as string) ?? "";
+  const gstAmount = (transaction.gstAmount as number) ?? 0;
+  const gstLine = `${gst}% GST Included in the total: $${gstAmount.toFixed(2)}`;
+  const cardNumber = (transaction.card as any)?.cardNumber ?? null;
+  const paymentMethod = cardNumber
+    ? `Credit Card ${cardNumber.slice(-4)}`
+    : "Credit Card";
+  const totalAmountWithBonus = (transaction.totalAmount as number) ?? amount;
+  const bonusAmount = totalAmountWithBonus - amount;
+
+  const invoice = topupEmailTemplate
+    .replace("{{invoiceText}}", r(""))
+    .replace("{{gst}}", r(gstNumber))
+    .replace("{{transactionNumber}}", r(transactionNumber))
+    .replace("{{amount}}", r(`$${amount.toFixed(2)}`))
+    .replace("{{total}}", r(`$${amount.toFixed(2)}`))
+    .replace("{{gstLine}}", r(gstLine))
+    .replace("{{paymentMethod}}", r(paymentMethod))
+    .replace("{{createdAt}}", r(createdAt))
+    .replace("{{bonusAmount}}", r(`$${bonusAmount.toFixed(2)}`))
+    .replace("{{totalCoffixCredit}}", r(`$${totalAmountWithBonus.toFixed(2)}`));
+
+  await emailService.sendInvoice({
+    to: customer.email,
+    userId: customerId,
+    invoiceHtml: invoice,
+    storeName: "Coffix",
+    transactionNumber,
+  });
 }
 
 async function sendTopupInvoice(
@@ -189,36 +256,7 @@ async function sendTopupInvoice(
       .status(404)
       .json({ success: false, message: "Transaction not found" });
   }
-
-  const customer = await firebaseService.findUserByCustomerId(customerId);
-  const customerName =
-    [customer?.firstName, customer?.lastName].filter(Boolean).join(" ") ||
-    "Guest";
-  const createdAt = formatNzTime(toDate(transaction.createdAt));
-
-  const amount = transaction.amount as number;
-  const totalAmount = transaction.totalAmount as number;
-  const bonusAmount = totalAmount - amount;
-
-  const invoice = topupEmailTemplate
-    .replace("{{customerName}}", r(customerName))
-    .replace("{{amount}}", r(`$${amount.toFixed(2)}`))
-    .replace("{{bonusAmount}}", r(`$${bonusAmount.toFixed(2)}`))
-    .replace("{{totalAmount}}", r(`$${totalAmount.toFixed(2)}`))
-    .replace("{{createdAt}}", r(createdAt))
-    .replace(
-      "{{transactionNumber}}",
-      r(transaction.transactionNumber as string),
-    );
-
-  await emailService.sendInvoice({
-    to: customer?.email as string,
-    userId: customerId,
-    invoiceHtml: invoice,
-    storeName: "Coffix",
-    transactionNumber: transaction.transactionNumber as string,
-  });
-
+  await buildAndSendTopupInvoice(firebaseService, emailService, customerId, transactionNumber);
   return response.status(200).json({ success: true, message: "Invoice sent" });
 }
 

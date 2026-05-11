@@ -12,7 +12,7 @@ import { setGlobalOptions } from "firebase-functions";
 import { onRequest } from "firebase-functions/https";
 import { api } from "./api";
 
-export const v1 = onRequest(api);
+export const v1 = onRequest({ timeoutSeconds: 540 }, api);
 // Start writing functions
 // https://firebase.google.com/docs/functions/typescript
 

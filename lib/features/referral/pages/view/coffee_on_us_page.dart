@@ -1,5 +1,6 @@
 import 'package:coffix_app/core/constants/sizes.dart';
 import 'package:coffix_app/core/di/service_locator.dart';
+import 'package:coffix_app/features/app/logic/app_cubit.dart';
 import 'package:coffix_app/features/referral/logic/referral_cubit.dart';
 import 'package:coffix_app/presentation/atoms/app_button.dart';
 import 'package:coffix_app/presentation/atoms/app_field.dart';
@@ -143,6 +144,10 @@ class _CoffeeOnUsViewState extends State<CoffeeOnUsView> {
       loading: () => true,
       orElse: () => false,
     );
+    final global = context.watch<AppCubit>().state.maybeWhen(
+      loaded: (global, appVersion) => global,
+      orElse: () => null,
+    );
 
     return Scaffold(
       appBar: AppBackHeader(title: 'Coffee On Us', showLocation: false),
@@ -168,8 +173,8 @@ class _CoffeeOnUsViewState extends State<CoffeeOnUsView> {
             padding: AppSizes.defaultPadding,
             child: Column(
               children: [
-                const Text(
-                  "Introduce your friends to the Coffix App and get a coffee on us after their first purchase (within 7 days)",
+                Text(
+                  "Introduce your friends to the Coffix App and get a coffee on us after their first TopUp (within ${global?.referralExpiryDays?.toInt() ?? 7} days from your invitation)",
                   textAlign: TextAlign.center,
                 ),
                 SizedBox(height: AppSizes.xl),

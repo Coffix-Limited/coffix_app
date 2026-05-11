@@ -7,6 +7,7 @@ import 'package:coffix_app/data/repositories/auth_repository.dart';
 import 'package:coffix_app/data/repositories/store_repository.dart';
 import 'package:coffix_app/features/auth/data/model/user_with_store.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
@@ -41,17 +42,11 @@ class AuthCubit extends Cubit<AuthState> {
   }
 
   AuthExceptions _handleAuthException(FirebaseAuthException e) {
-    switch (e.code) {
-      case 'user-disabled':
-        throw AuthExceptions(message: "User is disabled", code: e.code);
-      case 'invalid-credential':
-        throw AuthExceptions(message: "Invalid credential", code: e.code);
-      case 'invalid-email':
-        throw AuthExceptions(message: "Invalid email", code: e.code);
-      case 'invalid-password':
-        throw AuthExceptions(message: "Invalid password", code: e.code);
-    }
-    return AuthExceptions(message: e.message ?? "Unknown error", code: e.code);
+    debugPrint('auth exception code: ${e.stackTrace}');
+    return AuthExceptions(
+      message: getAuthExceptionMessage(e.code),
+      code: e.code,
+    );
   }
 
   Future<void> signInWithEmailAndPassword({
@@ -192,8 +187,11 @@ class AuthCubit extends Cubit<AuthState> {
         );
       }
       getUser();
+    } on FirebaseAuthException catch (e) {
+      emit(AuthState.error(message: _handleAuthException(e).message));
     } catch (e) {
-      emit(AuthState.error(message: e.toString()));
+      debugPrint('create or login account error: $e');
+      emit(AuthState.error(message: 'Something went wrong. Please try again.'));
     }
   }
 

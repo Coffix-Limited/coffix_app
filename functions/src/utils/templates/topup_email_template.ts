@@ -1,23 +1,168 @@
-export const topupEmailTemplate = `
-<h2 style="margin:0 0 16px;font-size:18px;font-weight:700;color:#1a1a1a;">TopUp Invoice #{{transactionNumber}}</h2>
-<p style="margin:0 0 16px;font-size:14px;color:#333333;">Hi {{customerName}},</p>
-<table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;border:1px solid #e0e0e0;">
-  <tr style="border-bottom:1px solid #e0e0e0;">
-    <td style="padding:10px 12px;font-size:13px;color:#555555;">TopUp Amount</td>
-    <td style="padding:10px 12px;font-size:13px;font-weight:700;color:#1a1a1a;text-align:right;">{{amount}}</td>
-  </tr>
-  <tr style="border-bottom:1px solid #e0e0e0;">
-    <td style="padding:10px 12px;font-size:13px;color:#555555;">Bonus Amount</td>
-    <td style="padding:10px 12px;font-size:13px;font-weight:700;color:#1a1a1a;text-align:right;">{{bonusAmount}}</td>
-  </tr>
-  <tr style="border-bottom:1px solid #e0e0e0;">
-    <td style="padding:10px 12px;font-size:14px;font-weight:700;color:#1a1a1a;">Total Amount Added</td>
-    <td style="padding:10px 12px;font-size:14px;font-weight:700;color:#1a1a1a;text-align:right;">{{totalAmount}}</td>
-  </tr>
-  <tr>
-    <td style="padding:10px 12px;font-size:13px;color:#555555;">Paid by</td>
-    <td style="padding:10px 12px;font-size:13px;font-weight:700;color:#1a1a1a;text-align:right;">{{paidBy}}</td>
-  </tr>
-</table>
-<p style="margin:16px 0 0;font-size:12px;color:#666666;">Date: {{createdAt}}</p>
-`;
+export const topupEmailTemplate = `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Your Coffix Tax Invoice</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        background-color: #f5f5f5;
+        font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+        color: #333333;
+      }
+      .wrapper {
+        max-width: 480px;
+        margin: 40px auto;
+        background-color: #ffffff;
+        border: 1px solid #cccccc;
+      }
+      .store-header {
+        padding: 20px 24px 16px;
+        text-align: center;
+        border-bottom: 1px solid #cccccc;
+      }
+      .store-name {
+        font-size: 20px;
+        font-weight: 700;
+        color: #1a1a1a;
+        margin: 0 0 4px;
+      }
+      .store-address {
+        font-size: 11px;
+        color: #333333;
+        margin: 0 0 2px;
+      }
+      .store-gst {
+        font-size: 11px;
+        color: #333333;
+        margin: 0;
+      }
+      .tax-invoice-header {
+        padding: 16px 24px;
+        text-align: center;
+        border-bottom: 1px solid #cccccc;
+      }
+      .tax-invoice-number {
+        font-size: 16px;
+        font-weight: 700;
+        color: #1a1a1a;
+        margin: 0;
+      }
+      .items-section {
+        padding: 0 24px;
+        border-bottom: 1px solid #cccccc;
+      }
+      .item-row {
+        display: table;
+        width: 100%;
+        padding: 10px 0;
+        box-sizing: border-box;
+      }
+      .item-left {
+        display: table-cell;
+        width: 75%;
+        vertical-align: top;
+      }
+      .item-right {
+        display: table-cell;
+        width: 25%;
+        text-align: right;
+        vertical-align: top;
+        font-size: 11px;
+        color: #1a1a1a;
+      }
+      .item-name {
+        font-size: 11px;
+        font-weight: 700;
+        color: #1a1a1a;
+      }
+      .total-section {
+        padding: 12px 24px 4px;
+        text-align: right;
+        border-bottom: 1px solid #cccccc;
+      }
+      .total-text {
+        font-size: 14px;
+        font-weight: 700;
+        color: #1a1a1a;
+        display: block;
+      }
+      .gst-text {
+        font-size: 11px;
+        color: #333333;
+        display: block;
+        margin-top: 4px;
+        padding-bottom: 12px;
+      }
+      .meta-section {
+        padding: 12px 24px 16px;
+        border-bottom: 1px solid #cccccc;
+      }
+      .meta-line {
+        font-size: 11px;
+        color: #333333;
+        margin: 4px 0;
+      }
+      .thank-you-section {
+        padding: 16px 24px;
+        text-align: center;
+        border-bottom: 1px solid #cccccc;
+      }
+      .thank-you-text {
+        font-size: 14px;
+        color: #333333;
+        margin: 0 0 6px;
+      }
+      .website-text {
+        font-size: 11px;
+        font-weight: 700;
+        color: #1a1a1a;
+        margin: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrapper">
+      <div class="store-header">
+        <p class="store-name">Coffix</p>
+        <p class="store-address">{{invoiceText}}</p>
+        <p class="store-gst">GST: {{gst}}</p>
+      </div>
+
+      <div class="tax-invoice-header">
+        <p class="tax-invoice-number">Tax Invoice: {{transactionNumber}}</p>
+      </div>
+
+      <div class="items-section">
+        <div class="item-row">
+          <div class="item-left">
+            <div class="item-name">Coffix Credit TopUp</div>
+          </div>
+          <div class="item-right">{{amount}}</div>
+        </div>
+      </div>
+
+      <div class="total-section">
+        <span class="total-text">Total: {{total}}</span>
+        <span class="gst-text">{{gstLine}}</span>
+      </div>
+
+      <div class="meta-section">
+        <p class="meta-line">Paid by: {{paymentMethod}}</p>
+        <p class="meta-line">Order Time: {{createdAt}}</p>
+        <div style="display:table;width:100%;margin:4px 0;">
+          <span style="display:table-cell;font-size:11px;color:#333333;">You received Coffix credit bonus of</span>
+          <span style="display:table-cell;font-size:11px;color:#333333;text-align:right;">{{bonusAmount}}</span>
+        </div>
+        <p class="meta-line" style="font-weight:700;text-align:right;margin-top:4px;">Total Coffix Credit: {{totalCoffixCredit}}</p>
+      </div>
+
+      <div class="thank-you-section">
+        <p class="thank-you-text">Thank you for your purchase</p>
+        <p class="website-text">coffix.co.nz</p>
+      </div>
+    </div>
+  </body>
+</html>`;

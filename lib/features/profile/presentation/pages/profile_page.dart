@@ -218,14 +218,16 @@ class _ProfileViewState extends State<ProfileView> {
             ),
             Divider(height: 0, color: AppColors.textBlackColor),
 
-            ProfileTile(
-              label: 'Share your balance',
-              onTap: () {
-                context.pushNamed(ShareYourBalancePage.route);
-              },
-              icon: AppImages.balance,
-            ),
-            Divider(height: 0, color: AppColors.textBlackColor),
+            if (global?.shareCredit == true) ...[
+              ProfileTile(
+                label: 'Share your balance',
+                onTap: () {
+                  context.pushNamed(ShareYourBalancePage.route);
+                },
+                icon: AppImages.balance,
+              ),
+              Divider(height: 0, color: AppColors.textBlackColor),
+            ],
 
             ProfileTile(
               label: 'Specials',

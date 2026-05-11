@@ -1,4 +1,5 @@
 import express from "express";
+import cors from "cors";
 import { otpRouter } from "./otp/router";
 import referralsRouter from "./referrals/router";
 import windcaveRouter from "./windcave/router";
@@ -9,16 +10,38 @@ import authRouter from "./auth/route";
 import orderRouter from "./order/router";
 import notificationRouter from "./notification/router";
 import emailRouter from "./email/router";
+import transactionRouter from "./transaction/router";
 import { globalLimiter } from "./middleware/rateLimiter";
+import { app } from "firebase-functions";
 
 export const api = express();
-// Global middleware
+
+const allowedOrigins = [
+  "https://dev.appmgr.coffix.co.nz",
+  "https://appmgr.coffix.co.nz",
+  "http://localhost:3000",
+];
+
+const corsOptions = {
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(null, false);
+    }
+  },
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true,
+};
+
+api.use(cors(corsOptions));
+
 api.use(express.json());
 api.use(globalLimiter);
 
-
 api.use("/health", (request, response) => {
-  response.send("OK");
+  response.send("OKK!");
 });
 
 // Mount routers
@@ -32,3 +55,4 @@ api.use("/order", orderRouter);
 api.use("/notification", notificationRouter);
 api.use("/referrals", referralsRouter);
 api.use("/email", emailRouter);
+api.use("/transaction", transactionRouter);

@@ -137,11 +137,11 @@ export const invoiceEmailTemplate = `<!doctype html>
       <div class="store-header">
         <p class="store-name">Coffix</p>
         <p class="store-address">{{invoiceText}}</p>
-        <p class="store-gst">GST: {{gst}}</p>
+        {{gstNumberLine}}
       </div>
 
       <div class="tax-invoice-header">
-        <p class="tax-invoice-number">Tax Invoice: {{transactionNumber}}</p>
+        <p class="tax-invoice-number">{{invoiceLabel}}: {{transactionNumber}}</p>
       </div>
 
       <div class="items-section">
@@ -150,7 +150,7 @@ export const invoiceEmailTemplate = `<!doctype html>
 
       <div class="total-section">
         <span class="total-text">Total: {{total}}</span>
-        <span class="gst-text">{{gstLine}}</span>
+        {{gstLineSection}}
       </div>
 
       <div class="meta-section">

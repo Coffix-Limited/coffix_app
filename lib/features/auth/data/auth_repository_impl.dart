@@ -46,6 +46,8 @@ class AuthRepositoryImpl extends ApiClient implements AuthRepository {
           message: 'User is disabled',
         );
       }
+    } on FirebaseAuthException {
+      rethrow;
     } catch (e) {
       throw Exception(e);
     }
@@ -79,7 +81,7 @@ class AuthRepositoryImpl extends ApiClient implements AuthRepository {
         throw Exception('Email already in use');
       }
       debugPrint('signUp error: $e\n$st'); // see real error in console
-      throw Exception(e.message);
+      rethrow;
     } catch (e, st) {
       debugPrint('signUp error: $e\n$st'); // see real error in console
       throw Exception(e);

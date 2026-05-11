@@ -70,20 +70,27 @@ export class WebhookService {
     if (authorised) {
       const createdAt = formatNzTime(toDate(transaction.createdAt));
       const amount = transaction.amount as number;
-      const totalAmount = transaction.totalAmount as number;
-      const bonusAmount = totalAmount - amount;
+      const gst = (transaction.gst as number) ?? 0;
+      const gstNumber = (transaction.gstNumber as string) ?? "";
+      const gstAmount = (transaction.gstAmount as number) ?? 0;
+      const gstLine = `${gst}% GST Included in the total: $${gstAmount.toFixed(2)}`;
       const cardNumber = (transaction.card as any)?.cardNumber ?? null;
-      const paidBy = cardNumber
-        ? `Credit Card ${(cardNumber as string).replace(/\./g, "").slice(-4)}`
+      const paymentMethod = cardNumber
+        ? `Credit Card ${cardNumber.slice(-4)}`
         : "Credit Card";
+      const totalAmountWithBonus = (transaction.totalAmount as number) ?? amount;
+      const bonusAmount = totalAmountWithBonus - amount;
       invoiceHtml = topupEmailTemplate
-        .replace("{{customerName}}", customerName)
+        .replace("{{invoiceText}}", "")
+        .replace("{{gst}}", gstNumber)
+        .replace("{{transactionNumber}}", transactionNumber)
         .replace("{{amount}}", `$${amount.toFixed(2)}`)
-        .replace("{{bonusAmount}}", `$${bonusAmount.toFixed(2)}`)
-        .replace("{{totalAmount}}", `$${totalAmount.toFixed(2)}`)
+        .replace("{{total}}", `$${amount.toFixed(2)}`)
+        .replace("{{gstLine}}", gstLine)
+        .replace("{{paymentMethod}}", paymentMethod)
         .replace("{{createdAt}}", createdAt)
-        .replace("{{paidBy}}", paidBy)
-        .replace("{{transactionNumber}}", transactionNumber);
+        .replace("{{bonusAmount}}", `$${bonusAmount.toFixed(2)}`)
+        .replace("{{totalCoffixCredit}}", `$${totalAmountWithBonus.toFixed(2)}`);
     } else {
       const amount = transaction.amount as number;
       invoiceHtml = wrapInEmailShell(
