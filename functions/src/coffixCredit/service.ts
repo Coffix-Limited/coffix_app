@@ -5,6 +5,8 @@ import FirebaseService from "../firebase/service";
 import { InsufficientCreditError, MinCreditError } from "./errors";
 import { EmailService } from "../email/service";
 import { generateTransactionNumber } from "../utils/generate_order_number";
+import { ReceiptService } from "../receipt/service";
+import { formatNzTime, nowNZ } from "../utils/nz_time";
 
 export { InsufficientCreditError, MinCreditError };
 
@@ -129,10 +131,18 @@ export class CoffixCreditService {
     if (!senderSnap.exists) {
       throw new Error("Sender not found");
     }
-    const creditAvailable = (senderSnap.data()?.creditAvailable ?? 0) as number;
+    const senderData = senderSnap.data();
+    const creditAvailable = (senderData?.creditAvailable ?? 0) as number;
     if (creditAvailable < amount) {
       throw new InsufficientCreditError(creditAvailable, amount);
     }
+
+    const storeDoc = senderData?.preferredStoreId
+      ? await firebaseService.findStoreByStoreId(senderData.preferredStoreId)
+      : null;
+    const storeInvoiceText = (storeDoc?.invoiceText ?? "") as string;
+    const storeId = (senderData?.preferredStoreId ?? "") as string;
+    const printerId = (storeDoc?.printerId ?? "TRY") as string;
 
     // 4. Look up recipient by email
     const recipient = await firebaseService.findCustomerByEmail(recipientEmail);
@@ -169,6 +179,9 @@ export class CoffixCreditService {
           recipientCustomerId: recipient.customerId,
           amount,
           transactionNumber,
+          storeInvoiceText,
+          storeId,
+          printerId,
         });
       });
     } else {
@@ -189,6 +202,9 @@ export class CoffixCreditService {
           recipientFullName,
           amount,
           transactionNumber,
+          storeInvoiceText,
+          storeId,
+          printerId,
         });
       });
     }
@@ -202,6 +218,8 @@ export class CoffixCreditService {
           userId: senderId,
           amount,
           transactionNumber,
+          recipientFullName,
+          storeInvoiceText,
         })
         .catch((emailError) =>
           logger.error("Error sending gift notification email to recipient", {
@@ -210,10 +228,12 @@ export class CoffixCreditService {
         ),
       emailService
         .sendGift({
-          to: senderSnap.data()!.email as string,
+          to: senderData!.email as string,
           userId: senderId,
           amount,
           transactionNumber,
+          recipientFullName,
+          storeInvoiceText,
         })
         .catch((emailError) =>
           logger.error("Error sending gift sent email to sender", {
@@ -221,5 +241,24 @@ export class CoffixCreditService {
           }),
         ),
     ]);
+
+    // 6. Create gift print queue (non-fatal)
+    void (async () => {
+      try {
+        const receiptService = new ReceiptService();
+        await receiptService.createGiftPrintQueue({
+          receiptData: {
+            printerId,
+            storeInvoiceText,
+            transactionNumber,
+            recipientFullName,
+            amount,
+            orderTime: nowNZ(),
+          },
+        });
+      } catch (printError) {
+        logger.error("Error creating gift print queue", { printError });
+      }
+    })();
   }
 }

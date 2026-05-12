@@ -22,3 +22,14 @@ export const createReceiptBodySchema = z.object({
 });
 
 export type CreateReceiptBodySchema = z.infer<typeof createReceiptBodySchema>;
+
+export const createGiftBodySchema = z.object({
+  printerId: z.string().trim(),
+  storeInvoiceText: z.string().trim(),
+  transactionNumber: z.string().trim(),
+  recipientFullName: z.string().trim(),
+  amount: z.number().positive(),
+  orderTime: z.string().trim(),
+});
+
+export type CreateGiftBodySchema = z.infer<typeof createGiftBodySchema>;

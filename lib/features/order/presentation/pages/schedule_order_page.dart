@@ -3,8 +3,6 @@ import 'package:coffix_app/core/constants/sizes.dart';
 import 'package:coffix_app/core/di/service_locator.dart';
 import 'package:coffix_app/core/services/log_service.dart';
 import 'package:coffix_app/core/theme/typography.dart';
-import 'package:coffix_app/features/app/logic/app_cubit.dart';
-import 'package:coffix_app/features/auth/data/model/user_with_store.dart';
 import 'package:coffix_app/features/auth/logic/auth_cubit.dart';
 import 'package:coffix_app/features/cart/logic/cart_cubit.dart';
 import 'package:coffix_app/features/payment/presentation/pages/payment_options_page.dart';
@@ -62,22 +60,18 @@ class _ScheduleOrderViewState extends State<ScheduleOrderView> {
 
   @override
   Widget build(BuildContext context) {
-    final global = context.watch<AppCubit>().state.maybeWhen(
-      loaded: (global, appVersion) => global,
+    final user = context.watch<AuthCubit>().state.maybeWhen(
+      authenticated: (user) => user,
       orElse: () => null,
     );
     List<PickupOption> availableOptions0(int? minsLeft) {
-      if (global?.scheduleOrder == false) return [PickupOption.now];
+      if (user?.user.scheduleOrder == false) return [PickupOption.now];
       if (minsLeft == null || minsLeft <= 30) return [PickupOption.now];
       if (minsLeft <= 45)
         return [PickupOption.now, PickupOption.fifteenMinutes];
       return PickupOption.values;
     }
 
-    final AppUserWithStore? user = context.watch<AuthCubit>().state.maybeWhen(
-      authenticated: (user) => user,
-      orElse: () => null,
-    );
     final minsLeft = user?.store?.minutesUntilClose();
     final availableOptions = availableOptions0(minsLeft);
     if (!availableOptions.contains(_selected)) {

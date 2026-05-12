@@ -13,6 +13,7 @@ import {
 import { AppUser } from "../user/interface";
 import { EmailTemplate } from "./interface";
 import { formatNzDate, formatNzTime, nowNZ } from "../utils/nz_time";
+import { giftEmailTemplate } from "../utils/templates/gift_email_template";
 import * as admin from "firebase-admin";
 
 function toDate(value: unknown): Date {
@@ -139,6 +140,13 @@ export class EmailService {
 
   // send gift notification email
   async sendGift(params: GiftEmailParams): Promise<void> {
+    const invoiceHtml = renderTemplate(giftEmailTemplate, {
+      transaction_number: params.transactionNumber ?? "",
+      recipient_full_name: params.recipientFullName ?? "",
+      gift_amount: params.amount.toFixed(2),
+      date: nowNZ(),
+      invoice_text: params.storeInvoiceText ?? "",
+    });
     await this.send({
       email: params.to,
       documentId: "GIFT",
@@ -146,6 +154,8 @@ export class EmailService {
       variables: {
         gift_amount: params.amount.toFixed(2),
         transaction_number: params.transactionNumber ?? "",
+        recipient_full_name: params.recipientFullName ?? "",
+        invoice: invoiceHtml,
       },
     });
   }

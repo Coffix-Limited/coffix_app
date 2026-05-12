@@ -56,7 +56,7 @@ class GiftTransactionState extends State<GiftTransaction> {
 
     String label() {
       if (widget.transaction.status == TransactionStatus.sent) {
-        return "Gift to: ${widget.transaction.recipientEmail ?? 'N/A'} (${widget.transaction.recipientEmail ?? 'N/A'})";
+        return "Gift to: ${widget.transaction.recipientFullName ?? 'N/A'} (${widget.transaction.recipientEmail ?? 'N/A'})";
       } else if (widget.transaction.status == TransactionStatus.claimed) {
         return "Gift from: ${widget.transaction.senderFullName ?? 'N/A'} (${widget.transaction.senderEmail ?? 'N/A'})";
       }

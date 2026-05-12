@@ -15,6 +15,7 @@ import { firestore } from "../config/firebaseAdmin";
 import { formatNzTime } from "../utils/nz_time";
 import { EmailService } from "../email/service";
 import { buildAndSendOrderInvoice } from "../order/router";
+import { getPaymentMethod } from "../order/service";
 import { wrapInEmailShell } from "../utils/emailShell";
 import { topupEmailTemplate } from "../utils/templates/topup_email_template";
 import admin from "firebase-admin";
@@ -78,10 +79,11 @@ export class WebhookService {
       const paymentMethod = cardNumber
         ? `Credit Card ${cardNumber.slice(-4)}`
         : "Credit Card";
+      const storeInvoiceText = (transaction.storeInvoiceText as string) ?? "";
       const totalAmountWithBonus = (transaction.totalAmount as number) ?? amount;
       const bonusAmount = totalAmountWithBonus - amount;
       invoiceHtml = topupEmailTemplate
-        .replace("{{invoiceText}}", "")
+        .replace("{{invoiceText}}", storeInvoiceText)
         .replace("{{gst}}", gstNumber)
         .replace("{{transactionNumber}}", transactionNumber)
         .replace("{{amount}}", `$${amount.toFixed(2)}`)
@@ -343,6 +345,11 @@ export class WebhookService {
           card,
         });
 
+        const formattedPaymentMethod = getPaymentMethod(
+          paymentMethod,
+          (card as any)?.cardNumber ?? null,
+        );
+
         // Non-critical path: don't block response
         void this.receiptService.createPrintQueue({
           receiptData: {
@@ -362,7 +369,7 @@ export class WebhookService {
             customer: customerName,
             baristaName: "John Doe",
             duration: orderDoc?.duration ?? 0,
-            paymentMethod: "Credit Card",
+            paymentMethod: formattedPaymentMethod,
             orderTime: formatNzTime(orderDoc.createdAt.toDate()),
             serviceTime: formatNzTime(orderDoc.scheduledAt.toDate()),
           },

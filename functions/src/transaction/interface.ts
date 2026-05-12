@@ -33,4 +33,7 @@ export interface Transaction {
   gst?: number | null;
   gstAmount?: number | null;
   gstNumber?: string | null;
+
+  storeInvoiceText?: string | null;
+  storeId?: string | null;
 }

@@ -25,9 +25,6 @@ class AppGlobal extends Equatable {
   final int? invoiceCounter;
   final double? creditExpiryDuration;
   final double? referralExpiryDays;
-  final bool? scheduleOrder;
-  final bool? shareCredit;
-  final bool? withdrawBalance;
 
   const AppGlobal({
     this.GST,
@@ -48,9 +45,6 @@ class AppGlobal extends Equatable {
     this.invoiceCounter,
     this.creditExpiryDuration,
     this.referralExpiryDays,
-    this.scheduleOrder,
-    this.shareCredit,
-    this.withdrawBalance,
   });
 
   factory AppGlobal.fromJson(Map<String, dynamic> json) =>
@@ -76,9 +70,6 @@ class AppGlobal extends Equatable {
     int? invoiceCounter,
     double? creditExpiryDuration,
     double? referralExpiryDays,
-    bool? scheduleOrder,
-    bool? shareCredit,
-    bool? withdrawBalance,
   }) => AppGlobal(
     GST: GST ?? this.GST,
     appVersion: appVersion ?? this.appVersion,
@@ -98,9 +89,6 @@ class AppGlobal extends Equatable {
     invoiceCounter: invoiceCounter ?? this.invoiceCounter,
     creditExpiryDuration: creditExpiryDuration ?? this.creditExpiryDuration,
     referralExpiryDays: referralExpiryDays ?? this.referralExpiryDays,
-    scheduleOrder: scheduleOrder ?? this.scheduleOrder,
-    shareCredit: shareCredit ?? this.shareCredit,
-    withdrawBalance: withdrawBalance ?? this.withdrawBalance,
   );
 
   @override
@@ -123,8 +111,5 @@ class AppGlobal extends Equatable {
     invoiceCounter,
     creditExpiryDuration,
     referralExpiryDays,
-    scheduleOrder,
-    shareCredit,
-    withdrawBalance,
   ];
 }

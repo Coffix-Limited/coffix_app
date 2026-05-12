@@ -218,7 +218,7 @@ class _ProfileViewState extends State<ProfileView> {
             ),
             Divider(height: 0, color: AppColors.textBlackColor),
 
-            if (global?.shareCredit == true) ...[
+            if (user?.shareCredit == null || user?.shareCredit == true) ...[
               ProfileTile(
                 label: 'Share your balance',
                 onTap: () {

@@ -102,6 +102,7 @@ router.post(
             orderNumber: orderData.orderNumber,
             transactionNumber,
             scheduledAt,
+            storeId: validation.data.storeId,
           });
 
         // Non-critical path: don't block response
@@ -197,6 +198,7 @@ router.post(
         type: "order",
         gstNumber: orderData.storeGst,
         paymentMethod: validation.data.paymentMethod,
+        storeId: validation.data.storeId,
       });
 
       return response.status(200).json({

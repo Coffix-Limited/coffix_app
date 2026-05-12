@@ -32,6 +32,9 @@ class AppUser {
   final bool? finishedOnboarding;
   @DateTimeConverter()
   final DateTime? creditExpiry;
+  final bool? scheduleOrder;
+  final bool? shareCredit;
+  final bool? withdrawBalance;
 
   AppUser({
     this.creditAvailable,
@@ -57,6 +60,9 @@ class AppUser {
     this.fcmToken,
     this.finishedOnboarding,
     this.creditExpiry,
+    this.scheduleOrder,
+    this.shareCredit,
+    this.withdrawBalance,
   });
 
   factory AppUser.fromJson(Map<String, dynamic> json) =>

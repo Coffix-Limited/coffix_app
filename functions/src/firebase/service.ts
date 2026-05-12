@@ -213,6 +213,7 @@ class FirebaseService {
     orderNumber,
     transactionNumber,
     scheduledAt,
+    storeId,
   }: {
     customerId: string;
     orderId: string;
@@ -221,6 +222,7 @@ class FirebaseService {
     orderNumber: string;
     transactionNumber: string;
     scheduledAt: Date;
+    storeId?: string;
   }): Promise<{ paidAt: Date }> {
     const customerRef = firestore.collection("customers").doc(customerId);
     const orderRef = firestore.collection("orders").doc(orderId);
@@ -346,6 +348,7 @@ class FirebaseService {
         gst,
         gstNumber,
         gstAmount,
+        storeId: storeId ?? "",
       });
 
       tx.set(
@@ -374,6 +377,7 @@ class FirebaseService {
     type,
     gstNumber,
     paymentMethod,
+    storeId,
   }: {
     customerId: string;
     orderId: string;
@@ -383,6 +387,7 @@ class FirebaseService {
     type: string;
     gstNumber: string;
     paymentMethod: string;
+    storeId?: string;
   }): Promise<string> {
     const transactionRef = firestore.collection("transactions").doc();
 
@@ -404,6 +409,7 @@ class FirebaseService {
       gstNumber,
       gstAmount,
       paymentMethod,
+      storeId: storeId ?? "",
     });
     return transactionRef.id;
   }
@@ -436,6 +442,7 @@ class FirebaseService {
       : null;
     const gst = (globalDoc?.GST ?? 0) as number;
     const gstNumber = (storeDoc?.gstNumber ?? "") as string;
+    const storeInvoiceText = (storeDoc?.invoiceText ?? "") as string;
     const gstAmount = amount - amount / (1 + gst / 100);
     const transactionDoc = {
       docId: transactionRef.id,
@@ -450,6 +457,7 @@ class FirebaseService {
       gst,
       gstNumber,
       gstAmount,
+      storeInvoiceText,
     };
     await transactionRef.set(transactionDoc, { merge: true });
     return transactionDoc;
@@ -553,6 +561,9 @@ class FirebaseService {
       recipientCustomerId,
       amount,
       transactionNumber,
+      storeInvoiceText,
+      storeId,
+      printerId,
     }: {
       senderId: string;
       senderFullName: string;
@@ -562,6 +573,9 @@ class FirebaseService {
       recipientCustomerId?: string;
       amount: number;
       transactionNumber: string;
+      storeInvoiceText?: string;
+      storeId?: string;
+      printerId?: string;
     },
   ): void {
     const now = new Date();
@@ -575,6 +589,9 @@ class FirebaseService {
       amount,
       transactionNumber,
       createdAt: now,
+      storeInvoiceText: storeInvoiceText ?? "",
+      storeId: storeId ?? "",
+      printerId: printerId ?? "",
     };
 
     const senderTxRef = firestore.collection("transactions").doc();

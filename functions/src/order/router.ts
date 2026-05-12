@@ -7,7 +7,8 @@ import { giftEmailTemplate } from "../utils/templates/gift_email_template";
 import { topupEmailTemplate } from "../utils/templates/topup_email_template";
 import { EmailService } from "../email/service";
 import { wrapInEmailShell } from "../utils/emailShell";
-import { formatNzTime } from "../utils/nz_time";
+import { renderTemplate } from "../utils/renderEmailTemplate";
+import { formatNzTime, nowNZ } from "../utils/nz_time";
 import * as admin from "firebase-admin";
 import FirebaseService from "../firebase/service";
 import { getPaymentMethod } from "./service";
@@ -147,24 +148,14 @@ export async function buildAndSendGiftInvoice(
   const sender = await firebaseService.findUserByCustomerId(
     transaction.customerId as string,
   );
-  const senderName =
-    [transaction.senderFirstName, transaction.senderLastName]
-      .filter(Boolean)
-      .join(" ") ||
-    [sender?.firstName, sender?.lastName].filter(Boolean).join(" ") ||
-    "Guest";
-  const createdAt = formatNzTime(toDate(transaction.createdAt));
 
   const invoice = wrapInEmailShell(
-    giftEmailTemplate
-      .replace("{{senderName}}", r(senderName))
-      .replace(
-        "{{recipientFullName}}",
-        r(transaction.recipientFullName as string),
-      )
-      .replace("{{recipientEmail}}", r(transaction.recipientEmail as string))
-      .replace("{{amount}}", r(`$${(transaction.amount as number).toFixed(2)}`))
-      .replace("{{createdAt}}", r(createdAt)),
+    renderTemplate(giftEmailTemplate, {
+      transaction_number: transaction.transactionNumber as string,
+      recipient_full_name: transaction.recipientFullName as string,
+      gift_amount: (transaction.amount as number).toFixed(2),
+      date: nowNZ(),
+    }),
   );
 
   await emailService.sendInvoice({

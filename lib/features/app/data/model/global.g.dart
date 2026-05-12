@@ -25,9 +25,6 @@ AppGlobal _$AppGlobalFromJson(Map<String, dynamic> json) => AppGlobal(
   invoiceCounter: (json['invoiceCounter'] as num?)?.toInt(),
   creditExpiryDuration: (json['creditExpiryDuration'] as num?)?.toDouble(),
   referralExpiryDays: (json['referralExpiryDays'] as num?)?.toDouble(),
-  scheduleOrder: json['scheduleOrder'] as bool?,
-  shareCredit: json['shareCredit'] as bool?,
-  withdrawBalance: json['withdrawBalance'] as bool?,
 );
 
 Map<String, dynamic> _$AppGlobalToJson(AppGlobal instance) => <String, dynamic>{
@@ -49,7 +46,4 @@ Map<String, dynamic> _$AppGlobalToJson(AppGlobal instance) => <String, dynamic>{
   'invoiceCounter': instance.invoiceCounter,
   'creditExpiryDuration': instance.creditExpiryDuration,
   'referralExpiryDays': instance.referralExpiryDays,
-  'scheduleOrder': instance.scheduleOrder,
-  'shareCredit': instance.shareCredit,
-  'withdrawBalance': instance.withdrawBalance,
 };

@@ -1,5 +1,10 @@
 import { printerFirestore } from "../config/firebaseAdmin";
-import { createReceiptBodySchema, CreateReceiptBodySchema } from "./schema";
+import {
+  createReceiptBodySchema,
+  CreateReceiptBodySchema,
+  createGiftBodySchema,
+  CreateGiftBodySchema,
+} from "./schema";
 // import { nowNZ } from "../utils/nz_time";
 
 export class ReceiptService {
@@ -29,15 +34,55 @@ export class ReceiptService {
       status: duration > 0 ? "scheduled" : "pending",
       printTime,
       label: transactionNumber,
-      templateName: "ORDER",
+      templateName: "DOCKET",
       lines: [
         `Order #: ${transactionNumber}`, // Order #
         `${validation.data.customer}`, // Customer Name
         `${validation.data.orders}`, // Orders
         `Total: $${validation.data.total.toFixed(2)}`, // Total
-        `Payment method: ${validation.data.paymentMethod}`, // Payment method
+        `Paid by ${validation.data.paymentMethod}`, // Payment method
         `Order Time: ${validation.data.orderTime}`, // Order Time
         `Service Time: ${validation.data.serviceTime} | ${validation.data.storeName}`, // Service Time
+      ],
+    });
+  }
+
+  async createGiftPrintQueue({
+    receiptData,
+  }: {
+    receiptData: CreateGiftBodySchema;
+  }) {
+    const validation = createGiftBodySchema.safeParse(receiptData);
+    if (!validation.success) {
+      const errors = validation.error.issues
+        .map((i) => `${i.path.join(".")}: ${i.message}`)
+        .join(", ");
+      throw new Error(errors);
+    }
+    const printQueueRef = printerFirestore.collection("printQueue").doc();
+    const { printerId, storeInvoiceText, transactionNumber, recipientFullName, amount, orderTime } = validation.data;
+    await printQueueRef.set({
+      printerId,
+      status: "pending",
+      printTime: null,
+      label: transactionNumber,
+      templateName: "GIFT",
+      lines: [
+        "Coffix",
+        storeInvoiceText,
+        "",
+        `Coffix Credit Claim: ${transactionNumber}`,
+        `Gift to ${recipientFullName} | $${amount.toFixed(2)}`,
+        `Total: $${amount.toFixed(2)}`,
+        "",
+        "Paid by: Coffix Credit",
+        `Order Time: ${orderTime}`,
+        "",
+        "",
+        "Thank you for your purchase",
+        "coffix.co.nz",
+        "",
+        "",
       ],
     });
   }
