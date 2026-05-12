@@ -54,6 +54,7 @@ router.post(
           firebaseService,
           emailService,
           transactionNumber,
+          customerId,
         );
       } else {
         await buildAndSendOrderInvoice(

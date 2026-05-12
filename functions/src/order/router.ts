@@ -3,12 +3,10 @@ import { requiredAuth, type AuthenticatedRequest } from "../middleware/auth";
 import { requirePost } from "../middleware/method";
 import { invoiceSchema } from "./schema";
 import { invoiceEmailTemplate } from "../utils/templates/invoice_email_template";
-import { giftEmailTemplate } from "../utils/templates/gift_email_template";
 import { topupEmailTemplate } from "../utils/templates/topup_email_template";
 import { EmailService } from "../email/service";
 import { wrapInEmailShell } from "../utils/emailShell";
-import { renderTemplate } from "../utils/renderEmailTemplate";
-import { formatNzTime, nowNZ } from "../utils/nz_time";
+import { formatNzTime } from "../utils/nz_time";
 import * as admin from "firebase-admin";
 import FirebaseService from "../firebase/service";
 import { getPaymentMethod } from "./service";
@@ -139,31 +137,22 @@ export async function buildAndSendGiftInvoice(
   firebaseService: FirebaseService,
   emailService: EmailService,
   transactionNumber: string,
+  customerId: string,
 ): Promise<void> {
   const transaction =
     await firebaseService.findTransactionByTransactionNumber(transactionNumber);
   if (!transaction)
     throw new Error(`Transaction not found: ${transactionNumber}`);
 
-  const sender = await firebaseService.findUserByCustomerId(
-    transaction.customerId as string,
-  );
+  const sender = await firebaseService.findUserByCustomerId(customerId);
 
-  const invoice = wrapInEmailShell(
-    renderTemplate(giftEmailTemplate, {
-      transaction_number: transaction.transactionNumber as string,
-      recipient_full_name: transaction.recipientFullName as string,
-      gift_amount: (transaction.amount as number).toFixed(2),
-      date: nowNZ(),
-    }),
-  );
-
-  await emailService.sendInvoice({
+  await emailService.sendGift({
     to: sender?.email as string,
-    userId: transaction.customerId as string,
-    invoiceHtml: invoice,
-    storeName: "Coffix",
+    userId: customerId,
+    amount: transaction.amount as number,
     transactionNumber: transaction.transactionNumber as string,
+    recipientFullName: transaction.recipientFullName as string,
+    storeInvoiceText: transaction.storeInvoiceText as string | undefined,
   });
 }
 
@@ -171,6 +160,7 @@ async function sendGiftInvoice(
   firebaseService: FirebaseService,
   emailService: EmailService,
   transactionNumber: string,
+  customerId: string,
   response: Response,
 ) {
   const transaction =
@@ -180,7 +170,12 @@ async function sendGiftInvoice(
       .status(404)
       .json({ success: false, message: "Transaction not found" });
   }
-  await buildAndSendGiftInvoice(firebaseService, emailService, transactionNumber);
+  await buildAndSendGiftInvoice(
+    firebaseService,
+    emailService,
+    transactionNumber,
+    customerId,
+  );
   return response.status(200).json({ success: true, message: "Invoice sent" });
 }
 
@@ -247,7 +242,12 @@ async function sendTopupInvoice(
       .status(404)
       .json({ success: false, message: "Transaction not found" });
   }
-  await buildAndSendTopupInvoice(firebaseService, emailService, customerId, transactionNumber);
+  await buildAndSendTopupInvoice(
+    firebaseService,
+    emailService,
+    customerId,
+    transactionNumber,
+  );
   return response.status(200).json({ success: true, message: "Invoice sent" });
 }
 
@@ -287,6 +287,7 @@ router.post(
           firebaseService,
           emailService,
           transactionNumber,
+          customerId,
           response,
         );
       }
