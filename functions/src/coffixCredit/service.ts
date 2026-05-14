@@ -242,23 +242,23 @@ export class CoffixCreditService {
         ),
     ]);
 
-    // 6. Create gift print queue (non-fatal)
-    void (async () => {
-      try {
-        const receiptService = new ReceiptService();
-        await receiptService.createGiftPrintQueue({
-          receiptData: {
-            printerId,
-            storeInvoiceText,
-            transactionNumber,
-            recipientFullName,
-            amount,
-            orderTime: nowNZ(),
-          },
-        });
-      } catch (printError) {
-        logger.error("Error creating gift print queue", { printError });
-      }
-    })();
+    // // 6. Create gift print queue (non-fatal)
+    // void (async () => {
+    //   try {
+    //     const receiptService = new ReceiptService();
+    //     await receiptService.createGiftPrintQueue({
+    //       receiptData: {
+    //         printerId,
+    //         storeInvoiceText,
+    //         transactionNumber,
+    //         recipientFullName,
+    //         amount,
+    //         orderTime: nowNZ(),
+    //       },
+    //     });
+    //   } catch (printError) {
+    //     logger.error("Error creating gift print queue", { printError });
+    //   }
+    // })();
   }
 }

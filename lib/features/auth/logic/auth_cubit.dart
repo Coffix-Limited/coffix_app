@@ -116,7 +116,18 @@ class AuthCubit extends Cubit<AuthState> {
         emit(AuthState.initial());
         return;
       }
-      emit(AuthState.error(message: e.toString()));
+      final message = switch (e.code) {
+        AuthorizationErrorCode.failed =>
+          'Apple Sign In failed. Please try again.',
+        AuthorizationErrorCode.invalidResponse =>
+          'Apple Sign In returned an invalid response. Please try again.',
+        AuthorizationErrorCode.notHandled =>
+          'Apple Sign In could not be completed. Please try again.',
+        AuthorizationErrorCode.notInteractive =>
+          'Apple Sign In requires user interaction. Please try again.',
+        _ => 'Apple Sign In failed. Please try again.',
+      };
+      emit(AuthState.error(message: message));
     } on UserCancelledSignIn catch (_) {
       emit(AuthState.unauthenticated());
       return;
