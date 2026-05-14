@@ -4,5 +4,5 @@ abstract class OrderRepository {
   Stream<List<Order>> getOrders();
   Future<Order?> getOrderById(String orderId);
   Future<void> updateOrder({required Map<String, dynamic> data});
-  Future<void> sendOrderToEmail({required String orderId});
+  Future<void> sendOrderToEmail({required String transactionNumber});
 }

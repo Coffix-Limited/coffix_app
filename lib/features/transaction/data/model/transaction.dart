@@ -17,6 +17,12 @@ enum TransactionStatus {
   declined,
   @JsonValue('completed')
   completed,
+  @JsonValue('expired')
+  expired,
+  @JsonValue('sent')
+  sent,
+  @JsonValue('claimed')
+  claimed,
 }
 
 @JsonSerializable()
@@ -27,6 +33,7 @@ class Transaction {
   final double? amount;
   @DateTimeConverter()
   final DateTime? createdAt;
+  @JsonKey(unknownEnumValue: TransactionStatus.created)
   final TransactionStatus? status;
   @PaymentMethodConverter()
   final PaymentMethod? paymentMethod;
@@ -38,10 +45,13 @@ class Transaction {
   String? recipientCustomerId;
   String? recipientEmail;
   String? recipientFullName;
-  String? senderFirstName;
-  String? senderLastName;
+  String? senderFullName;
+  String? senderEmail;
   String? transactionNumber;
   double? totalAmount;
+  double? gst;
+  double? gstAmount;
+  String? gstNumber;
 
   Transaction({
     this.docId,
@@ -58,10 +68,13 @@ class Transaction {
     this.recipientCustomerId,
     this.recipientEmail,
     this.recipientFullName,
-    this.senderFirstName,
-    this.senderLastName,
+    this.senderFullName,
+    this.senderEmail,
     this.transactionNumber,
     this.totalAmount,
+    this.gst,
+    this.gstAmount,
+    this.gstNumber,
   });
 
   factory Transaction.fromJson(Map<String, dynamic> json) =>

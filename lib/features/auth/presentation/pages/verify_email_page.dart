@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:coffix_app/core/constants/colors.dart';
 import 'package:coffix_app/core/constants/sizes.dart';
 import 'package:coffix_app/core/di/service_locator.dart';
+import 'package:coffix_app/core/services/log_service.dart';
 import 'package:coffix_app/features/auth/logic/otp_cubit.dart';
 import 'package:coffix_app/features/profile/presentation/pages/personal_info_page.dart';
 import 'package:coffix_app/presentation/atoms/app_button.dart';
@@ -49,6 +50,7 @@ class _VerifyEmailViewState extends State<VerifyEmailView> {
   void initState() {
     super.initState();
     context.read<OtpCubit>().sendEmailVerification();
+    LogService().getOTP();
     _startTimer();
   }
 
@@ -83,10 +85,12 @@ class _VerifyEmailViewState extends State<VerifyEmailView> {
 
   void _onVerify() {
     if (_pin.length != 6) return;
+    LogService().verifyOTP();
     context.read<OtpCubit>().verifyOtp(otp: _pin);
   }
 
   void _onResendOtp() {
+    LogService().getOTP();
     context.read<OtpCubit>().sendEmailVerification();
     _startTimer();
   }
@@ -122,7 +126,10 @@ class _VerifyEmailViewState extends State<VerifyEmailView> {
                 context,
                 'OTP sent to $email. Please check your email.',
               ),
-              error: (message) => AppNotification.error(context, message),
+              error: (message) {
+                LogService().otpError();
+                AppNotification.error(context, message);
+              },
               verified: () => context.goNamed(
                 PersonalInfoPage.route,
                 extra: {"canBack": false},

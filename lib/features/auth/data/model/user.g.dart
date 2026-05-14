@@ -29,6 +29,10 @@ AppUser _$AppUserFromJson(Map<String, dynamic> json) => AppUser(
   qrId: json['qrId'] as String?,
   fcmToken: json['fcmToken'] as String?,
   finishedOnboarding: json['finishedOnboarding'] as bool?,
+  creditExpiry: const DateTimeConverter().fromJson(json['creditExpiry']),
+  scheduleOrder: json['scheduleOrder'] as bool?,
+  shareCredit: json['shareCredit'] as bool?,
+  withdrawBalance: json['withdrawBalance'] as bool?,
 );
 
 Map<String, dynamic> _$AppUserToJson(AppUser instance) => <String, dynamic>{
@@ -54,4 +58,8 @@ Map<String, dynamic> _$AppUserToJson(AppUser instance) => <String, dynamic>{
   'qrId': instance.qrId,
   'fcmToken': instance.fcmToken,
   'finishedOnboarding': instance.finishedOnboarding,
+  'creditExpiry': const DateTimeConverter().toJson(instance.creditExpiry),
+  'scheduleOrder': instance.scheduleOrder,
+  'shareCredit': instance.shareCredit,
+  'withdrawBalance': instance.withdrawBalance,
 };

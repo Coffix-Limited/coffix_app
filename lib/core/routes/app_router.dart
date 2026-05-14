@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:coffix_app/core/routes/app_navigation_observer.dart';
 import 'package:coffix_app/features/auth/presentation/pages/verify_email_page.dart';
 import 'package:coffix_app/features/cart/data/model/cart_item.dart';
 import 'package:coffix_app/features/credit/presentation/pages/credit_page.dart';
@@ -60,6 +61,7 @@ class AppRouter {
     refreshListenable: _GoRouterRefreshStream(
       FirebaseAuth.instance.authStateChanges(),
     ),
+    observers: [AppNavigationObserver()],
     redirect: (context, state) {
       final currentUser = FirebaseAuth.instance.currentUser;
       // ignore: avoid_print

@@ -11,12 +11,15 @@ class ProfileTile extends StatelessWidget {
     required this.onTap,
     required this.icon,
     this.textColor,
+    this.trailingIcon,
   });
 
   final String label;
   final VoidCallback onTap;
   final Color? textColor;
   final String icon;
+  final Widget? trailingIcon;
+
   @override
   Widget build(BuildContext context) {
     return AppClickable(
@@ -44,11 +47,7 @@ class ProfileTile extends StatelessWidget {
                 ],
               ),
             ),
-            // AppIcon.withIconData(
-            //   Icons.chevron_right_rounded,
-            //   size: AppSizes.iconSizeSmall,
-            //   color: AppColors.lightGrey,
-            // ),
+            if (trailingIcon != null) trailingIcon!,
           ],
         ),
       ),

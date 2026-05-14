@@ -1,8 +1,7 @@
 import z from "zod";
 
-export const sendReceiptBodySchema = z.object({
-  orderId: z.string().trim(),
-  email: z.email(),
+export const invoiceSchema = z.object({
+  transactionNumber: z.string().trim(),
 });
 
-export type SendReceiptBodySchema = z.infer<typeof sendReceiptBodySchema>;
+export type InvoiceSchema = z.infer<typeof invoiceSchema>;

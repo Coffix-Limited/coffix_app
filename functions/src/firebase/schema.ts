@@ -14,6 +14,7 @@ export const createOrderBodySchema = z
     storeId: z.string().trim(),
     storeName: z.string().trim(),
     storeAddress: z.string().trim(),
+    storeInvoiceText: z.string().trim(),
     items: z.array(
       z.object({
         productId: z.string().trim(),
@@ -35,6 +36,7 @@ export const createOrderBodySchema = z
     duration: z.number().min(0),
     paymentMethod: z.enum(["coffixCredit", "card"]),
     transactionNumber: z.string().trim(),
+
   })
   .strict();
 

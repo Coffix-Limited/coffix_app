@@ -2,6 +2,8 @@ import 'package:coffix_app/core/constants/colors.dart';
 import 'package:coffix_app/core/constants/images.dart';
 import 'package:coffix_app/core/constants/sizes.dart';
 import 'package:coffix_app/core/di/service_locator.dart';
+import 'package:coffix_app/core/extensions/date_extensions.dart';
+import 'package:coffix_app/core/services/log_service.dart';
 import 'package:coffix_app/core/extensions/price_extensions.dart';
 import 'package:coffix_app/core/theme/typography.dart';
 import 'package:coffix_app/features/app/logic/app_cubit.dart';
@@ -19,15 +21,18 @@ import 'package:coffix_app/features/profile/presentation/pages/qr_id_page.dart';
 import 'package:coffix_app/features/profile/presentation/pages/share_your_balance_page.dart';
 import 'package:coffix_app/features/profile/presentation/pages/special_url_page.dart';
 import 'package:coffix_app/features/profile/presentation/widgets/profile_tile.dart';
+import 'package:coffix_app/features/transaction/domain/usecases/download_transaction.dart';
 import 'package:coffix_app/features/transaction/presentation/pages/transaction_page.dart';
+import 'package:coffix_app/domain/usecases/use_case.dart';
 import 'package:coffix_app/presentation/atoms/app_button.dart';
 import 'package:coffix_app/presentation/atoms/app_card.dart';
 import 'package:coffix_app/presentation/atoms/app_clickable.dart';
+import 'package:coffix_app/presentation/atoms/app_loading.dart';
+import 'package:coffix_app/presentation/atoms/app_notification.dart';
 import 'package:coffix_app/presentation/molecules/app_back_header.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 class ProfilePage extends StatelessWidget {
   static String route = 'profile_route';
@@ -65,6 +70,8 @@ class _ProfileViewState extends State<ProfileView> {
     });
   }
 
+  bool sendingTransactionEmail = false;
+
   @override
   Widget build(BuildContext context) {
     final double creditBalance = context.watch<AuthCubit>().state.maybeWhen(
@@ -84,13 +91,14 @@ class _ProfileViewState extends State<ProfileView> {
       loaded: (global, appVersion) => global,
       orElse: () => null,
     );
+    final String fullName = user?.firstName == null || user?.lastName == null
+        ? ""
+        : "${user?.firstName} ${user?.lastName}".length > 20
+        ? "${"${user?.firstName} ${user?.lastName}".substring(0, 20)}..."
+        : "${user?.firstName} ${user?.lastName}";
 
     return Scaffold(
-      appBar: AppBackHeader(
-        title: isAuthenticated
-            ? "${user?.firstName} ${user?.lastName}"
-            : "My Account",
-      ),
+      appBar: AppBackHeader(title: isAuthenticated ? fullName : "My Account"),
       body: SingleChildScrollView(
         padding: AppSizes.defaultPadding,
         child: Column(
@@ -142,6 +150,12 @@ class _ProfileViewState extends State<ProfileView> {
                     },
                   ),
                   const SizedBox(height: AppSizes.md),
+                  if (user?.creditExpiry != null)
+                    Text(
+                      "Expiration Date: ${user?.creditExpiry?.formatDate()}",
+                      textAlign: TextAlign.center,
+                    ),
+
                   AppButton.primary(
                     onPressed: () {
                       context.read<CreditCubit>().showTopUpField(false);
@@ -169,17 +183,51 @@ class _ProfileViewState extends State<ProfileView> {
                 context.pushNamed(TransactionPage.route);
               },
               icon: AppImages.transaction,
+              trailingIcon: sendingTransactionEmail
+                  ? AppLoading()
+                  : AppClickable(
+                      onPressed: () async {
+                        try {
+                          setState(() {
+                            sendingTransactionEmail = true;
+                          });
+                          await getIt<DownloadTransaction>().call(
+                            const NoParams(),
+                          );
+                          setState(() {
+                            sendingTransactionEmail = false;
+                          });
+                          AppNotification.show(
+                            context,
+                            'Transaction email sent successfully',
+                          );
+                        } catch (e) {
+                          setState(() {
+                            sendingTransactionEmail = false;
+                          });
+                          AppNotification.error(context, e.toString());
+                        }
+                      },
+                      showSplash: false,
+                      child: Image.asset(
+                        AppImages.transactionDownload,
+                        width: AppSizes.iconSizeMedium,
+                        height: AppSizes.iconSizeMedium,
+                      ),
+                    ),
             ),
             Divider(height: 0, color: AppColors.textBlackColor),
 
-            ProfileTile(
-              label: 'Share your balance',
-              onTap: () {
-                context.pushNamed(ShareYourBalancePage.route);
-              },
-              icon: AppImages.balance,
-            ),
-            Divider(height: 0, color: AppColors.textBlackColor),
+            if (user?.shareCredit == null || user?.shareCredit == true) ...[
+              ProfileTile(
+                label: 'Share your balance',
+                onTap: () {
+                  context.pushNamed(ShareYourBalancePage.route);
+                },
+                icon: AppImages.balance,
+              ),
+              Divider(height: 0, color: AppColors.textBlackColor),
+            ],
 
             ProfileTile(
               label: 'Specials',
@@ -236,6 +284,7 @@ class _ProfileViewState extends State<ProfileView> {
             ProfileTile(
               label: 'Logout',
               onTap: () {
+                LogService().logout();
                 context.read<AuthCubit>().signOut();
                 context.read<CartCubit>().resetCart();
               },
@@ -243,27 +292,6 @@ class _ProfileViewState extends State<ProfileView> {
             ),
             Divider(height: 0, color: AppColors.textBlackColor),
             const SizedBox(height: AppSizes.xxxl),
-            Center(
-              child: AppClickable(
-                onPressed: () async {
-                  await launchUrl(
-                    Uri.parse('https://www.coffix.co.nz/term-of-use-privacy'),
-                  );
-                },
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: AppSizes.sm),
-                  child: Text(
-                    'Terms of use & privacy',
-                    style: AppTypography.bodyXS.copyWith(
-                      color: AppColors.lightGrey,
-                      decoration: TextDecoration.underline,
-                      decorationColor: AppColors.lightGrey,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: AppSizes.xxl),
           ],
         ),
       ),

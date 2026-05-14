@@ -1,7 +1,10 @@
+import 'package:coffix_app/core/constants/colors.dart';
 import 'package:coffix_app/core/constants/sizes.dart';
 import 'package:coffix_app/core/di/service_locator.dart';
+import 'package:coffix_app/core/services/log_service.dart';
 import 'package:coffix_app/core/extensions/price_extensions.dart';
 import 'package:coffix_app/core/theme/typography.dart';
+import 'package:coffix_app/features/app/logic/app_cubit.dart';
 import 'package:coffix_app/features/auth/logic/auth_cubit.dart';
 import 'package:coffix_app/features/profile/logic/profile_cubit.dart';
 import 'package:coffix_app/presentation/atoms/app_button.dart';
@@ -49,8 +52,12 @@ class _ShareYourBalanceViewState extends State<ShareYourBalanceView> {
       loading: () => true,
       orElse: () => false,
     );
+    final global = context.watch<AppCubit>().state.maybeWhen(
+      loaded: (global, appVersion) => global,
+      orElse: () => null,
+    );
     return Scaffold(
-      appBar: const AppBackHeader(title: 'Share your balance'),
+      appBar: const AppBackHeader(title: 'My Coffix Credit Balance'),
       body: BlocListener<ProfileCubit, ProfileState>(
         listener: (context, state) {
           state.maybeWhen(
@@ -86,6 +93,7 @@ class _ShareYourBalanceViewState extends State<ShareYourBalanceView> {
                             children: [
                               const SizedBox(height: AppSizes.xxl),
                               AppCard(
+                                color: AppColors.softGrey,
                                 child: Column(
                                   crossAxisAlignment:
                                       CrossAxisAlignment.stretch,
@@ -185,10 +193,20 @@ class _ShareYourBalanceViewState extends State<ShareYourBalanceView> {
                               Row(
                                 children: [
                                   SizedBox(width: 140.0),
-                                  Text(
-                                    "Minimum of \$15",
-                                    style: theme.textTheme.bodyMedium
-                                        ?.copyWith(),
+                                  Text.rich(
+                                    textAlign: TextAlign.center,
+                                    style: AppTypography.bodyXS.copyWith(),
+                                    TextSpan(
+                                      children: [
+                                        TextSpan(text: 'Minimum of '),
+                                        global?.minCreditToShare
+                                                ?.toCurrencySuperscript(
+                                                  style: AppTypography.bodyXS
+                                                      .copyWith(),
+                                                ) ??
+                                            TextSpan(text: ''),
+                                      ],
+                                    ),
                                   ),
                                 ],
                               ),
@@ -208,6 +226,15 @@ class _ShareYourBalanceViewState extends State<ShareYourBalanceView> {
                         onPressed: () {
                           if (_formKey.currentState?.saveAndValidate() ??
                               false) {
+                            final recipientEmail =
+                                _formKey.currentState!.value['email'] ?? '';
+                            final amount = double.parse(
+                              _formKey.currentState!.value['amount'] ?? '0',
+                            );
+                            LogService().giftCoffixCredit(
+                              recipientEmail: recipientEmail,
+                              amount: amount,
+                            );
                             context.read<ProfileCubit>().sendGift(
                               recipientFirstName:
                                   _formKey.currentState!.value['firstName'] ??
@@ -215,11 +242,8 @@ class _ShareYourBalanceViewState extends State<ShareYourBalanceView> {
                               recipientLastName:
                                   _formKey.currentState!.value['lastName'] ??
                                   '',
-                              recipientEmail:
-                                  _formKey.currentState!.value['email'] ?? '',
-                              amount: double.parse(
-                                _formKey.currentState!.value['amount'] ?? '0',
-                              ),
+                              recipientEmail: recipientEmail,
+                              amount: amount,
                             );
                           }
                         },

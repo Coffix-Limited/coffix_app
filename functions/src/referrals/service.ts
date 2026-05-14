@@ -1,8 +1,5 @@
-import { getAuth } from "firebase-admin/auth";
 import { firestore } from "../config/firebaseAdmin";
-import { RESEND_FROM_EMAIL } from "../constant/constant";
-import { renderTemplate } from "../utils/renderEmailTemplate";
-import { wrapInEmailShell } from "../utils/emailShell";
+import { GLOBAL_COLLECTION_ID } from "../constant/constant";
 import { logger } from "firebase-functions/v1";
 import { generateCouponCode } from "../utils/generateCouponCode";
 
@@ -14,15 +11,27 @@ export class ReferralService {
     referrerUid: string;
     referee: { email: string; name: string };
   }): Promise<void> {
+    const globalSnap = await firestore
+      .collection("global")
+      .doc(GLOBAL_COLLECTION_ID)
+      .get();
+    const referralExpiryDays = (globalSnap.data()?.referralExpiryDays ??
+      7) as number;
+
+    const referralTime = new Date();
+    const validTime = new Date(
+      referralTime.getTime() + referralExpiryDays * 24 * 60 * 60 * 1000,
+    );
+
     const referralRef = firestore.collection("referrals").doc();
     await referralRef.set({
       docId: referralRef.id,
-      referralTime: new Date(),
+      referralTime,
       referrer: referrerUid,
-      referee: referee.email,
+      referee: referee.email.toLowerCase(),
       refereeUid: null,
       signupTime: null,
-      expiresAt: null,
+      validTime,
       couponId: null,
       refereeCouponId: null,
       status: "pending",
@@ -37,31 +46,39 @@ export class ReferralService {
       .limit(1)
       .get();
 
-    if (snap.empty) return;
+    if (snap.empty) {
+      logger.info(`No pending referral found for referee: ${refereeUid}`);
+      return;
+    }
 
     const referralDoc = snap.docs[0];
     const signupTime = new Date();
-    const expiresAt = new Date(signupTime.getTime() + 7 * 24 * 60 * 60 * 1000);
+
+    const validTime: Date =
+      referralDoc.data().validTime?.toDate?.() ?? referralDoc.data().validTime;
+
+    if (signupTime > validTime) {
+      await referralDoc.ref.update({ status: "expired" });
+      logger.info(`Referral expired for referee: ${refereeUid}`);
+      return;
+    }
 
     await referralDoc.ref.update({
       refereeUid,
       signupTime,
-      expiresAt,
       status: "active",
     });
 
     logger.info(`Referral activated for referee: ${refereeUid}`);
   }
 
+  // this function is called when a customer makes their first topUp
   async handleFirstPurchase({
     customerId,
-    orderId,
-    paidAt,
   }: {
     customerId: string;
-    orderId: string;
-    paidAt: Date;
   }): Promise<void> {
+    logger.info(`Handling first purchase for customer: ${customerId}`);
     // 1. Find active referral for this referee
     const referralSnap = await firestore
       .collection("referrals")
@@ -75,39 +92,43 @@ export class ReferralService {
     const referralDoc = referralSnap.docs[0];
     const referral = referralDoc.data();
 
-    // 2. Check expiry window
-    const expiresAt: Date =
-      referral.expiresAt?.toDate?.() ?? referral.expiresAt;
-
-    if (paidAt > expiresAt) {
-      await referralDoc.ref.update({ status: "expired" });
-      logger.info(`Referral expired for referee: ${customerId}`);
-      return;
-    }
-
-    // 3. Ensure this is the first paid order
-    const paidOrdersSnap = await firestore
-      .collection("orders")
+    // 2. Ensure this is the first approved topup
+    const topupSnap = await firestore
+      .collection("transactions")
       .where("customerId", "==", customerId)
-      .where("status", "==", "paid")
+      .where("type", "==", "topup")
+      .where("status", "==", "approved")
       .limit(2)
       .get();
 
-    if (paidOrdersSnap.size > 1) return;
+    if (topupSnap.size > 1) return;
+
+    // 3. Read coupon config from globals
+    const globalSnap = await firestore
+      .collection("global")
+      .doc(GLOBAL_COLLECTION_ID)
+      .get();
+    const couponAmount = (globalSnap.data()?.couponDefaultAmount ??
+      5) as number;
+    const couponExpiryDays = (globalSnap.data()?.couponExpiryDays ??
+      30) as number;
 
     // 4. Generate unique coupon codes
     const referrerCode = await this.generateUniqueCode();
     const refereeCode = await this.generateUniqueCode();
 
     const now = new Date();
-    const couponExpiry = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+    const couponExpiry = new Date(
+      now.getTime() + couponExpiryDays * 24 * 60 * 60 * 1000,
+    );
 
     const referrerCouponRef = firestore.collection("coupons").doc();
     const refereeCouponRef = firestore.collection("coupons").doc();
 
     const baseCoupon = {
+      createdAt: now,
       type: "fixed",
-      amount: 5,
+      amount: couponAmount,
       usageLimit: 1,
       usageCount: 0,
       source: "referral",
@@ -115,7 +136,7 @@ export class ReferralService {
       isUsed: false,
       expiryDate: couponExpiry,
       storeId: null,
-      notes: "Referral reward - $5 off your next order",
+      notes: `Referral reward - $${couponAmount} off your next order`,
     };
 
     // 5. Batch write both coupons + update referral atomically
@@ -144,7 +165,7 @@ export class ReferralService {
     await batch.commit();
 
     logger.info(
-      `Referral rewarded. Referrer: ${referral.referrer}, Referee: ${customerId}, Order: ${orderId}`,
+      `Referral rewarded. Referrer: ${referral.referrer}, Referee: ${customerId}`,
     );
   }
 
@@ -159,76 +180,5 @@ export class ReferralService {
       if (existing.empty) return code;
     }
     throw new Error("Failed to generate a unique coupon code after 5 attempts");
-  }
-
-  async sendReferralEmail({
-    referrerUid,
-    referee,
-  }: {
-    referrerUid: string;
-    referee: { email: string; name: string };
-  }): Promise<void> {
-    const RESEND_API_KEY = process.env.RESEND_API_KEY;
-    if (!RESEND_API_KEY) {
-      logger.warn("RESEND_API_KEY not set – skipping referral email");
-      return;
-    }
-
-    const [referrerRecord, templateSnap] = await Promise.all([
-      getAuth().getUser(referrerUid),
-      firestore.collection("emails").doc("REFERRAL").get(),
-    ]);
-
-    const templateData = templateSnap.data();
-    if (!templateData) {
-      logger.warn("Referral email template not found in emails/REFERRAL");
-      return;
-    }
-
-    const referrerName = referrerRecord.displayName ?? "";
-    const referrerEmail = referrerRecord.email ?? "";
-    const appDownloadUrl = process.env.APP_DOWNLOAD_URL ?? "";
-
-    const subject: string =
-      (templateData.subject as string) ?? "You've been invited to Coffix!";
-
-    const renderedContent = renderTemplate(
-      (templateData.content as string) ?? "",
-      {
-        REFEREE_NAME: referee.name,
-        REFEREE_EMAIL: referee.email,
-        REFERRER_NAME: referrerName,
-        REFERRER_EMAIL: referrerEmail,
-        APP_DOWNLOAD_URL: appDownloadUrl,
-        firstName: referee.name,
-        email: referee.email,
-        appUrl: appDownloadUrl,
-        currentYear: new Date().getFullYear(),
-      },
-    );
-
-    const html = wrapInEmailShell(renderedContent);
-
-    const resendRes = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${RESEND_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        from: RESEND_FROM_EMAIL,
-        to: [referee.email],
-        subject,
-        html,
-      }),
-    });
-
-    if (!resendRes.ok) {
-      const err = await resendRes.json();
-      logger.error("Failed to send referral email", {
-        email: referee.email,
-        err,
-      });
-    }
   }
 }

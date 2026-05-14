@@ -13,185 +13,114 @@ export const orderEmailTemplate = `<!doctype html>
         color: #333333;
       }
       .wrapper {
-        max-width: 600px;
+        max-width: 480px;
         margin: 40px auto;
         background-color: #ffffff;
-        border-radius: 8px;
-        overflow: hidden;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        border: 1px solid #cccccc;
       }
-      .header {
-        background-color: #f15f2c;
-        padding: 32px 40px;
+      .docket-header {
+        padding: 20px 24px 16px;
         text-align: center;
+        border-bottom: 1px solid #cccccc;
       }
-      .header h1 {
-        margin: 0;
-        color: #ffffff;
-        font-size: 28px;
-        letter-spacing: 4px;
-        text-transform: uppercase;
-      }
-      .header p {
-        margin: 6px 0 0;
-        color: #fff;
-        font-size: 13px;
-        letter-spacing: 1px;
-      }
-      .body {
-        padding: 32px 40px;
-      }
-      .section-title {
+      .order-number {
         font-size: 11px;
-        font-weight: 700;
-        letter-spacing: 2px;
-        text-transform: uppercase;
-        color: #999999;
-        margin: 0 0 12px;
+        color:rgb(0, 0, 0);
+        margin: 0 0 8px;
       }
-      .info-table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-bottom: 32px;
-      }
-      .info-table td {
-        padding: 8px 0;
-        font-size: 14px;
-        border-bottom: 1px solid #f0f0f0;
-      }
-      .info-table td:first-child {
-        color: #888888;
-        width: 40%;
-      }
-      .info-table td:last-child {
-        font-weight: 600;
-        text-align: right;
-      }
-      .items-table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-bottom: 24px;
-      }
-      .items-table thead tr {
-        border-bottom: 2px solid #1a1a1a;
-      }
-      .items-table thead th {
-        padding: 8px 0;
-        font-size: 11px;
-        font-weight: 700;
-        letter-spacing: 1px;
-        text-transform: uppercase;
-        color: #555555;
-        text-align: left;
-      }
-      .items-table thead th.right {
-        text-align: right;
-      }
-      .items-table tbody tr {
-        border-bottom: 1px solid #f0f0f0;
-      }
-      .items-table tbody td {
-        padding: 12px 0;
-        font-size: 14px;
-        vertical-align: top;
-      }
-      .items-table tbody td.right {
-        text-align: right;
-      }
-      .item-name {
-        font-weight: 600;
-        color: #1a1a1a;
-      }
-      .item-modifiers {
-        font-size: 12px;
-        color: #888888;
-        margin-top: 2px;
-      }
-      .total-row {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 16px 0;
-        border-top: 2px solid #1a1a1a;
-        margin-top: 4px;
-      }
-      .total-label {
-        font-size: 14px;
-        font-weight: 700;
-        letter-spacing: 1px;
-        text-transform: uppercase;
-      }
-      .total-amount {
+      .customer-name {
         font-size: 20px;
         font-weight: 700;
         color: #1a1a1a;
+        margin: 0;
+      }
+      .items-section {
+        padding: 0 24px;
+        border-bottom: 1px solid #cccccc;
+      }
+      .item-row {
+        display: table;
+        width: 100%;
+        padding: 10px 0;
+        border-bottom: 1px solid #eeeeee;
+        box-sizing: border-box;
+      }
+      .item-row:last-child {
+        border-bottom: none;
+      }
+      .item-left {
+        display: table-cell;
+        width: 75%;
+        vertical-align: top;
+      }
+      .item-right {
+        display: table-cell;
+        width: 25%;
+        text-align: right;
+        vertical-align: top;
+        font-size: 13px;
+        color: #1a1a1a;
+      }
+      .item-name {
+        font-size: 13px;
+        font-weight: 700;
+        color: #1a1a1a;
+      }
+      .item-modifiers {
+        font-size: 11px;
+        color:rgb(0, 0, 0);
+        margin-top: 2px;
+      }
+      .total-section {
+        padding: 12px 24px;
+        text-align: right;
+        border-bottom: 1px solid #cccccc;
+      }
+      .total-text {
+        font-size: 14px;
+        font-weight: 700;
+        color: #1a1a1a;
+      }
+      .meta-section {
+        padding: 12px 24px 16px;
+      }
+      .meta-line {
+        font-size: 11px;
+        color: #333333;
+        margin: 4px 0;
       }
       .footer {
         background-color: #f9f9f9;
-        border-top: 1px solid #eeeeee;
-        padding: 24px 40px;
+        border-top: 1px solid #cccccc;
+        padding: 16px 24px;
         text-align: center;
       }
       .footer p {
         margin: 4px 0;
-        font-size: 12px;
+        font-size: 11px;
         color: #aaaaaa;
       }
     </style>
   </head>
   <body>
     <div class="wrapper">
-      <div class="header">
-        <h1>Coffix</h1>
-        <p>Order Receipt</p>
+      <div class="docket-header">
+        <p class="order-number">Order #: {{orderNumber}}</p>
+        <p class="customer-name">{{customerName}}</p>
       </div>
 
-      <div class="body">
-        <p class="section-title">Order Details</p>
-        <table class="info-table">
-          <tbody>
-            <tr>
-              <td>Order Number</td>
-              <td>#{{orderNumber}}</td>
-            </tr>
-            <tr>
-              <td>Store</td>
-              <td>{{storeName}}</td>
-            </tr>
-            <tr>
-              <td>Address</td>
-              <td>{{storeAddress}}</td>
-            </tr>
-            <tr>
-              <td>Date</td>
-              <td>{{createdAt}}</td>
-            </tr>
-            <tr>
-              <td>Payment Method</td>
-              <td>{{paymentMethod}}</td>
-            </tr>
-          </tbody>
-        </table>
+      <div class="items-section">
+        {{items}}
+      </div>
 
-        <p class="section-title">Items</p>
-        <table class="items-table">
-          <thead>
-            <tr>
-              <th>Item</th>
-              <th class="right">Qty</th>
-              <th class="right">Price</th>
-              <th class="right">Subtotal</th>
-            </tr>
-          </thead>
-          <tbody>
-            {{items}}
-          </tbody>
-        </table>
+      <div class="total-section">
+        <span class="total-text">Total: {{total}}</span>
+      </div>
 
-        <div class="total-row">
-          <span class="total-label">Total</span>
-          <span class="total-amount">{{total}}</span>
-        </div>
+      <div class="meta-section">
+        <p class="meta-line">Paid by: {{paymentMethod}}</p>
+        <p class="meta-line">Order Time: {{createdAt}}</p>
+        {{serviceTimeLine}}
       </div>
 
       <div class="footer">

@@ -23,6 +23,8 @@ enum OrderStatus {
   cancelled,
   @JsonValue('pending')
   pending,
+  @JsonValue('payment_failed')
+  paymentFailed,
 }
 
 @JsonSerializable(explicitToJson: true)
@@ -35,8 +37,8 @@ class Order {
   final DateTime? createdAt;
   @DateTimeConverter()
   final DateTime? scheduledAt;
-  final String? orderNumber;
   final List<Item>? items;
+  @JsonKey(unknownEnumValue: OrderStatus.draft)
   final OrderStatus? status;
   final PaymentStatus? paymentStatus;
   @PaymentMethodConverter()
@@ -51,7 +53,6 @@ class Order {
     this.amount,
     this.createdAt,
     this.scheduledAt,
-    this.orderNumber,
     this.status,
     this.paymentStatus,
     this.items,
@@ -94,8 +95,9 @@ class Item {
 class ItemModifier {
   final String? modifierId;
   final double? priceDelta;
+  final String? name;
 
-  ItemModifier({this.modifierId, this.priceDelta});
+  ItemModifier({this.modifierId, this.priceDelta, this.name});
 
   factory ItemModifier.fromJson(Map<String, dynamic> json) =>
       _$ItemModifierFromJson(json);

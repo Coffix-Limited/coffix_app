@@ -1,5 +1,6 @@
 import 'package:coffix_app/core/constants/colors.dart';
 import 'package:coffix_app/core/constants/images.dart';
+import 'package:coffix_app/presentation/molecules/app_about_url_dialog.dart';
 import 'package:coffix_app/core/di/service_locator.dart';
 import 'package:coffix_app/core/theme/typography.dart';
 import 'package:coffix_app/features/app/logic/app_cubit.dart';
@@ -93,10 +94,10 @@ class _LayoutViewState extends State<LayoutView> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       context.read<AppCubit>().getGlobal();
+      context.read<StoreCubit>().getStores();
+      context.read<ProductCubit>().getProducts();
     });
     // context.read<AuthCubit>().getUserWithStore();
-    // context.read<StoreCubit>().getStores();
-    // context.read<ProductCubit>().getProducts();
     // context.read<ModifierCubit>().getModifiers();
     Future.delayed(const Duration(seconds: 2), () {
       setState(() {
@@ -108,6 +109,16 @@ class _LayoutViewState extends State<LayoutView> {
   @override
   Widget build(BuildContext context) {
     final location = GoRouterState.of(context).uri.path;
+    final isAuthenticated = context.watch<AuthCubit>().state.maybeWhen(
+      authenticated: (user) =>
+          user.user.emailVerified == true &&
+          user.user.finishedOnboarding == true,
+      orElse: () => false,
+    );
+    final aboutUrl = context.watch<AppCubit>().state.maybeWhen(
+      loaded: (global, _) => global.aboutUrl ?? '',
+      orElse: () => '',
+    );
 
     const hideTabPages = ['/payment', '/credit-topup-payment'];
     final isHidden = hideTabPages.contains(location);
@@ -155,25 +166,31 @@ class _LayoutViewState extends State<LayoutView> {
                             return BottomNavigationBar(
                               currentIndex: widget.shell.currentIndex,
                               onTap: (index) {
-                                state.maybeWhen(
-                                  authenticated: (user) {
-                                    if (user.user.emailVerified == true &&
-                                        user.user.finishedOnboarding == true) {
-                                      if (index ==
-                                          LayoutPageTab.coffixCredit.index) {
-                                        context
-                                            .read<CreditCubit>()
-                                            .showTopUpField(false);
-                                      }
-
-                                      widget.shell.goBranch(
-                                        index,
-                                        initialLocation: true,
-                                      );
-                                    }
-                                  },
-                                  orElse: () => null,
-                                );
+                                if (index == LayoutPageTab.order.index) {
+                                  if (!isAuthenticated) {
+                                    showDialog(
+                                      context: context,
+                                      builder: (_) =>
+                                          AppAboutUrlDialog(url: aboutUrl),
+                                    );
+                                  } else {
+                                    widget.shell.goBranch(
+                                      index,
+                                      initialLocation: true,
+                                    );
+                                  }
+                                } else {
+                                  if (index ==
+                                      LayoutPageTab.coffixCredit.index) {
+                                    context.read<CreditCubit>().showTopUpField(
+                                      false,
+                                    );
+                                  }
+                                  widget.shell.goBranch(
+                                    index,
+                                    initialLocation: true,
+                                  );
+                                }
                               },
                               type: BottomNavigationBarType.fixed,
                               backgroundColor: Colors.transparent,

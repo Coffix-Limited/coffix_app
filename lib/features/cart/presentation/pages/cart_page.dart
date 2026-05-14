@@ -1,6 +1,7 @@
 import 'package:coffix_app/core/constants/colors.dart';
 import 'package:coffix_app/core/constants/sizes.dart';
 import 'package:coffix_app/core/di/service_locator.dart';
+import 'package:coffix_app/core/services/log_service.dart';
 import 'package:coffix_app/core/extensions/price_extensions.dart';
 import 'package:coffix_app/features/auth/logic/auth_cubit.dart';
 import 'package:coffix_app/features/cart/data/model/cart_item.dart';
@@ -118,6 +119,12 @@ class _CartViewState extends State<CartView> {
                                   price: cartItem.unitTotal,
                                   basePrice: cartItem.basePrice,
                                   onRemove: () {
+                                    LogService().removeProductFromCart(
+                                      product: Product(
+                                        docId: cartItem.productId,
+                                        name: cartItem.productName,
+                                      ),
+                                    );
                                     context.read<CartCubit>().removeProduct(
                                       cartItemId: cartItem.id ?? '',
                                     );
@@ -219,6 +226,7 @@ class _CartViewState extends State<CartView> {
                                       isLoading,
                                   onPressed: () async {
                                     if (state.cart == null) return;
+                                    LogService().saveDraft();
                                     context.read<DraftCubit>().createDraft(
                                       cart: state.cart!,
                                     );

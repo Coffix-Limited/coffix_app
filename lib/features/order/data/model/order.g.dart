@@ -13,8 +13,11 @@ Order _$OrderFromJson(Map<String, dynamic> json) => Order(
   amount: (json['amount'] as num?)?.toDouble(),
   createdAt: const DateTimeConverter().fromJson(json['createdAt']),
   scheduledAt: const DateTimeConverter().fromJson(json['scheduledAt']),
-  orderNumber: json['orderNumber'] as String?,
-  status: $enumDecodeNullable(_$OrderStatusEnumMap, json['status']),
+  status: $enumDecodeNullable(
+    _$OrderStatusEnumMap,
+    json['status'],
+    unknownValue: OrderStatus.draft,
+  ),
   paymentStatus: $enumDecodeNullable(
     _$PaymentStatusEnumMap,
     json['paymentStatus'],
@@ -34,7 +37,6 @@ Map<String, dynamic> _$OrderToJson(Order instance) => <String, dynamic>{
   'amount': instance.amount,
   'createdAt': const DateTimeConverter().toJson(instance.createdAt),
   'scheduledAt': const DateTimeConverter().toJson(instance.scheduledAt),
-  'orderNumber': instance.orderNumber,
   'items': instance.items?.map((e) => e.toJson()).toList(),
   'status': _$OrderStatusEnumMap[instance.status],
   'paymentStatus': _$PaymentStatusEnumMap[instance.paymentStatus],
@@ -55,6 +57,7 @@ const _$OrderStatusEnumMap = {
   OrderStatus.completed: 'completed',
   OrderStatus.cancelled: 'cancelled',
   OrderStatus.pending: 'pending',
+  OrderStatus.paymentFailed: 'payment_failed',
 };
 
 const _$PaymentStatusEnumMap = {
@@ -94,10 +97,12 @@ Map<String, dynamic> _$ItemToJson(Item instance) => <String, dynamic>{
 ItemModifier _$ItemModifierFromJson(Map<String, dynamic> json) => ItemModifier(
   modifierId: json['modifierId'] as String?,
   priceDelta: (json['priceDelta'] as num?)?.toDouble(),
+  name: json['name'] as String?,
 );
 
 Map<String, dynamic> _$ItemModifierToJson(ItemModifier instance) =>
     <String, dynamic>{
       'modifierId': instance.modifierId,
       'priceDelta': instance.priceDelta,
+      'name': instance.name,
     };

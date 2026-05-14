@@ -1,8 +1,8 @@
 import 'package:coffix_app/core/constants/colors.dart';
 import 'package:coffix_app/core/constants/sizes.dart';
 import 'package:coffix_app/core/di/service_locator.dart';
+import 'package:coffix_app/core/services/log_service.dart';
 import 'package:coffix_app/core/theme/typography.dart';
-import 'package:coffix_app/features/auth/data/model/user_with_store.dart';
 import 'package:coffix_app/features/auth/logic/auth_cubit.dart';
 import 'package:coffix_app/features/cart/logic/cart_cubit.dart';
 import 'package:coffix_app/features/payment/presentation/pages/payment_options_page.dart';
@@ -47,12 +47,6 @@ class ScheduleOrderView extends StatefulWidget {
 class _ScheduleOrderViewState extends State<ScheduleOrderView> {
   PickupOption _selected = PickupOption.now;
 
-  List<PickupOption> _availableOptions(int? minsLeft) {
-    if (minsLeft == null || minsLeft <= 30) return [PickupOption.now];
-    if (minsLeft <= 45) return [PickupOption.now, PickupOption.fifteenMinutes];
-    return PickupOption.values;
-  }
-
   String _label(PickupOption option) {
     switch (option) {
       case PickupOption.now:
@@ -66,12 +60,20 @@ class _ScheduleOrderViewState extends State<ScheduleOrderView> {
 
   @override
   Widget build(BuildContext context) {
-    final AppUserWithStore? user = context.watch<AuthCubit>().state.maybeWhen(
+    final user = context.watch<AuthCubit>().state.maybeWhen(
       authenticated: (user) => user,
       orElse: () => null,
     );
+    List<PickupOption> availableOptions0(int? minsLeft) {
+      if (user?.user.scheduleOrder == false) return [PickupOption.now];
+      if (minsLeft == null || minsLeft <= 30) return [PickupOption.now];
+      if (minsLeft <= 45)
+        return [PickupOption.now, PickupOption.fifteenMinutes];
+      return PickupOption.values;
+    }
+
     final minsLeft = user?.store?.minutesUntilClose();
-    final availableOptions = _availableOptions(minsLeft);
+    final availableOptions = availableOptions0(minsLeft);
     if (!availableOptions.contains(_selected)) {
       _selected = PickupOption.now;
     }
@@ -110,7 +112,10 @@ class _ScheduleOrderViewState extends State<ScheduleOrderView> {
                     Padding(
                       padding: const EdgeInsets.only(bottom: AppSizes.sm),
                       child: AppClickable(
-                        onPressed: () => setState(() => _selected = option),
+                        onPressed: () {
+                          LogService().selectPickupTime();
+                          setState(() => _selected = option);
+                        },
                         borderRadius: BorderRadius.circular(AppSizes.md),
                         child: AppCard(
                           borderColor: _selected == option

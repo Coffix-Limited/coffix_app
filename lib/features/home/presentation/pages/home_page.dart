@@ -160,14 +160,12 @@ class _HomeViewState extends State<HomeView> {
                                       );
                                     }
                                   },
-                                  passwordResetEmailSent: () {
-                                    AppNotification.show(
-                                      context,
-                                      'Password reset email sent. Please check your email.',
-                                    );
+                                  passwordResetEmailSent: (message) {
+                                    AppNotification.show(context, message);
                                   },
-                                  unauthenticated: () =>
-                                      context.goNamed(HomePage.route),
+                                  unauthenticated: () {
+                                    context.goNamed(HomePage.route);
+                                  },
                                   error: (message) =>
                                       AppNotification.error(context, message),
                                 );
@@ -181,8 +179,8 @@ class _HomeViewState extends State<HomeView> {
                                   otpSent: (email) =>
                                       LoginForm(formKey: formKey),
                                   forgotPassword: () => ForgotPassword(),
-                                  passwordResetEmailSent: () =>
-                                      EmailForgotPasswordSent(),
+                                  passwordResetEmailSent: (message) =>
+                                      EmailForgotPasswordSent(message: message),
                                   initial: () => AppLoading(),
                                   loading: () =>
                                       const Center(child: AppLoading()),
@@ -240,8 +238,8 @@ class _HomeViewState extends State<HomeView> {
                                                     icon: Icon(
                                                       Icons.settings,
                                                       color: Colors.white,
-                                                      size:
-                                                          AppSizes.iconSizeLarge,
+                                                      size: AppSizes
+                                                          .iconSizeLarge,
                                                     ),
                                                   ),
                                                 ),
@@ -342,13 +340,19 @@ class _HomeContent extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final screenHeight = MediaQuery.of(context).size.height;
+    String displayName =
+        user.user.firstName ?? user.user.nickName?.toUpperCase() ?? "";
+
+    if (displayName.length > 15) {
+      displayName = '${displayName.substring(0, 15)}...';
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         SizedBox(height: screenHeight * 0.1),
         Text(
-          "Welcome ${user.user.firstName ?? user.user.nickName ?? ""}",
+          "Welcome $displayName",
           textAlign: TextAlign.center,
           style: theme.textTheme.titleLarge!.copyWith(
             fontWeight: FontWeight.bold,

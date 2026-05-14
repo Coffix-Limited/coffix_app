@@ -1,6 +1,7 @@
 import 'package:coffix_app/core/constants/colors.dart';
 import 'package:coffix_app/core/constants/sizes.dart';
 import 'package:coffix_app/core/di/service_locator.dart';
+import 'package:coffix_app/core/services/log_service.dart';
 import 'package:coffix_app/core/extensions/price_extensions.dart';
 import 'package:coffix_app/features/auth/logic/auth_cubit.dart';
 import 'package:coffix_app/features/cart/logic/cart_cubit.dart';
@@ -74,10 +75,7 @@ class _PaymentOptionsPageViewState extends State<PaymentOptionsPageView> {
       loaded: (coupons) => coupons,
       orElse: () => <Coupon>[],
     );
-    final totalCoupon = coupons.fold(
-      0.0,
-      (sum, c) => sum + (c.amount ?? 0.0),
-    );
+    final totalCoupon = coupons.fold(0.0, (sum, c) => sum + (c.amount ?? 0.0));
     final totalBalance = creditAvailable + totalCoupon;
     final insufficientCredit =
         paymentMethod == PaymentMethod.coffixCredit && totalBalance < total;
@@ -94,7 +92,7 @@ class _PaymentOptionsPageViewState extends State<PaymentOptionsPageView> {
                     PaymentSuccessfulPage.route,
                     extra: {
                       "pickupAt": order.scheduledAt,
-                      "orderNumber": order.orderNumber,
+                      "orderNumber": order.transactionNumber,
                     },
                   );
                   context.read<CartCubit>().resetCart();
@@ -155,6 +153,7 @@ class _PaymentOptionsPageViewState extends State<PaymentOptionsPageView> {
                               selected:
                                   paymentMethod == PaymentMethod.coffixCredit,
                               onTap: () {
+                                LogService().selectPaymentMethod();
                                 context.read<CartCubit>().setPaymentMethod(
                                   PaymentMethod.coffixCredit,
                                 );
@@ -206,6 +205,7 @@ class _PaymentOptionsPageViewState extends State<PaymentOptionsPageView> {
                             PaymentOption(
                               selected: paymentMethod == PaymentMethod.card,
                               onTap: () {
+                                LogService().selectPaymentMethod();
                                 context.read<CartCubit>().setPaymentMethod(
                                   PaymentMethod.card,
                                 );
@@ -230,6 +230,7 @@ class _PaymentOptionsPageViewState extends State<PaymentOptionsPageView> {
                               insufficientCredit,
                           onPressed: () {
                             if (cart == null) return;
+                            LogService().openPaymentSession();
                             final request = PaymentRequest(
                               storeId: cart.storeId ?? "",
                               items:

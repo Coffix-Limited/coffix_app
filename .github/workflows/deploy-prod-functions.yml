@@ -49,6 +49,9 @@ jobs:
       - name: Install Firebase CLI
         run: npm i -g firebase-tools
 
+      - name: Install functions dependencies
+        run: npm --prefix functions ci
+
       - name: Write prod .env
         env:
           FUNCTIONS_ENV: ${{ secrets.FUNCTIONS_ENV_PROD }}

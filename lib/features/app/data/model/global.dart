@@ -15,6 +15,7 @@ class AppGlobal extends Equatable {
   final double? maxDayBetweenLogin;
   final double? minCreditToShare;
   final double? minTopUp;
+  final String? aboutUrl;
   final String? specialUrl;
   final String? storeUrl;
   final String? tcUrl;
@@ -23,6 +24,7 @@ class AppGlobal extends Equatable {
   final double? withdrawalFee;
   final int? invoiceCounter;
   final double? creditExpiryDuration;
+  final double? referralExpiryDays;
 
   const AppGlobal({
     this.GST,
@@ -33,6 +35,7 @@ class AppGlobal extends Equatable {
     this.maxDayBetweenLogin,
     this.minCreditToShare,
     this.minTopUp,
+    this.aboutUrl,
     this.specialUrl,
     this.storeUrl,
     this.tcUrl,
@@ -41,6 +44,7 @@ class AppGlobal extends Equatable {
     this.withdrawalFee,
     this.invoiceCounter,
     this.creditExpiryDuration,
+    this.referralExpiryDays,
   });
 
   factory AppGlobal.fromJson(Map<String, dynamic> json) =>
@@ -56,6 +60,7 @@ class AppGlobal extends Equatable {
     double? maxDayBetweenLogin,
     double? minCreditToShare,
     double? minTopUp,
+    String? aboutUrl,
     String? specialUrl,
     String? storeUrl,
     String? tcUrl,
@@ -64,6 +69,7 @@ class AppGlobal extends Equatable {
     double? withdrawalFee,
     int? invoiceCounter,
     double? creditExpiryDuration,
+    double? referralExpiryDays,
   }) => AppGlobal(
     GST: GST ?? this.GST,
     appVersion: appVersion ?? this.appVersion,
@@ -73,6 +79,7 @@ class AppGlobal extends Equatable {
     maxDayBetweenLogin: maxDayBetweenLogin ?? this.maxDayBetweenLogin,
     minCreditToShare: minCreditToShare ?? this.minCreditToShare,
     minTopUp: minTopUp ?? this.minTopUp,
+    aboutUrl: aboutUrl ?? this.aboutUrl,
     specialUrl: specialUrl ?? this.specialUrl,
     storeUrl: storeUrl ?? this.storeUrl,
     tcUrl: tcUrl ?? this.tcUrl,
@@ -81,6 +88,7 @@ class AppGlobal extends Equatable {
     withdrawalFee: withdrawalFee ?? this.withdrawalFee,
     invoiceCounter: invoiceCounter ?? this.invoiceCounter,
     creditExpiryDuration: creditExpiryDuration ?? this.creditExpiryDuration,
+    referralExpiryDays: referralExpiryDays ?? this.referralExpiryDays,
   );
 
   @override
@@ -93,6 +101,7 @@ class AppGlobal extends Equatable {
     maxDayBetweenLogin,
     minCreditToShare,
     minTopUp,
+    aboutUrl,
     specialUrl,
     storeUrl,
     tcUrl,
@@ -101,5 +110,6 @@ class AppGlobal extends Equatable {
     withdrawalFee,
     invoiceCounter,
     creditExpiryDuration,
+    referralExpiryDays,
   ];
 }

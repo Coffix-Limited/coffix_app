@@ -16,13 +16,14 @@ export function wrapInEmailShell(content: string): string {
         </td>
       </tr>
       <tr>
+
         <td style="padding:24px 48px 48px;color:#1a1a1a;font-size:14px;line-height:1.6;">
           ${content}
         </td>
       </tr>
       <tr>
         <td style="padding:24px 48px 32px;border-top:1px solid #e0e0e0;color:#666666;font-size:12px;line-height:1.8;text-align:center;">
-          <p style="margin:0 0 4px;">This is an automatically-generated message from the Coffix VIP app.</p>
+          <p style="margin:0 0 4px;">This is an automatically-generated message from the Coffix app.</p>
           <p style="margin:0 0 4px;">If you did not make this request, please let us know by forwarding this message to <a href="mailto:support@coffix.co.nz" style="color:#1a73e8;text-decoration:underline;">support@coffix.co.nz</a></p>
           <p style="margin:0;"><a href="https://www.coffix.co.nz/term-of-use-privacy" style="color:#1a73e8;text-decoration:none;">Terms of Use &amp; Privacy</a></p>
         </td>

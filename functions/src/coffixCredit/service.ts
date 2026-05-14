@@ -5,6 +5,8 @@ import FirebaseService from "../firebase/service";
 import { InsufficientCreditError, MinCreditError } from "./errors";
 import { EmailService } from "../email/service";
 import { generateTransactionNumber } from "../utils/generate_order_number";
+import { ReceiptService } from "../receipt/service";
+import { formatNzTime, nowNZ } from "../utils/nz_time";
 
 export { InsufficientCreditError, MinCreditError };
 
@@ -57,6 +59,8 @@ export class CoffixCreditService {
     const discountLevel3 = ((globalData.discountLevel3 ?? 0) / 100) as number;
     const topupLevel2 = (globalData.topupLevel2 ?? Infinity) as number;
     const topupLevel3 = (globalData.topupLevel3 ?? Infinity) as number;
+    const creditExpiryDuration = (globalData.creditExpiryDuration ??
+      0) as number;
 
     if (amount < minTopUp) {
       throw new Error(`Top-up amount is below the minimum of ${minTopUp}`);
@@ -78,9 +82,12 @@ export class CoffixCreditService {
         ? ((customerSnap.data()?.creditAvailable ?? 0) as number)
         : 0;
 
+      const expiryDate = new Date(
+        Date.now() + creditExpiryDuration * 24 * 60 * 60 * 1000,
+      );
       tx.set(
         customerRef,
-        { creditAvailable: current + totalAmount },
+        { creditAvailable: current + totalAmount, creditExpiry: expiryDate },
         { merge: true },
       );
     });
@@ -90,15 +97,15 @@ export class CoffixCreditService {
 
   async shareCredit({
     senderId,
-    senderFirstName,
-    senderLastName,
+    senderFullName,
+    senderEmail,
     recipientFullName,
     recipientEmail,
     amount,
   }: {
     senderId: string;
-    senderFirstName: string;
-    senderLastName: string;
+    senderFullName: string;
+    senderEmail: string;
     recipientFullName: string;
     recipientEmail: string;
     amount: number;
@@ -124,10 +131,18 @@ export class CoffixCreditService {
     if (!senderSnap.exists) {
       throw new Error("Sender not found");
     }
-    const creditAvailable = (senderSnap.data()?.creditAvailable ?? 0) as number;
+    const senderData = senderSnap.data();
+    const creditAvailable = (senderData?.creditAvailable ?? 0) as number;
     if (creditAvailable < amount) {
       throw new InsufficientCreditError(creditAvailable, amount);
     }
+
+    const storeDoc = senderData?.preferredStoreId
+      ? await firebaseService.findStoreByStoreId(senderData.preferredStoreId)
+      : null;
+    const storeInvoiceText = (storeDoc?.invoiceText ?? "") as string;
+    const storeId = (senderData?.preferredStoreId ?? "") as string;
+    const printerId = (storeDoc?.printerId ?? "TRY") as string;
 
     // 4. Look up recipient by email
     const recipient = await firebaseService.findCustomerByEmail(recipientEmail);
@@ -157,13 +172,16 @@ export class CoffixCreditService {
         );
         firebaseService.createGiftTransaction(tx, {
           senderId,
-          senderFirstName,
-          senderLastName,
+          senderFullName,
+          senderEmail,
           recipientEmail,
           recipientFullName,
           recipientCustomerId: recipient.customerId,
           amount,
           transactionNumber,
+          storeInvoiceText,
+          storeId,
+          printerId,
         });
       });
     } else {
@@ -178,27 +196,69 @@ export class CoffixCreditService {
         tx.update(senderRef, { creditAvailable: senderCredit - amount });
         firebaseService.createGiftTransaction(tx, {
           senderId,
-          senderFirstName,
-          senderLastName,
+          senderFullName,
+          senderEmail,
           recipientEmail,
           recipientFullName,
           amount,
           transactionNumber,
+          storeInvoiceText,
+          storeId,
+          printerId,
         });
       });
     }
 
-    // 5. Send gift notification email (non-fatal)
-    try {
-      await new EmailService().sendGift({
-        to: recipientEmail,
-        senderFirstName,
-        senderLastName,
-        amount,
-        transactionNumber,
-      });
-    } catch (emailError) {
-      logger.error("Error sending gift notification email", { emailError });
-    }
+    // 5. Send gift notification emails (non-fatal)
+    const emailService = new EmailService();
+    await Promise.allSettled([
+      emailService
+        .sendGift({
+          to: recipientEmail,
+          userId: senderId,
+          amount,
+          transactionNumber,
+          recipientFullName,
+          storeInvoiceText,
+        })
+        .catch((emailError) =>
+          logger.error("Error sending gift notification email to recipient", {
+            emailError,
+          }),
+        ),
+      emailService
+        .sendGift({
+          to: senderData!.email as string,
+          userId: senderId,
+          amount,
+          transactionNumber,
+          recipientFullName,
+          storeInvoiceText,
+        })
+        .catch((emailError) =>
+          logger.error("Error sending gift sent email to sender", {
+            emailError,
+          }),
+        ),
+    ]);
+
+    // // 6. Create gift print queue (non-fatal)
+    // void (async () => {
+    //   try {
+    //     const receiptService = new ReceiptService();
+    //     await receiptService.createGiftPrintQueue({
+    //       receiptData: {
+    //         printerId,
+    //         storeInvoiceText,
+    //         transactionNumber,
+    //         recipientFullName,
+    //         amount,
+    //         orderTime: nowNZ(),
+    //       },
+    //     });
+    //   } catch (printError) {
+    //     logger.error("Error creating gift print queue", { printError });
+    //   }
+    // })();
   }
 }

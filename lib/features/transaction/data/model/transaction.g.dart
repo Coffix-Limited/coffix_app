@@ -12,7 +12,11 @@ Transaction _$TransactionFromJson(Map<String, dynamic> json) => Transaction(
   customerId: json['customerId'] as String?,
   amount: (json['amount'] as num?)?.toDouble(),
   createdAt: const DateTimeConverter().fromJson(json['createdAt']),
-  status: $enumDecodeNullable(_$TransactionStatusEnumMap, json['status']),
+  status: $enumDecodeNullable(
+    _$TransactionStatusEnumMap,
+    json['status'],
+    unknownValue: TransactionStatus.created,
+  ),
   paymentMethod: const PaymentMethodConverter().fromJson(json['paymentMethod']),
   paymentId: json['paymentId'] as String?,
   paymentTime: const DateTimeConverter().fromJson(json['paymentTime']),
@@ -21,10 +25,13 @@ Transaction _$TransactionFromJson(Map<String, dynamic> json) => Transaction(
   recipientCustomerId: json['recipientCustomerId'] as String?,
   recipientEmail: json['recipientEmail'] as String?,
   recipientFullName: json['recipientFullName'] as String?,
-  senderFirstName: json['senderFirstName'] as String?,
-  senderLastName: json['senderLastName'] as String?,
+  senderFullName: json['senderFullName'] as String?,
+  senderEmail: json['senderEmail'] as String?,
   transactionNumber: json['transactionNumber'] as String?,
   totalAmount: (json['totalAmount'] as num?)?.toDouble(),
+  gst: (json['gst'] as num?)?.toDouble(),
+  gstAmount: (json['gstAmount'] as num?)?.toDouble(),
+  gstNumber: json['gstNumber'] as String?,
 );
 
 Map<String, dynamic> _$TransactionToJson(Transaction instance) =>
@@ -45,10 +52,13 @@ Map<String, dynamic> _$TransactionToJson(Transaction instance) =>
       'recipientCustomerId': instance.recipientCustomerId,
       'recipientEmail': instance.recipientEmail,
       'recipientFullName': instance.recipientFullName,
-      'senderFirstName': instance.senderFirstName,
-      'senderLastName': instance.senderLastName,
+      'senderFullName': instance.senderFullName,
+      'senderEmail': instance.senderEmail,
       'transactionNumber': instance.transactionNumber,
       'totalAmount': instance.totalAmount,
+      'gst': instance.gst,
+      'gstAmount': instance.gstAmount,
+      'gstNumber': instance.gstNumber,
     };
 
 const _$TransactionStatusEnumMap = {
@@ -58,4 +68,7 @@ const _$TransactionStatusEnumMap = {
   TransactionStatus.approved: 'approved',
   TransactionStatus.declined: 'declined',
   TransactionStatus.completed: 'completed',
+  TransactionStatus.expired: 'expired',
+  TransactionStatus.sent: 'sent',
+  TransactionStatus.claimed: 'claimed',
 };

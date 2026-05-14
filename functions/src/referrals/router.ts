@@ -6,26 +6,20 @@ import { firestore } from "../config/firebaseAdmin";
 import { AuthService } from "../auth/service";
 import { logger } from "firebase-functions/v1";
 import { ReferralService } from "./service";
+import { EmailService } from "../email/service";
+import { sendReferralSchema } from "./schemas";
 
 const referralsRouter = express.Router();
 referralsRouter.use(express.json());
 
-const sendReferralSchema = z.object({
-  recipients: z
-    .array(
-      z.object({
-        email: z.email(),
-        name: z.string().min(1),
-      }),
-    )
-    .min(1),
-});
+
 
 referralsRouter.post(
   "/send",
   requirePost,
   requiredAuth,
   async (request: AuthenticatedRequest, response) => {
+    const emailService = new EmailService();
     const validation = sendReferralSchema.safeParse(request.body);
     if (!validation.success) {
       const errors = validation.error.issues
@@ -56,7 +50,8 @@ referralsRouter.post(
       if (existingEmails.length > 0) {
         return response.status(400).json({
           success: false,
-          message: `The following emails are already registered: ${existingEmails.join(", ")}`,
+          // message: `The following emails are already registered: ${existingEmails.join(", ")}`,
+          message: "Some of the referrals already exist and will not be invited",
         });
       }
 
@@ -80,7 +75,8 @@ referralsRouter.post(
       if (alreadyReferredEmails.length > 0) {
         return response.status(400).json({
           success: false,
-          message: `The following emails already have a pending referral: ${alreadyReferredEmails.join(", ")}`,
+          // message: `The following emails already have a pending referral: ${alreadyReferredEmails.join(", ")}`,
+          message: "Some of the referrals already exist and will not be invited",
         });
       }
 
@@ -92,9 +88,10 @@ referralsRouter.post(
             referrerUid: uid,
             referee: { email, name },
           });
-          await referralService.sendReferralEmail({
-            referrerUid: uid,
-            referee: { email, name },
+          await emailService.sendReferralEmail({
+            to: email,
+            userId: uid,
+            referee_name: name,
           });
         }),
       );

@@ -2,48 +2,53 @@ import { z } from "zod";
 
 export const sendGiftEmailSchema = z.object({
   to: z.email(),
-  senderFirstName: z.string().min(1),
-  senderLastName: z.string().min(1),
+  userId: z.string().min(1),
   amount: z.number().positive(),
   recipientFirstName: z.string().optional(),
 });
 
-export const orderItemSchema = z.object({
-  name: z.string().min(1),
-  quantity: z.number().int().positive(),
-  price: z.number().nonnegative(),
-  modifiers: z.array(z.string()).optional(),
+export const sendInvoiceSchema = z.object({
+  to: z.email(),
+  userId: z.string().min(1),
+  invoice: z.string().min(1),
+  storeName: z.string().min(1),
+  transactionNumber: z.string().min(1),
 });
 
-export const sendOrderReceiptEmailSchema = z.object({
+export const sendOTPSchema = z.object({
   to: z.email(),
-  orderNumber: z.string().min(1),
-  storeName: z.string().min(1),
-  storeAddress: z.string().min(1),
-  createdAt: z.string().min(1),
-  paymentMethod: z.string().min(1),
-  total: z.number().nonnegative(),
-  items: z.array(orderItemSchema).min(1),
+  userId: z.string().min(1),
+  otp: z.string().min(1),
 });
+
+export const sendReferralEmailSchema = z.object({
+  to: z.email(),
+  userId: z.string().min(1),
+  referee_name: z.string().min(1),
+});
+
 
 export interface SendEmailParams {
   email: string;
-  subject: string;
+  subject?: string;
   documentId: string;
   variables: Record<string, string | number>;
+  userId?: string;
+  htmlContent?: string;
 }
 
 export interface GiftEmailParams {
   to: string;
-  senderFirstName: string;
-  senderLastName: string;
+  userId: string;
   amount: number;
-  recipientFirstName?: string;
-  recipientLastName?: string;
+  recipientFullName?: string;
   transactionNumber?: string;
+  storeInvoiceText?: string;
 }
 
+
+
 export type SendGiftEmailSchema = z.infer<typeof sendGiftEmailSchema>;
-export type SendOrderReceiptEmailSchema = z.infer<
-  typeof sendOrderReceiptEmailSchema
->;
+export type SendInvoiceSchema = z.infer<typeof sendInvoiceSchema>;
+export type SendOTPSchema = z.infer<typeof sendOTPSchema>;
+export type SendReferralEmailSchema = z.infer<typeof sendReferralEmailSchema>;

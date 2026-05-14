@@ -1,6 +1,7 @@
 import 'package:coffix_app/core/constants/colors.dart';
 import 'package:coffix_app/core/constants/sizes.dart';
 import 'package:coffix_app/core/di/service_locator.dart';
+import 'package:coffix_app/core/services/log_service.dart';
 import 'package:coffix_app/core/extensions/date_extensions.dart';
 import 'package:coffix_app/core/theme/typography.dart';
 import 'package:coffix_app/features/app/logic/app_cubit.dart';
@@ -123,6 +124,18 @@ class AboutView extends StatelessWidget {
                   SizedBox(height: AppSizes.sm),
                   AppTextButton(
                     showUnderline: true,
+                    onPressed: () async {
+                      await launchUrl(
+                        Uri.parse(
+                          'https://www.coffix.co.nz/term-of-use-privacy',
+                        ),
+                      );
+                    },
+                    text: 'Terms of use & privacy',
+                  ),
+                  SizedBox(height: AppSizes.sm),
+                  AppTextButton(
+                    showUnderline: true,
                     onPressed: () {
                       if (global?.specialUrl != null) {
                         launchUrl(Uri.parse(global?.specialUrl ?? ''));
@@ -140,6 +153,7 @@ class AboutView extends StatelessWidget {
                         ConfirmAccountDeletion.show(
                           context,
                           onConfirm: () {
+                            LogService().deleteAccount();
                             context.read<AuthCubit>().deleteAccount();
                             context.read<CartCubit>().resetCart();
                           },

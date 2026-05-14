@@ -32,5 +32,5 @@ class AuthState with _$AuthState {
   const factory AuthState.forgotPassword() = _ForgotPassword;
 
   // Password reset email sent
-  const factory AuthState.passwordResetEmailSent() = _PasswordResetEmailSent;
+  const factory AuthState.passwordResetEmailSent({required String message}) = _PasswordResetEmailSent;
 }

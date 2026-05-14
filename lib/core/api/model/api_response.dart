@@ -16,20 +16,23 @@ class ApiResponse<T> {
   factory ApiResponse.fromJson(
     dynamic json, {
     T Function(dynamic json)? fromJsonT,
+    int? statusCode,
   }) {
     if (json is Map<String, dynamic>) {
       return ApiResponse<T>(
         success: json['success'] ?? false,
         message: json['message'],
-        data: fromJsonT != null && json['data'] != null ? fromJsonT(json['data']) : json['data'],
+        data: fromJsonT != null && json['data'] != null
+            ? fromJsonT(json['data'])
+            : json['data'],
         errors: json['errors'],
-        statusCode: json['status_code'],
+        statusCode: statusCode ?? json['status_code'],
       );
     } else {
       return ApiResponse<T>(
         success: true,
         data: fromJsonT != null ? fromJsonT(json) : json,
-        statusCode: json['status_code'],
+        statusCode: statusCode ?? json['status_code'],
       );
     }
   }

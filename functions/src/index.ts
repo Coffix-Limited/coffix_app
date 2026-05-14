@@ -10,24 +10,9 @@ dotenv.config({ path: path.join(__dirname, "..", envFile), override: true });
 
 import { setGlobalOptions } from "firebase-functions";
 import { onRequest } from "firebase-functions/https";
-import { onDocumentCreated } from "firebase-functions/firestore";
 import { api } from "./api";
-import { handleCustomerCreated } from "./triggers/onCustomerCreated";
 
-export const v1 = onRequest(api);
-
-export const onCustomerCreated = onDocumentCreated(
-  {
-    document: "customers/{uid}",
-    database: project.includes("dev") ? "(default)" : "coffix-prod-australia",
-  },
-  async (event) => {
-    const uid = event.params.uid;
-    const data = event.data?.data();
-    if (!data) return;
-    await handleCustomerCreated(uid, data);
-  },
-);
+export const v1 = onRequest({ timeoutSeconds: 540 }, api);
 // Start writing functions
 // https://firebase.google.com/docs/functions/typescript
 

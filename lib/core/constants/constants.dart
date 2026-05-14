@@ -8,4 +8,5 @@ class AppConstants {
       'update_warning_dismiss_count';
   static const int kUpdateWarningDismissLimit = 5;
   static const String globalCollectionDocId = 'EQ0i4V6H47Ra7yMCdG7B';
+  
 }

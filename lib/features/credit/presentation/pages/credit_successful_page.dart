@@ -84,13 +84,12 @@ class CreditSuccessfulView extends StatelessWidget {
                           vertical: AppSizes.md,
                         ),
                         decoration: BoxDecoration(
-                          color: AppColors.primary,
                           borderRadius: BorderRadius.circular(AppSizes.md),
                         ),
                         child: Column(
                           children: [
                             Text(
-                              'Amount Added: \$${amount.toStringAsFixed(2)}',
+                              'Amount Paid: \$${amount.toStringAsFixed(2)}',
                               style: AppTypography.titleM.copyWith(
                                 fontWeight: FontWeight.bold,
                               ),
@@ -105,6 +104,7 @@ class CreditSuccessfulView extends StatelessWidget {
                           ],
                         ),
                       ),
+                      SizedBox(height: AppSizes.xl),
                       AppButton.primary(
                         onPressed: () {
                           context.goNamed(HomePage.route);

@@ -126,8 +126,7 @@ router.post(
 
       if (
         senderDoc.email &&
-        (senderDoc.email as string).toLowerCase() ===
-          recipientEmail.toLowerCase()
+        senderDoc.email.toLowerCase() === recipientEmail.toLowerCase()
       ) {
         return response.status(400).json({
           success: false,
@@ -137,9 +136,9 @@ router.post(
 
       await creditService.shareCredit({
         senderId,
-        senderFirstName: (senderDoc.firstName as string) ?? "",
-        senderLastName: (senderDoc.lastName as string) ?? "",
-        recipientFullName: `${recipientFirstName} ${recipientLastName}`,
+        senderFullName: `${senderDoc.firstName ?? ""} ${senderDoc.lastName ?? ""}`,
+        recipientFullName: `${recipientFirstName ?? ""} ${recipientLastName ?? ""}`,
+        senderEmail: senderDoc.email ?? "",
         recipientEmail,
         amount,
       });
@@ -164,6 +163,33 @@ router.post(
         });
       }
       logger.error("Error sharing credit:", error);
+      return response
+        .status(500)
+        .json({ success: false, message: "Internal server error" });
+    }
+  },
+);
+
+router.post(
+  "/expire",
+  requirePost,
+  async (request: AuthenticatedRequest, response: Response) => {
+    const secret = request.headers["x-cron-secret"];
+    if (!secret || secret !== process.env.CRON_SECRET) {
+      return response
+        .status(401)
+        .json({ success: false, message: "Unauthorized" });
+    }
+
+    const firebaseService = new FirebaseService();
+    try {
+      const { expiredCount } = await firebaseService.expireCredits();
+      logger.info(`Credit expiry run: ${expiredCount} customers expired`);
+      return response
+        .status(200)
+        .json({ success: true, data: { expiredCount } });
+    } catch (error) {
+      logger.error("Error expiring credits:", error);
       return response
         .status(500)
         .json({ success: false, message: "Internal server error" });

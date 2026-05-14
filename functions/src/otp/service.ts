@@ -1,6 +1,6 @@
 import { firestore } from "../config/firebaseAdmin";
 import * as admin from "firebase-admin";
-import { OTP } from "./otp";
+import { OTP } from "./interface";
 
 export async function createOTPDocumentWithTransaction({
   transaction,

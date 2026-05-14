@@ -1,4 +1,5 @@
 import 'package:coffix_app/core/extensions/order_extensions.dart';
+import 'package:coffix_app/core/services/log_service.dart';
 import 'package:coffix_app/core/utils/time_utils.dart';
 import 'package:coffix_app/features/cart/data/model/cart_item.dart';
 import 'package:coffix_app/features/cart/domain/helper.dart';
@@ -7,17 +8,14 @@ import 'package:coffix_app/features/cart/presentation/pages/cart_page.dart';
 import 'package:coffix_app/features/modifier/data/model/modifier.dart';
 import 'package:coffix_app/presentation/atoms/app_cached_network_image.dart';
 import 'package:coffix_app/core/constants/colors.dart';
-import 'package:coffix_app/core/constants/images.dart';
 import 'package:coffix_app/core/constants/sizes.dart';
 import 'package:coffix_app/core/extensions/date_extensions.dart';
 import 'package:coffix_app/core/extensions/price_extensions.dart';
 import 'package:coffix_app/core/theme/typography.dart';
 import 'package:coffix_app/features/order/data/model/order.dart';
 import 'package:coffix_app/features/auth/logic/auth_cubit.dart';
-import 'package:coffix_app/features/order/logic/order_cubit.dart';
 import 'package:coffix_app/features/products/logic/product_cubit.dart';
 import 'package:coffix_app/presentation/atoms/app_button.dart';
-import 'package:coffix_app/presentation/atoms/app_clickable.dart';
 import 'package:coffix_app/presentation/atoms/app_notification.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
@@ -30,6 +28,7 @@ class OrderCard extends StatelessWidget {
   final Order order;
 
   void _reorder(BuildContext context, {required Order order}) {
+    LogService().reOrder();
     final productCubit = context.read<ProductCubit>();
     final products = productCubit.allProducts;
 
@@ -74,7 +73,13 @@ class OrderCard extends StatelessWidget {
       }
 
       final product = match.product;
-      // print(product.docId);
+
+      final disabledStores = product.disabledStores;
+      final availableStores = product.availableToStores;
+      if (disabledStores != null && disabledStores.contains(storeId)) continue;
+      if (availableStores != null && !availableStores.contains(storeId))
+        continue;
+
       final selectedByGroup = item.selectedModifiers ?? {};
       final modifierMap = <String, Modifier>{
         for (final im in item.modifiers ?? [])
@@ -82,10 +87,15 @@ class OrderCard extends StatelessWidget {
             im.modifierId!: Modifier(
               docId: im.modifierId,
               priceDelta: im.priceDelta,
+              label: im.name,
             ),
       };
       // print(modifierMap);
       final modifierPriceSnapshot = helper.buildModifierPriceSnapshot(
+        selectedByGroup: selectedByGroup,
+        modifierMap: modifierMap,
+      );
+      final modifierLabelSnapshot = helper.buildModifierLabelSnapshot(
         selectedByGroup: selectedByGroup,
         modifierMap: modifierMap,
       );
@@ -111,6 +121,7 @@ class OrderCard extends StatelessWidget {
         selectedByGroup: selectedByGroup,
         basePrice: basePrice,
         modifierPriceSnapshot: modifierPriceSnapshot,
+        modifierLabelSnapshot: modifierLabelSnapshot,
         unitTotal: unitTotal,
         lineTotal: unitTotal * quantity,
         createdAt: TimeUtils.now(),
@@ -135,7 +146,7 @@ class OrderCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final date = order.scheduledAt ?? order.createdAt;
+    final date = order.createdAt;
     final dateStr = date != null ? date.formatDate() : '—';
     final items = order.items ?? [];
 
@@ -155,19 +166,6 @@ class OrderCard extends StatelessWidget {
               Expanded(
                 child: Row(
                   children: [
-                    AppClickable(
-                      onPressed: () {
-                        context.read<OrderCubit>().sendOrderToEmail(
-                          orderId: order.docId ?? '',
-                        );
-                      },
-                      child: Image.asset(
-                        AppImages.email,
-                        width: 24,
-                        height: 24,
-                      ),
-                    ),
-                    const SizedBox(width: AppSizes.sm),
                     Text(
                       '#${order.transactionNumber ?? 'N/A'}',
                       style: theme.textTheme.titleSmall?.copyWith(
@@ -189,8 +187,8 @@ class OrderCard extends StatelessWidget {
                   physics: const NeverScrollableScrollPhysics(),
                   itemBuilder: (context, index) {
                     final item = items[index];
-                    final modifiers =
-                        item.modifiers?.map((m) => m.modifierId).toList() ?? [];
+                    final List<String> modifiers =
+                        item.modifiers?.map((m) => m.name ?? "").toList() ?? [];
                     final imageUrl = item.productImageUrl ?? '';
 
                     return Padding(
@@ -240,7 +238,7 @@ class OrderCard extends StatelessWidget {
                                     children: modifiers
                                         .map(
                                           (m) => Text(
-                                            m?.toLarge() ?? '—',
+                                            m.toLarge(),
                                             style: AppTypography.body3XS
                                                 .copyWith(
                                                   color:

@@ -1,10 +1,12 @@
 import 'package:coffix_app/core/constants/colors.dart';
+import 'package:coffix_app/core/constants/images.dart';
 import 'package:coffix_app/core/constants/sizes.dart';
 import 'package:coffix_app/core/extensions/date_extensions.dart';
 import 'package:coffix_app/core/extensions/price_extensions.dart';
 import 'package:coffix_app/core/theme/typography.dart';
 import 'package:coffix_app/features/order/logic/order_cubit.dart';
 import 'package:coffix_app/features/transaction/data/model/transaction.dart';
+import 'package:coffix_app/presentation/atoms/app_clickable.dart';
 import 'package:coffix_app/presentation/molecules/status_chip.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
@@ -26,6 +28,8 @@ class GiftTransaction extends StatefulWidget {
     TransactionStatus.approved => ('Approved', AppColors.success),
     TransactionStatus.failed => ('Failed', AppColors.error),
     TransactionStatus.completed => ('Completed', AppColors.success),
+    TransactionStatus.sent => ('Sent', AppColors.success),
+    TransactionStatus.claimed => ('Claimed', AppColors.success),
     _ => ('—', AppColors.lightGrey),
   };
 }
@@ -40,6 +44,24 @@ class GiftTransactionState extends State<GiftTransaction> {
     final order = context.watch<OrderCubit>().state.orders.firstWhereOrNull(
       (order) => order.docId == widget.transaction.orderId,
     );
+
+    Color amountColor() {
+      if (widget.transaction.status == TransactionStatus.sent) {
+        return AppColors.error;
+      } else if (widget.transaction.status == TransactionStatus.claimed) {
+        return AppColors.success;
+      }
+      return AppColors.textBlackColor;
+    }
+
+    String label() {
+      if (widget.transaction.status == TransactionStatus.sent) {
+        return "Gift to: ${widget.transaction.recipientFullName ?? 'N/A'} (${widget.transaction.recipientEmail ?? 'N/A'})";
+      } else if (widget.transaction.status == TransactionStatus.claimed) {
+        return "Gift from: ${widget.transaction.senderFullName ?? 'N/A'} (${widget.transaction.senderEmail ?? 'N/A'})";
+      }
+      return "Gift from: ${widget.transaction.senderFullName ?? 'N/A'} (${widget.transaction.senderEmail ?? 'N/A'})";
+    }
 
     return Container(
       padding: const EdgeInsets.all(AppSizes.md),
@@ -56,6 +78,20 @@ class GiftTransactionState extends State<GiftTransaction> {
               Expanded(
                 child: Row(
                   children: [
+                    AppClickable(
+                      onPressed: () {
+                        context.read<OrderCubit>().sendOrderToEmail(
+                          transactionNumber:
+                              widget.transaction.transactionNumber ?? '',
+                        );
+                      },
+                      child: Image.asset(
+                        AppImages.email,
+                        width: 24,
+                        height: 24,
+                      ),
+                    ),
+                    const SizedBox(width: AppSizes.sm),
                     Text(
                       "#${widget.transaction.transactionNumber ?? 'N/A'}",
                       style: theme.textTheme.titleSmall?.copyWith(
@@ -83,11 +119,7 @@ class GiftTransactionState extends State<GiftTransaction> {
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      "Gift to: ${widget.transaction.recipientFullName ?? 'N/A'} (${widget.transaction.recipientEmail ?? 'N/A'})",
-                    ),
-                  ],
+                  children: [Text(label())],
                 ),
               ),
 
@@ -96,7 +128,9 @@ class GiftTransactionState extends State<GiftTransaction> {
                 children: [
                   Text.rich(
                     widget.transaction.amount?.toCurrencySuperscript(
-                          style: AppTypography.titleS,
+                          style: AppTypography.titleS.copyWith(
+                            color: amountColor(),
+                          ),
                         ) ??
                         0.00.toCurrencySuperscript(style: AppTypography.titleS),
                   ),

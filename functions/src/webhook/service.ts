@@ -13,6 +13,24 @@ import { NotificationService } from "../notification/service";
 import { ReferralService } from "../referrals/service";
 import { firestore } from "../config/firebaseAdmin";
 import { formatNzTime } from "../utils/nz_time";
+import { EmailService } from "../email/service";
+import { buildAndSendOrderInvoice } from "../order/router";
+import { getPaymentMethod } from "../order/service";
+import { wrapInEmailShell } from "../utils/emailShell";
+import { topupEmailTemplate } from "../utils/templates/topup_email_template";
+import admin from "firebase-admin";
+
+function toDate(value: unknown): Date {
+  if (value instanceof Date) return value;
+  if (
+    value != null &&
+    typeof (value as admin.firestore.Timestamp).toDate === "function"
+  ) {
+    return (value as admin.firestore.Timestamp).toDate();
+  }
+  return new Date(value as string | number);
+}
+
 export class WebhookService {
   private readonly windcaveService: WindcaveService;
   private readonly firebaseService: FirebaseService;
@@ -20,6 +38,7 @@ export class WebhookService {
   private readonly coffixCreditService: CoffixCreditService;
   private readonly notificationService: NotificationService;
   private readonly referralService: ReferralService;
+  private readonly emailService: EmailService;
 
   constructor() {
     this.windcaveService = new WindcaveService();
@@ -28,6 +47,68 @@ export class WebhookService {
     this.receiptService = new ReceiptService();
     this.notificationService = new NotificationService();
     this.referralService = new ReferralService();
+    this.emailService = new EmailService();
+  }
+
+  private async sendTopupEmail(
+    customerId: string,
+    transactionNumber: string,
+    authorised: boolean,
+  ): Promise<void> {
+    const [transaction, customer] = await Promise.all([
+      this.firebaseService.findTransactionByTransactionNumber(
+        transactionNumber,
+      ),
+      this.firebaseService.findUserByCustomerId(customerId),
+    ]);
+    if (!customer?.email || !transaction) return;
+
+    const customerName =
+      [customer.firstName, customer.lastName].filter(Boolean).join(" ") ||
+      "Guest";
+
+    let invoiceHtml: string;
+    if (authorised) {
+      const createdAt = formatNzTime(toDate(transaction.createdAt));
+      const amount = transaction.amount as number;
+      const gst = (transaction.gst as number) ?? 0;
+      const gstNumber = (transaction.gstNumber as string) ?? "";
+      const gstAmount = (transaction.gstAmount as number) ?? 0;
+      const gstLine = `${gst}% GST Included in the total: $${gstAmount.toFixed(2)}`;
+      const cardNumber = (transaction.card as any)?.cardNumber ?? null;
+      const paymentMethod = cardNumber
+        ? `Credit Card ${cardNumber.slice(-4)}`
+        : "Credit Card";
+      const storeInvoiceText = (transaction.storeInvoiceText as string) ?? "";
+      const totalAmountWithBonus = (transaction.totalAmount as number) ?? amount;
+      const bonusAmount = totalAmountWithBonus - amount;
+      invoiceHtml = topupEmailTemplate
+        .replace("{{invoiceText}}", storeInvoiceText)
+        .replace("{{gst}}", gstNumber)
+        .replace("{{transactionNumber}}", transactionNumber)
+        .replace("{{amount}}", `$${amount.toFixed(2)}`)
+        .replace("{{total}}", `$${amount.toFixed(2)}`)
+        .replace("{{gstLine}}", gstLine)
+        .replace("{{paymentMethod}}", paymentMethod)
+        .replace("{{createdAt}}", createdAt)
+        .replace("{{bonusAmount}}", `$${bonusAmount.toFixed(2)}`)
+        .replace("{{totalCoffixCredit}}", `$${totalAmountWithBonus.toFixed(2)}`);
+    } else {
+      const amount = transaction.amount as number;
+      invoiceHtml = wrapInEmailShell(
+        `<h2 style="margin:0 0 16px;font-size:18px;font-weight:700;color:#1a1a1a;">Top-up Failed</h2>
+<p style="margin:0 0 16px;font-size:14px;color:#333333;">Hi ${customerName},</p>
+<p style="margin:0 0 16px;font-size:14px;color:#333333;">Unfortunately your top-up of <strong>$${amount.toFixed(2)}</strong> (Transaction #${transactionNumber}) was declined. Please try again or contact support if the issue persists.</p>`,
+      );
+    }
+
+    await this.emailService.sendInvoice({
+      to: customer.email,
+      userId: customerId,
+      invoiceHtml,
+      storeName: "Coffix",
+      transactionNumber,
+    });
   }
 
   /**
@@ -208,6 +289,7 @@ export class WebhookService {
     const authorised = transaction.authorised === true;
     const amount = Number(transaction.amount ?? 0) || transactionDoc.amount;
     const paymentMethod = transaction.method ?? transaction.cardType ?? "card";
+    const card = transaction.card ?? {};
 
     // MERCHANT REFERENCE IF TOPUP: topup:<customerId>
     // MERCHANT REFERENCE IF ORDER: order:<customerId>:<orderId>
@@ -223,6 +305,7 @@ export class WebhookService {
         paymentMethod,
         responseText: transaction.responseText,
         authorised,
+        card,
       });
     } else {
       // if the user buys a product this function will be called
@@ -233,7 +316,7 @@ export class WebhookService {
       const storeDoc = await this.firebaseService.findStoreByStoreId(
         orderDoc?.storeId,
       );
-
+      const customerName = `${transaction.customer.firstName} ${transaction.customer.lastName}`;
       if (authorised) {
         if (!orderDoc) {
           throw new WindcaveError(400, {
@@ -259,10 +342,16 @@ export class WebhookService {
           paymentId: transaction.id,
           responseText: transaction.responseText,
           orderNumber: orderDoc?.orderNumber,
+          card,
         });
 
-        // CREATE RECEIPT PRINT QUEUE
-        await this.receiptService.createPrintQueue({
+        const formattedPaymentMethod = getPaymentMethod(
+          paymentMethod,
+          (card as any)?.cardNumber ?? null,
+        );
+
+        // Non-critical path: don't block response
+        void this.receiptService.createPrintQueue({
           receiptData: {
             printerId: storeDoc?.printerId ?? "TRY",
             storeName: storeDoc?.name ?? "",
@@ -271,18 +360,18 @@ export class WebhookService {
             orders: (orderDoc.items ?? [])
               .map((item: any) => {
                 const itemModifiers = (item.modifiers ?? [])
-                  .map((m: any) => m.modifierId)
+                  .map((m: any) => m.name)
                   .join(", ");
-                return `${item.quantity}x ${item.productName} | ${itemModifiers} | $${item.price.toFixed(2)}`;
+                return `<b>${item.quantity}x ${item.productName}</b> | ${itemModifiers} | <b>$${item.price.toFixed(2)}</b>`;
               })
               .join("\n"),
             total: Number((orderDoc.amount ?? 0).toFixed(2)),
-            customer: transaction.customer.firstName ?? "",
+            customer: customerName,
             baristaName: "John Doe",
             duration: orderDoc?.duration ?? 0,
-            paymentMethod: "Credit Card",
-            orderTime: formatNzTime(orderDoc?.createdAt ?? new Date()),
-            serviceTime: formatNzTime(orderDoc?.scheduledAt ?? new Date()),
+            paymentMethod: formattedPaymentMethod,
+            orderTime: formatNzTime(orderDoc.createdAt.toDate()),
+            serviceTime: formatNzTime(orderDoc.scheduledAt.toDate()),
           },
         });
 
@@ -290,18 +379,25 @@ export class WebhookService {
           .sendNotification({
             customerId: customerId ?? "",
             title: "Order Payment Successful",
-            message: `A payment for order #${orderDoc?.transactionNumber} has been accepted`,
+            message:
+              orderDoc.paymentMethod === "coffixCredit"
+                ? `A payment for order #${orderDoc?.transactionNumber} has been made from Coffix Credit`
+                : `A payment for order #${orderDoc?.transactionNumber} has been accepted`,
           })
           .catch((err) => logger.error("Notification failed:", err));
-        this.referralService
-          .handleFirstPurchase({
-            customerId: customerId ?? "",
-            orderId,
-            paidAt,
+
+        this.firebaseService
+          .findUserByCustomerId(customerId ?? "")
+          .then((customer) => {
+            if (!customer?.allowWinACoffee) return;
+            return buildAndSendOrderInvoice(
+              this.firebaseService,
+              new EmailService(),
+              customerId ?? "",
+              orderDoc.transactionNumber as string,
+            );
           })
-          .catch((err) =>
-            logger.error("Referral first-purchase check failed:", err),
-          );
+          .catch((err) => logger.error("Invoice email failed:", err));
         return;
       } else {
         await this.firebaseService.updateTransaction(transactionDoc.docId, {
@@ -321,7 +417,7 @@ export class WebhookService {
           .sendNotification({
             customerId: customerId ?? "",
             title: "Order Failed",
-            message: "Your order has been failed",
+            message: `A payment for order #${orderDoc?.transactionNumber} has been declined`,
           })
           .catch((err) => logger.error("Notification failed:", err));
       }
@@ -337,6 +433,7 @@ export class WebhookService {
     paymentMethod,
     responseText,
     authorised,
+    card,
   }: {
     customerId: string;
     amount: number;
@@ -346,6 +443,7 @@ export class WebhookService {
     paymentMethod: string;
     responseText: string;
     authorised: boolean;
+    card: Record<string, any>;
   }) {
     if (authorised) {
       const totalAmount = await this.coffixCreditService.addCredit(
@@ -361,14 +459,26 @@ export class WebhookService {
         paymentId: transaction.id,
         responseText: transaction.responseText,
         totalAmount,
+        card,
       });
+
       this.notificationService
         .sendNotification({
           customerId,
-          title: "Top-up Payment Successful",
-          message: `A payment for top-up #${transactionDoc?.transactionNumber} has been accepted`,
+          title: "TopUp Payment Successful",
+          message: `A payment for topUp #${transactionDoc?.transactionNumber} has been accepted`,
         })
         .catch((err) => logger.error("Notification failed:", err));
+      this.sendTopupEmail(
+        customerId,
+        transactionDoc.transactionNumber,
+        true,
+      ).catch((err) => logger.error("Email failed:", err));
+      this.referralService
+        .handleFirstPurchase({ customerId })
+        .catch((err) =>
+          logger.error("Referral first-topup check failed:", err),
+        );
       return;
     } else {
       await this.firebaseService.updateTransaction(transactionDoc.docId, {
@@ -385,6 +495,11 @@ export class WebhookService {
           message: "Your top-up has been failed",
         })
         .catch((err) => logger.error("Notification failed:", err));
+      this.sendTopupEmail(
+        customerId,
+        transactionDoc.transactionNumber,
+        false,
+      ).catch((err) => logger.error("Email failed:", err));
     }
     return;
   }

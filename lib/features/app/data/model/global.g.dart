@@ -15,6 +15,7 @@ AppGlobal _$AppGlobalFromJson(Map<String, dynamic> json) => AppGlobal(
   maxDayBetweenLogin: (json['maxDayBetweenLogin'] as num?)?.toDouble(),
   minCreditToShare: (json['minCreditToShare'] as num?)?.toDouble(),
   minTopUp: (json['minTopUp'] as num?)?.toDouble(),
+  aboutUrl: json['aboutUrl'] as String?,
   specialUrl: json['specialUrl'] as String?,
   storeUrl: json['storeUrl'] as String?,
   tcUrl: json['tcUrl'] as String?,
@@ -23,6 +24,7 @@ AppGlobal _$AppGlobalFromJson(Map<String, dynamic> json) => AppGlobal(
   withdrawalFee: (json['withdrawalFee'] as num?)?.toDouble(),
   invoiceCounter: (json['invoiceCounter'] as num?)?.toInt(),
   creditExpiryDuration: (json['creditExpiryDuration'] as num?)?.toDouble(),
+  referralExpiryDays: (json['referralExpiryDays'] as num?)?.toDouble(),
 );
 
 Map<String, dynamic> _$AppGlobalToJson(AppGlobal instance) => <String, dynamic>{
@@ -34,6 +36,7 @@ Map<String, dynamic> _$AppGlobalToJson(AppGlobal instance) => <String, dynamic>{
   'maxDayBetweenLogin': instance.maxDayBetweenLogin,
   'minCreditToShare': instance.minCreditToShare,
   'minTopUp': instance.minTopUp,
+  'aboutUrl': instance.aboutUrl,
   'specialUrl': instance.specialUrl,
   'storeUrl': instance.storeUrl,
   'tcUrl': instance.tcUrl,
@@ -42,4 +45,5 @@ Map<String, dynamic> _$AppGlobalToJson(AppGlobal instance) => <String, dynamic>{
   'withdrawalFee': instance.withdrawalFee,
   'invoiceCounter': instance.invoiceCounter,
   'creditExpiryDuration': instance.creditExpiryDuration,
+  'referralExpiryDays': instance.referralExpiryDays,
 };

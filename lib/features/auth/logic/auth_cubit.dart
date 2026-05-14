@@ -7,6 +7,7 @@ import 'package:coffix_app/data/repositories/auth_repository.dart';
 import 'package:coffix_app/data/repositories/store_repository.dart';
 import 'package:coffix_app/features/auth/data/model/user_with_store.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
@@ -41,17 +42,11 @@ class AuthCubit extends Cubit<AuthState> {
   }
 
   AuthExceptions _handleAuthException(FirebaseAuthException e) {
-    switch (e.code) {
-      case 'user-disabled':
-        throw AuthExceptions(message: "User is disabled", code: e.code);
-      case 'invalid-credential':
-        throw AuthExceptions(message: "Invalid credential", code: e.code);
-      case 'invalid-email':
-        throw AuthExceptions(message: "Invalid email", code: e.code);
-      case 'invalid-password':
-        throw AuthExceptions(message: "Invalid password", code: e.code);
-    }
-    return AuthExceptions(message: e.message ?? "Unknown error", code: e.code);
+    debugPrint('auth exception code: ${e.stackTrace}');
+    return AuthExceptions(
+      message: getAuthExceptionMessage(e.code),
+      code: e.code,
+    );
   }
 
   Future<void> signInWithEmailAndPassword({
@@ -121,7 +116,18 @@ class AuthCubit extends Cubit<AuthState> {
         emit(AuthState.initial());
         return;
       }
-      emit(AuthState.error(message: e.toString()));
+      final message = switch (e.code) {
+        AuthorizationErrorCode.failed =>
+          'Apple Sign In failed. Please try again.',
+        AuthorizationErrorCode.invalidResponse =>
+          'Apple Sign In returned an invalid response. Please try again.',
+        AuthorizationErrorCode.notHandled =>
+          'Apple Sign In could not be completed. Please try again.',
+        AuthorizationErrorCode.notInteractive =>
+          'Apple Sign In requires user interaction. Please try again.',
+        _ => 'Apple Sign In failed. Please try again.',
+      };
+      emit(AuthState.error(message: message));
     } on UserCancelledSignIn catch (_) {
       emit(AuthState.unauthenticated());
       return;
@@ -140,16 +146,10 @@ class AuthCubit extends Cubit<AuthState> {
     _userWithStoreSubscription?.cancel();
     _userWithStoreSubscription = stream.listen(
       (AppUserWithStore? user) {
-        // if (user?.user.emailVerified != true) {
-        //   emit(AuthState.emailNotVerified());
-        //   return;
-        // }
         emit(AuthState.authenticated(userWithStore: user!));
-        // emit(
-        //   user != null
-        //       ? AuthState.authenticated(userWithStore: user)
-        //       : AuthState.unauthenticated(),
-        // );
+        if (user.user.qrId == null || user.user.email == null) {
+          _authRepository.updateUser(uid: user.user.docId!);
+        }
       },
       onError: (error) {
         emit(AuthState.error(message: error.toString()));
@@ -198,9 +198,11 @@ class AuthCubit extends Cubit<AuthState> {
         );
       }
       getUser();
-      // getUserWithStore();
+    } on FirebaseAuthException catch (e) {
+      emit(AuthState.error(message: _handleAuthException(e).message));
     } catch (e) {
-      emit(AuthState.error(message: e.toString()));
+      debugPrint('create or login account error: $e');
+      emit(AuthState.error(message: 'Something went wrong. Please try again.'));
     }
   }
 
@@ -211,8 +213,10 @@ class AuthCubit extends Cubit<AuthState> {
   Future<void> forgotPasswordWithEmail({required String email}) async {
     emit(AuthState.loading());
     try {
-      await _authRepository.sendPasswordResetEmail(email: email);
-      emit(AuthState.passwordResetEmailSent());
+      final message = await _authRepository.sendPasswordResetEmail(
+        email: email,
+      );
+      emit(AuthState.passwordResetEmailSent(message: message));
     } catch (e) {
       emit(AuthState.error(message: e.toString()));
     }

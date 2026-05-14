@@ -28,33 +28,17 @@ export function nzDateKey(): string {
     day: "2-digit",
   }).formatToParts(new Date());
 
-  const get = (type: string) => parts.find((p) => p.type === type)?.value ?? "00";
+  const get = (type: string) =>
+    parts.find((p) => p.type === type)?.value ?? "00";
   return `${get("year")}${get("month")}${get("day")}`;
 }
 
 /**
- * Returns a future Date object representing `minutes` minutes from now
- * in New Zealand time. The returned Date has its UTC value shifted to
- * match the NZ wall-clock time, so it serializes as a NZ local time string.
+ * Returns a future Date object representing `minutes` minutes from now in UTC.
  */
 export function scheduledAtNZ(minutes: number): Date {
-  const nowUtc = Date.now();
-  const futureUtc = nowUtc + minutes * 60_000;
-
-  // Get NZ UTC offset in minutes at the future time
-  const formatter = new Intl.DateTimeFormat("en-NZ", {
-    timeZone: NZ_TZ,
-    timeZoneName: "shortOffset",
-  });
-  const parts = formatter.formatToParts(new Date(futureUtc));
-  const offsetStr = parts.find((p) => p.type === "timeZoneName")?.value ?? "GMT+0";
-  // offsetStr e.g. "GMT+13" or "GMT+12"
-  const match = offsetStr.match(/GMT([+-]\d+)/);
-  const offsetHours = match ? parseInt(match[1], 10) : 0;
-
-  return new Date(futureUtc + offsetHours * 60 * 60_000);
+  return new Date(Date.now() + minutes * 60_000);
 }
-
 
 /**
  * Returns the given date formatted as "MM-DD-YYYY HH:mm AM/PM" in NZ time.
@@ -70,7 +54,24 @@ export function formatNzTime(date: Date): string {
     hour12: true,
   }).formatToParts(date);
 
-  const get = (type: string) => parts.find((p) => p.type === type)?.value ?? "00";
+  const get = (type: string) =>
+    parts.find((p) => p.type === type)?.value ?? "00";
   const period = parts.find((p) => p.type === "dayPeriod")?.value ?? "AM";
-  return `${get("month")}-${get("day")}-${get("year")} ${get("hour")}:${get("minute")} ${period}`;
+  return `${get("day")}-${get("month")}-${get("year")} ${get("hour")}:${get("minute")} ${period}`;
+}
+
+/**
+ * Returns the given date formatted as "MM-DD-YYYY" in NZ time.
+ */
+export function formatNzDate(date: Date): string {
+  const parts = new Intl.DateTimeFormat("en-NZ", {
+    timeZone: NZ_TZ,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(date);
+
+  const get = (type: string) =>
+    parts.find((p) => p.type === type)?.value ?? "00";
+  return `${get("day")}-${get("month")}-${get("year")}`;
 }

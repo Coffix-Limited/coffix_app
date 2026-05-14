@@ -57,12 +57,8 @@ class OrderRepositoryImpl extends ApiClient implements OrderRepository {
   }
 
   @override
-  Future<void> sendOrderToEmail({required String orderId}) async {
-    final email = _auth.currentUser?.email;
-    if (email == null) {
-      throw Exception('User not found');
-    }
-    final data = {"email": email, "orderId": orderId};
-    await post('/order/send-receipt', data: data);
+  Future<void> sendOrderToEmail({required String transactionNumber}) async {
+    final data = {"transactionNumber": transactionNumber};
+    await post('/order/invoice', data: data);
   }
 }

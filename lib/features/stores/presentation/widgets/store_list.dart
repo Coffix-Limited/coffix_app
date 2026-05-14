@@ -14,6 +14,7 @@ import 'package:coffix_app/presentation/atoms/app_clickable.dart';
 import 'package:coffix_app/presentation/atoms/app_icon.dart';
 import 'package:coffix_app/presentation/atoms/app_notification.dart';
 import 'package:coffix_app/presentation/atoms/app_field.dart';
+import 'package:coffix_app/presentation/molecules/app_guest_bottom_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -25,6 +26,12 @@ class StoreList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isAuthenticated = context.watch<AuthCubit>().state.maybeWhen(
+      authenticated: (user) =>
+          user.user.emailVerified == true &&
+          user.user.finishedOnboarding == true,
+      orElse: () => false,
+    );
     void updateStore(String storeId) async {
       try {
         await context.read<StoreCubit>().updatePreferredStore(storeId: storeId);
@@ -82,13 +89,18 @@ class StoreList extends StatelessWidget {
             physics: const NeverScrollableScrollPhysics(),
             itemBuilder: (context, index) {
               final store = stores[index];
-            
+
               final isOpen = store.isOpenAt();
               // final isOpen = true;
               return AppClickable(
                 showSplash: false,
                 onPressed: () {
-                  if (isOpen) {
+                  if (!isAuthenticated) {
+                    AppGuestBottomSheet.show(
+                      context,
+                      message: "Please sign in to continue",
+                    );
+                  } else if (isOpen) {
                     updateStore(store.docId);
                   }
                 },

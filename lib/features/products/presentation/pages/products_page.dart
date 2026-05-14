@@ -57,8 +57,13 @@ class _ProductViewState extends State<ProductView> {
 
   @override
   Widget build(BuildContext context) {
-    final store = context.watch<AuthCubit>().state.maybeWhen(
+    final authState = context.watch<AuthCubit>().state;
+    final store = authState.maybeWhen(
       authenticated: (user) => user.store,
+      orElse: () => null,
+    );
+    final preferredStoreId = authState.maybeWhen(
+      authenticated: (userWithStore) => userWithStore.user.preferredStoreId,
       orElse: () => null,
     );
     final isClosed = store != null && !store.isOpenAt();
@@ -77,13 +82,20 @@ class _ProductViewState extends State<ProductView> {
                       List<ProductCategory> allCategories,
                       String? categoryFilter,
                     ) => ProductList(
-                      products: products.productsByStore(widget.storeId),
+                      products: products
+                          .productsByStore(
+                            storeId: widget.storeId,
+                            preferredStoreId: preferredStoreId ?? "",
+                          )
+                          .toList(),
                       allCategories: allCategories,
                       categoryFilter: categoryFilter,
                       storeId: widget.storeId,
                     ),
-                error: (message) =>
-                    AppError(title: "Failed getting products", subtitle: message),
+                error: (message) => AppError(
+                  title: "Failed getting products",
+                  subtitle: message,
+                ),
               );
             },
           ),
@@ -111,11 +123,7 @@ class _ClosedOverlay extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
-                Icons.storefront,
-                size: 64,
-                color: AppColors.lightGrey,
-              ),
+              Icon(Icons.storefront, size: 64, color: AppColors.lightGrey),
               const SizedBox(height: AppSizes.md),
               Text(
                 'Store is currently closed',
@@ -126,7 +134,9 @@ class _ClosedOverlay extends StatelessWidget {
               if (next != null)
                 Text(
                   'Opens ${next.day} at ${next.time}',
-                  style: AppTypography.bodyM.copyWith(color: AppColors.lightGrey),
+                  style: AppTypography.bodyM.copyWith(
+                    color: AppColors.lightGrey,
+                  ),
                   textAlign: TextAlign.center,
                 ),
               const SizedBox(height: AppSizes.lg),

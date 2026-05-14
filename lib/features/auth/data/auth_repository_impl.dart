@@ -17,6 +17,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:http/http.dart' as http;
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
 class AuthRepositoryImpl extends ApiClient implements AuthRepository {
@@ -45,6 +46,8 @@ class AuthRepositoryImpl extends ApiClient implements AuthRepository {
           message: 'User is disabled',
         );
       }
+    } on FirebaseAuthException {
+      rethrow;
     } catch (e) {
       throw Exception(e);
     }
@@ -78,7 +81,7 @@ class AuthRepositoryImpl extends ApiClient implements AuthRepository {
         throw Exception('Email already in use');
       }
       debugPrint('signUp error: $e\n$st'); // see real error in console
-      throw Exception(e.message);
+      rethrow;
     } catch (e, st) {
       debugPrint('signUp error: $e\n$st'); // see real error in console
       throw Exception(e);
@@ -254,15 +257,15 @@ class AuthRepositoryImpl extends ApiClient implements AuthRepository {
     required String email,
   }) async {
     final ref = _firestore.collection('customers').doc(docId);
-    final existing = await ref.get();
-    if (!existing.exists) {
-      await ref.set({
-        'docId': docId,
-        'email': email,
-        'createdAt': TimeUtils.now(),
-        'qrId': generateQrId(docId),
-      });
-    }
+    // final existing = await ref.get();
+    // if (!existing.exists) {
+    await ref.set({
+      'docId': docId,
+      'email': email,
+      'createdAt': TimeUtils.now(),
+      'qrId': generateQrId(docId),
+    }, SetOptions(merge: true));
+    // }
   }
 
   @override
@@ -272,7 +275,10 @@ class AuthRepositoryImpl extends ApiClient implements AuthRepository {
         .doc(_auth.currentUser?.uid)
         .snapshots()
         .map((event) {
-          return AppUser.fromJson(event.data() ?? {});
+          return AppUser.fromJson({
+            ...event.data() ?? {},
+            "docId": _auth.currentUser?.uid,
+          });
         });
   }
 
@@ -315,8 +321,11 @@ class AuthRepositoryImpl extends ApiClient implements AuthRepository {
     if (uid == null) {
       throw Exception('No user found');
     }
+    final packageInfo = await PackageInfo.fromPlatform();
+    final appVersion = '${packageInfo.version}+${packageInfo.buildNumber}';
     await _firestore.collection("customers").doc(_auth.currentUser?.uid).set({
       "lastLogin": TimeUtils.now(),
+      "appVersion": appVersion,
     }, SetOptions(merge: true));
   }
 
@@ -335,9 +344,10 @@ class AuthRepositoryImpl extends ApiClient implements AuthRepository {
     if (uid == null) {
       throw Exception('No user found');
     }
-    await _firestore.collection("customers").doc(uid).set({
-      "disabled": true,
-    }, SetOptions(merge: true));
+    final response = await delete("/auth/account");
+    if (response.statusCode != 200) {
+      throw Exception('Failed to delete account');
+    }
     await signOut();
   }
 
@@ -357,8 +367,15 @@ class AuthRepositoryImpl extends ApiClient implements AuthRepository {
   }
 
   @override
-  Future<void> sendPasswordResetEmail({required String email}) async {
-    await _auth.sendPasswordResetEmail(email: email);
+  Future<String> sendPasswordResetEmail({required String email}) async {
+    final response = await post(
+      '/auth/forgot-password',
+      data: {'email': email},
+    );
+    if (response.statusCode != 200) {
+      throw Exception('Failed to send password reset email');
+    }
+    return response.message as String;
   }
 
   @override
@@ -372,6 +389,18 @@ class AuthRepositoryImpl extends ApiClient implements AuthRepository {
     await _firestore.collection("customers").doc(_auth.currentUser?.uid).set({
       "fcmToken": fcmToken,
       "updatedAt": TimeUtils.now(),
+    }, SetOptions(merge: true));
+  }
+
+  @override
+  Future<void> updateUser({required String uid}) async {
+    final user = _auth.currentUser;
+    await _firestore.collection("customers").doc(uid).set({
+      "docId": uid,
+      "email": user?.email,
+      "qrId": generateQrId(uid),
+      "updatedAt": TimeUtils.now(),
+      "createdAt": TimeUtils.now(),
     }, SetOptions(merge: true));
   }
 }

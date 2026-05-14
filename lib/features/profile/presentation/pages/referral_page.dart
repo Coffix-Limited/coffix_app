@@ -42,7 +42,7 @@ class _ReferralViewState extends State<ReferralView> {
                 const AppBackHeader(title: 'Refer a friend'),
                 const SizedBox(height: AppSizes.xxl),
                 Text(
-                  'Introduce your friends to the Coffix app and get a coffee on us after their first purchase (within 7 days)',
+                  'Introduce your friends to the Coffix app and get a coffee on us after their first purchase (within 7 days from your invitation)',
                   style: theme.textTheme.bodyLarge?.copyWith(
                     color: AppColors.lightGrey,
                   ),

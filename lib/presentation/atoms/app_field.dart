@@ -25,6 +25,7 @@ class AppField<T> extends StatefulWidget {
   final Widget? suffixIcon;
   final BoxConstraints? suffixIconConstraints;
   final int maxLines;
+  final int? maxLength;
   final String? label;
   final bool filled;
   final bool isHorizontalAlign;
@@ -49,6 +50,7 @@ class AppField<T> extends StatefulWidget {
     this.suffixIcon,
     this.suffixIconConstraints,
     this.maxLines = 1,
+    this.maxLength,
     this.label,
     this.filled = true,
     this.isHorizontalAlign = false,
@@ -83,6 +85,7 @@ class _AppFieldState<T> extends State<AppField<T>> {
     final theme = Theme.of(context);
     final Widget formBuilder = FormBuilderTextField(
       maxLines: widget.maxLines,
+      maxLength: widget.maxLength,
       onTapOutside: (_) => FocusScope.of(context).unfocus(),
       initialValue: widget.initialValue,
       onChanged: _onTextChanged,
@@ -102,6 +105,7 @@ class _AppFieldState<T> extends State<AppField<T>> {
         fillColor: widget.readOnly ? AppColors.softGrey : Colors.white,
         filled: widget.filled,
         contentPadding: EdgeInsets.symmetric(horizontal: AppSizes.lg),
+        counterText: widget.maxLength != null ? '' : null,
         hintText: widget.hintText,
         hintStyle: AppTypography.bodyXS.copyWith(color: AppColors.lightGrey),
         border: widget.readOnly

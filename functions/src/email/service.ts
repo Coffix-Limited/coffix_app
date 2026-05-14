@@ -2,54 +2,59 @@ import { firestore } from "../config/firebaseAdmin";
 import { RESEND_BCC_EMAIL, RESEND_FROM_EMAIL } from "../constant/constant";
 import { renderTemplate } from "../utils/renderEmailTemplate";
 import { wrapInEmailShell } from "../utils/emailShell";
-import { orderEmailTemplate } from "../utils/templates/order_email_template";
 import { logger } from "firebase-functions";
-import { nowNZ } from "../utils/nz_time";
-import { GiftEmailParams, SendEmailParams } from "./schema";
+import {
+  GiftEmailParams,
+  SendEmailParams,
+  SendInvoiceSchema,
+  SendOTPSchema,
+  SendReferralEmailSchema,
+} from "./schema";
+import { AppUser } from "../user/interface";
+import { EmailTemplate } from "./interface";
+import { formatNzDate, formatNzTime, nowNZ } from "../utils/nz_time";
+import { giftEmailTemplate } from "../utils/templates/gift_email_template";
+import * as admin from "firebase-admin";
 
-export interface OrderReceiptEmailParams {
-  to: string;
-  orderNumber: string;
-  storeName: string;
-  storeAddress: string;
-  createdAt: string;
-  paymentMethod: string;
-  total: number;
-  items: Array<{
-    name: string;
-    quantity: number;
-    price: number;
-    modifiers?: string[];
-  }>;
-}
-
-function formatCurrency(amount: number): string {
-  return `$${amount.toFixed(2)}`;
-}
-
-function buildItemRows(items: OrderReceiptEmailParams["items"]): string {
-  if (!items.length) {
-    return `<tr><td colspan="4" style="padding:12px 0;color:#888;font-size:14px;">No items</td></tr>`;
+function toDate(value: unknown): Date {
+  if (value instanceof Date) return value;
+  if (
+    value !== null &&
+    typeof value === "object" &&
+    typeof (value as admin.firestore.Timestamp).toDate === "function"
+  ) {
+    return (value as admin.firestore.Timestamp).toDate();
   }
+  return new Date(value as string);
+}
 
-  return items
-    .map((item) => {
-      const subtotal = item.quantity * item.price;
-      const modifierHtml = item.modifiers?.length
-        ? `<div class="item-modifiers">${item.modifiers.join(", ")}</div>`
-        : "";
-      return `
-        <tr>
-          <td>
-            <div class="item-name">${item.name}</div>
-            ${modifierHtml}
-          </td>
-          <td class="right">${item.quantity}</td>
-          <td class="right">${formatCurrency(item.price)}</td>
-          <td class="right">${formatCurrency(subtotal)}</td>
-        </tr>`;
-    })
-    .join("");
+function buildUserVariables(
+  user: AppUser | null,
+  fallbackEmail?: string,
+): Record<string, string | number | boolean> {
+  if (!user) return fallbackEmail ? { email: fallbackEmail } : {};
+  return {
+    first_name: user.firstName ?? "",
+    last_name: user.lastName ?? "",
+    nick_name: user.nickName ?? "",
+    email: user.email ?? "",
+    mobile: user.mobile ?? "",
+    birthday: formatNzDate(user.birthday) ?? "",
+    suburb: user.suburb ?? "",
+    city: user.city ?? "",
+    preferred_store_id: user.preferredStoreId ?? "",
+    credit_available: user.creditAvailable ?? 0,
+    created_at: formatNzDate(user.createdAt) ?? "",
+    email_verified: user.emailVerified ?? false,
+    get_purchase_info_by_mail: user.getPurchaseInfoByMail ?? false,
+    get_promotions: user.getPromotions ?? false,
+    allow_win_a_coffee: user.allowWinACoffee ?? false,
+    last_login: formatNzDate(user.lastLogin) ?? "",
+    disabled: user.disabled ?? false,
+    qr_id: user.qrId ?? "",
+    fcm_token: user.fcmToken ?? "",
+    doc_id: user.docId ?? "",
+  };
 }
 
 export class EmailService {
@@ -92,69 +97,205 @@ export class EmailService {
 
   // send email to a single recipient
   async send(params: SendEmailParams): Promise<void> {
-    const templateSnap = await firestore
-      .collection("emails")
-      .doc(params.documentId)
-      .get();
-    const templateData = templateSnap.data();
-    if (!templateData) {
-      throw new Error(
-        `Email template "${params.documentId}" not found in Firestore`,
+    let subject: string;
+    let html: string;
+
+    const [templateSnap, userSnap] = await Promise.all([
+      firestore.collection("emails").doc(params.documentId).get(),
+      params.userId
+        ? firestore.collection("customers").doc(params.userId).get()
+        : Promise.resolve(null),
+    ]);
+
+    const userVariables = buildUserVariables(
+      userSnap?.exists ? (userSnap.data() as AppUser) : null,
+      params.email,
+    );
+    const now = nowNZ();
+    const templateData = templateSnap.data() as EmailTemplate;
+    const variables = {
+      ...userVariables,
+      ...params.variables,
+      date: now,
+    };
+
+    if (params.htmlContent) {
+      subject = renderTemplate(
+        templateData.subject ?? params.subject ?? "",
+        variables,
+      );
+      html = wrapInEmailShell(params.htmlContent);
+    } else {
+      subject = renderTemplate(
+        templateData.subject ?? params.subject ?? "",
+        variables,
+      );
+      html = wrapInEmailShell(
+        renderTemplate(templateData.content ?? "", variables),
       );
     }
-
-    const subject = renderTemplate(params.subject, params.variables);
-    const html = wrapInEmailShell(
-      renderTemplate(templateData.content as string, params.variables),
-    );
 
     await this.resendSend({ to: params.email, subject, html });
   }
 
   // send gift notification email
   async sendGift(params: GiftEmailParams): Promise<void> {
-    const templateSnap = await firestore.collection("emails").doc("GIFT").get();
-    const templateData = templateSnap.data();
-    if (!templateData)
-      throw new Error("GIFT_NOTIFICATION template not found in Firestore");
-
-    const senderName =
-      `${params.senderFirstName} ${params.senderLastName}`.trim();
-    const recipientName =
-      `${params.recipientFirstName} ${params.recipientLastName}`.trim();
-    const subject = renderTemplate(
-      (templateData.subject as string) ??
-        "You received a Coffix gift from {{ SENDER_FULLNAME }}!",
-      { SENDER_FULLNAME: senderName },
-    );
-    const html = wrapInEmailShell(
-      renderTemplate(templateData.content as string, {
-        SENDER_FULLNAME: senderName,
-        RECIPIENT_FULL_NAME: recipientName,
-        AMOUNT: params.amount.toFixed(2),
-        DATE: nowNZ(),
-        TRANSACTION_NUMBER: params.transactionNumber ?? "",
-      }),
-    );
-
-    await this.resendSend({ to: params.to, subject, html });
+    const invoiceHtml = renderTemplate(giftEmailTemplate, {
+      transaction_number: params.transactionNumber ?? "",
+      recipient_full_name: params.recipientFullName ?? "",
+      gift_amount: params.amount.toFixed(2),
+      date: nowNZ(),
+      invoice_text: params.storeInvoiceText ?? "",
+    });
+    await this.send({
+      email: params.to,
+      documentId: "GIFT",
+      userId: params.userId,
+      variables: {
+        gift_amount: params.amount.toFixed(2),
+        transaction_number: params.transactionNumber ?? "",
+        recipient_full_name: params.recipientFullName ?? "",
+        invoice: invoiceHtml,
+      },
+    });
   }
 
-  async sendOrderReceipt(params: OrderReceiptEmailParams): Promise<void> {
-    const shortNumber = params.orderNumber.slice(-6);
-    const html = orderEmailTemplate
-      .replace(/{{orderNumber}}/g, shortNumber)
-      .replace(/{{storeName}}/g, params.storeName)
-      .replace(/{{storeAddress}}/g, params.storeAddress)
-      .replace(/{{createdAt}}/g, params.createdAt)
-      .replace(/{{total}}/g, formatCurrency(params.total))
-      .replace(/{{paymentMethod}}/g, params.paymentMethod)
-      .replace(/{{items}}/g, buildItemRows(params.items));
+  async sendInvoice(
+    params: Omit<SendInvoiceSchema, "invoice"> & { invoiceHtml: string },
+  ): Promise<void> {
+    await this.send({
+      email: params.to,
+      documentId: "COFFIX_CREDIT_INVOICE",
+      userId: params.userId,
+      variables: {
+        store_name: params.storeName,
+        transaction_number: params.transactionNumber,
+      },
+      htmlContent: params.invoiceHtml,
+    });
+  }
 
-    await this.resendSend({
-      to: params.to,
-      subject: `Your Coffix Order Receipt #${params.orderNumber}`,
-      html,
+  async sendOTP(params: SendOTPSchema): Promise<void> {
+    await this.send({
+      email: params.to,
+      subject: "Your OTP code for Coffix",
+      documentId: "OTP",
+      userId: params.userId,
+      variables: {
+        otp_code: params.otp,
+      },
+    });
+  }
+
+  async sendReferralEmail(params: SendReferralEmailSchema): Promise<void> {
+    await this.send({
+      email: params.to,
+      subject: "You received a referral code from a friend!",
+      documentId: "REFERRAL",
+      userId: params.userId,
+      variables: {
+        referee_name: params.referee_name,
+      },
+    });
+  }
+
+  async sendCreditTransactions(customerId: string): Promise<void> {
+    logger.info(`Sending credit transactions to customer: ${customerId}`);
+    const customerSnap = await firestore
+      .collection("customers")
+      .doc(customerId)
+      .get();
+    if (!customerSnap.exists) throw new Error("Customer not found");
+
+    const customer = customerSnap.data()!;
+    const customerEmail = customer.email as string;
+    const customerName =
+      [customer.firstName, customer.lastName].filter(Boolean).join(" ") ||
+      "Customer";
+
+    const snap = await firestore
+      .collection("transactions")
+      .where("customerId", "==", customerId)
+      .orderBy("createdAt", "asc")
+      .get();
+
+    const transactions = snap.docs
+      .map((d) => d.data())
+      .filter((tx) => {
+        const type = (tx.type as string | undefined) ?? "";
+        const status = (tx.status as string | undefined) ?? "";
+        const paymentMethod = (tx.paymentMethod as string | undefined) ?? "";
+        if (type === "topup") return status === "approved";
+        if (type === "gift" && paymentMethod === "coffixCredit")
+          return status === "sent" || status === "claimed";
+        if (type === "order" && paymentMethod === "coffixCredit")
+          return (
+            status === "approved" || status === "paid" || status === "completed"
+          );
+        return false;
+      });
+
+    let runningBalance = 0;
+    const rows = transactions.map((tx) => {
+      const type = (tx.type as string | undefined) ?? "order";
+      const status = (tx.status as string | undefined) ?? "";
+      const amount = (tx.amount as number | undefined) ?? 0;
+      const totalAmount = (tx.totalAmount as number | undefined) ?? amount;
+      const isCredit =
+        (type === "topup" && status === "approved") ||
+        (type === "gift" && status === "claimed");
+      if (isCredit) {
+        runningBalance += totalAmount;
+      } else {
+        runningBalance -= amount;
+      }
+      return {
+        time: formatNzTime(toDate(tx.createdAt)),
+        transaction: `#${tx.transactionNumber ?? ""} ${type.charAt(0).toUpperCase() + type.slice(1)}`,
+        amount: isCredit
+          ? `$${totalAmount.toFixed(2)}`
+          : `-$${amount.toFixed(2)}`,
+        balance: `$${runningBalance.toFixed(2)}`,
+      };
+    });
+
+    rows.reverse();
+
+    const tableRows = rows
+      .map(
+        (r) => `<tr>
+          <td style="padding:8px 12px;border:1px solid #e0e0e0;">${r.time}</td>
+          <td style="padding:8px 12px;border:1px solid #e0e0e0;">${r.transaction}</td>
+          <td style="padding:8px 12px;border:1px solid #e0e0e0;">${r.amount}</td>
+          <td style="padding:8px 12px;border:1px solid #e0e0e0;">${r.balance}</td>
+        </tr>`,
+      )
+      .join("\n");
+
+    const content = `
+      <h2 style="margin:0 0 16px;font-size:18px;text-align:center;">Coffix Credit Transactions</h2>
+      <p style="margin:0 0 16px;">Hi ${customerName}, here is your Coffix Credit transaction history.</p>
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;font-size:13px;">
+        <thead>
+          <tr style="background-color:#f5f5f5;">
+            <th style="padding:8px 12px;border:1px solid #e0e0e0;text-align:left;">Time</th>
+            <th style="padding:8px 12px;border:1px solid #e0e0e0;text-align:left;">Transaction</th>
+            <th style="padding:8px 12px;border:1px solid #e0e0e0;text-align:left;">Amount</th>
+            <th style="padding:8px 12px;border:1px solid #e0e0e0;text-align:left;">Balance</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${tableRows || '<tr><td colspan="4" style="padding:8px 12px;border:1px solid #e0e0e0;text-align:center;">No transactions found.</td></tr>'}
+        </tbody>
+      </table>
+    `;
+
+    await this.sendInvoice({
+      to: customerEmail,
+      userId: customerId,
+      invoiceHtml: content,
+      storeName: "Coffix",
+      transactionNumber: "credit-history",
     });
   }
 }

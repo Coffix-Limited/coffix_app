@@ -15,6 +15,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:timezone/timezone.dart' as tz;
 
 class PaymentSuccessfulPage extends StatelessWidget {
   static String route = 'payment_successful_route';
@@ -46,7 +47,8 @@ class PaymentSuccessfulView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final timeText = DateFormat.jm().format(pickupAt);
+    final nzTime = tz.TZDateTime.from(pickupAt, tz.local);
+    final timeText = DateFormat.jm().format(nzTime);
     final Order? orderCreated = context.read<PaymentCubit>().state.maybeWhen(
       loaded: (_, order) => order,
       success: (order) => order,
@@ -85,15 +87,29 @@ class PaymentSuccessfulView extends StatelessWidget {
                             'THANK YOU!',
                             style: AppTypography.headlineXl,
                             textAlign: TextAlign.center,
-                          
                           ),
                           const SizedBox(height: AppSizes.lg),
-                          Text(
-                            orderCreated != null
-                                ? 'Order #${orderCreated.orderNumber?.substring(orderCreated.orderNumber!.length - 6) ?? '—'} will be ready for pick up from \n${store?.name ?? '—'} at'
-                                : 'Your order will be ready for pick up from \n${store?.name ?? '—'} at',
-                            style: AppTypography.bodyM,
+                          RichText(
                             textAlign: TextAlign.center,
+                            text: TextSpan(
+                              style: AppTypography.bodyM.copyWith(
+                                color: AppColors.textBlackColor,
+                              ),
+                              children: [
+                                TextSpan(
+                                  text:
+                                      "Order #${orderCreated?.transactionNumber ?? '—'} will be ready for pick up from ",
+                                ),
+                                TextSpan(
+                                  text: "\n${store?.name ?? '—'} ",
+                                  style: AppTypography.bodyM.copyWith(
+                                    color: AppColors.textBlackColor,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                TextSpan(text: "at"),
+                              ],
+                            ),
                           ),
                           const SizedBox(height: AppSizes.sm),
                           Container(

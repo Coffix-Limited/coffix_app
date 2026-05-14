@@ -38,11 +38,6 @@ class OrderActivityCard extends StatelessWidget {
         : '—';
     final (statusLabel, statusColor) = orderStatusStyle(order.status);
 
-    String getLast6(String? value) {
-      if (value == null || value.isEmpty) return '—';
-      return value.length <= 6 ? value : value.substring(value.length - 6);
-    }
-
     return AppCard(
       padding: const EdgeInsets.all(AppSizes.md),
       child: Row(
@@ -52,7 +47,7 @@ class OrderActivityCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  "Order: ${getLast6(order.orderNumber ?? '—')}",
+                  "Order: ${order.transactionNumber ?? '—'}",
                   style: theme.textTheme.titleSmall?.copyWith(
                     fontWeight: FontWeight.w600,
                   ),

@@ -1,6 +1,7 @@
 import 'package:coffix_app/core/constants/colors.dart';
 import 'package:coffix_app/core/constants/sizes.dart';
 import 'package:coffix_app/core/di/service_locator.dart';
+import 'package:coffix_app/core/services/log_service.dart';
 import 'package:coffix_app/core/theme/typography.dart';
 import 'package:coffix_app/core/utils/time_utils.dart';
 import 'package:coffix_app/features/auth/data/model/user.dart';
@@ -52,6 +53,7 @@ class _PersonalInfoViewState extends State<PersonalInfoView> {
   void _onSave() {
     if (_formKey.currentState?.saveAndValidate() ?? false) {
       final formValues = _formKey.currentState?.value;
+      LogService().updateProfile();
       context.read<ProfileCubit>().updateProfile(
         firstName: formValues?['firstName'],
         lastName: formValues?['lastName'],
@@ -94,7 +96,7 @@ class _PersonalInfoViewState extends State<PersonalInfoView> {
           hintText: 'Enter first name',
           isRequired: true,
           isHorizontalAlign: true,
-
+          maxLength: 50,
           onChanged: (val) {
             _formKey.currentState?.fields["nickname"]?.didChange(val);
           },
@@ -106,6 +108,7 @@ class _PersonalInfoViewState extends State<PersonalInfoView> {
           hintText: 'Enter last name',
           isRequired: true,
           isHorizontalAlign: true,
+          maxLength: 50,
         ),
         const SizedBox(height: AppSizes.lg),
         AppField<String>(
@@ -114,6 +117,7 @@ class _PersonalInfoViewState extends State<PersonalInfoView> {
           hintText: 'Enter nickname',
           isRequired: true,
           isHorizontalAlign: true,
+          maxLength: 50,
         ),
         const SizedBox(height: AppSizes.lg),
         AppField<String>(
@@ -123,6 +127,7 @@ class _PersonalInfoViewState extends State<PersonalInfoView> {
           keyboardType: TextInputType.phone,
           isRequired: true,
           isHorizontalAlign: true,
+          maxLength: 20,
         ),
         const SizedBox(height: AppSizes.lg),
         AppDateField(
@@ -288,8 +293,7 @@ class _PersonalInfoViewState extends State<PersonalInfoView> {
                   initial: () => _buildForm(context, theme, user, stores),
                   loading: () => AppLoading(),
                   success: () => _buildForm(context, theme, user, stores),
-                  error: (message) =>
-                      AppError(title: "Error", subtitle: message),
+                  error: (message) => _buildForm(context, theme, user, stores),
                 );
               },
             ),

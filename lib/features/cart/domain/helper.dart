@@ -41,6 +41,27 @@ class CartHelper {
     return result;
   }
 
+
+
+  /// Builds modifierId → price (priceDelta) for the current selection.
+  /// Uses [selectedByGroup] (groupId → modifierId) and [modifierMap] to resolve each selected modifier's price.
+  /// Example: selectedByGroup {'size': 'mod_1', 'milk': 'mod_2'},
+  ///  modifierMap has mod_1.priceDelta=0.5, mod_2.priceDelta=0.3 → {'mod_1': 0.5, 'mod_2': 0.3}
+  Map<String, String> buildModifierLabelSnapshot({
+    required Map<String, String> selectedByGroup,
+    required Map<String, Modifier> modifierMap,
+  }) {
+    final result = <String, String>{};
+
+    for (final modifierId in selectedByGroup.values) {
+      final modifier = modifierMap[modifierId];
+      if (modifier != null) {
+        result[modifierId] = modifier.label ?? '';
+      }
+    }
+    return result;
+  }
+
   double computeUnitTotal({
     required double basePrice,
     required Map<String, double> modifierPriceSnapshot,

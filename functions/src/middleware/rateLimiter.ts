@@ -35,7 +35,16 @@ export const otpVerifyLimiter = rateLimit({
 
 export const authLimiter = rateLimit({
   windowMs: 10 * 60 * 1000,
-  max: 10,
+  max: 5,
+  keyGenerator: (req) => ipKeyGenerator(req.ip ?? "unknown"),
+  handler: tooManyRequestsResponse,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+export const forgotPasswordLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
   keyGenerator: (req) => ipKeyGenerator(req.ip ?? "unknown"),
   handler: tooManyRequestsResponse,
   standardHeaders: true,

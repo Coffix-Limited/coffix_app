@@ -13,10 +13,12 @@ class AppMoneyField extends StatelessWidget {
     required this.name,
     this.validators,
     this.initialValue,
+    this.maxLength,
   });
   final List<FormFieldValidator<String>>? validators;
 
   final String? initialValue;
+  final int? maxLength;
 
   @override
   Widget build(BuildContext context) {
@@ -30,9 +32,11 @@ class AppMoneyField extends StatelessWidget {
           child: FormBuilderTextField(
             initialValue: initialValue,
             name: name,
+            maxLength: maxLength,
             onTapOutside: (_) => FocusScope.of(context).unfocus(),
             keyboardType: TextInputType.number,
             decoration: InputDecoration(
+              counterText: maxLength != null ? '' : null,
               hintStyle: AppTypography.headlineXxl.copyWith(
                 color: AppColors.lightGrey.withValues(alpha: 0.3),
               ),

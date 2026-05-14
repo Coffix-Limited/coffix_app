@@ -45,8 +45,9 @@ class ProductModifierCubit extends Cubit<ProductModifierState> {
     final inScope = allModifiers.where((m) => groupCodes.contains(m.groupId));
     final selected = <Modifier>[];
     for (final entry in selectedByGroup.entries) {
-      final matches = inScope
-          .where((m) => m.groupId == entry.key && m.docId == entry.value);
+      final matches = inScope.where(
+        (m) => m.groupId == entry.key && m.docId == entry.value,
+      );
       if (matches.isNotEmpty) selected.add(matches.first);
     }
     emit(
@@ -57,17 +58,27 @@ class ProductModifierCubit extends Cubit<ProductModifierState> {
     );
   }
 
-  void selectModifiers({required Modifier modifier}) {
+  void selectModifiers({
+    required Modifier modifier,
+    required String bundleGroupId,
+  }) {
+    final normalizedModifier = modifier.groupId != bundleGroupId
+        ? modifier.copyWith(groupId: bundleGroupId)
+        : modifier;
+
     final current = state.modifiers;
-    final alreadySelected = current.any((m) => m.docId == modifier.docId);
+    final alreadySelected = current.any(
+      (m) => m.docId == normalizedModifier.docId,
+    );
 
     final List<Modifier> updated;
     if (alreadySelected) {
-      updated = current.where((m) => m.docId != modifier.docId).toList();
+      updated =
+          current.where((m) => m.docId != normalizedModifier.docId).toList();
     } else {
       updated = [
-        ...current.where((m) => m.groupId != modifier.groupId),
-        modifier,
+        ...current.where((m) => m.groupId != bundleGroupId),
+        normalizedModifier,
       ];
     }
 

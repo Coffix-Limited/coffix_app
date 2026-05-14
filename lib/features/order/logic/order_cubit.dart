@@ -44,10 +44,10 @@ class OrderCubit extends Cubit<OrderState> {
     return _orderRepository.getOrderById(orderId);
   }
 
-  void sendOrderToEmail({required String orderId}) async {
+  void sendOrderToEmail({required String transactionNumber}) async {
     emit(OrderState.loading(orders: state.orders));
     try {
-      await _orderRepository.sendOrderToEmail(orderId: orderId);
+      await _orderRepository.sendOrderToEmail(transactionNumber: transactionNumber);
       emit(
         OrderState.emailSent(
           message: 'Order sent to email',

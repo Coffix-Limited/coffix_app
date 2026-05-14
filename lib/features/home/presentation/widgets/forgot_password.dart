@@ -1,5 +1,6 @@
 import 'package:coffix_app/core/constants/colors.dart';
 import 'package:coffix_app/core/constants/sizes.dart';
+import 'package:coffix_app/core/services/log_service.dart';
 import 'package:coffix_app/core/theme/typography.dart';
 import 'package:coffix_app/features/auth/logic/auth_cubit.dart';
 import 'package:coffix_app/presentation/atoms/app_button.dart';
@@ -50,6 +51,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                 hintText: "Email",
                 name: "email",
                 validators: [FormBuilderValidators.email()],
+                textCapitalization: TextCapitalization.none,
               ),
               SizedBox(height: AppSizes.xl),
               Padding(
@@ -59,6 +61,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                       formKey.currentState?.value["email"] == null ||
                       formKey.currentState?.value["email"] == "",
                   onPressed: () {
+                    LogService().forgotPassword();
                     if (formKey.currentState!.saveAndValidate()) {
                       final email =
                           formKey.currentState?.value['email'] as String;
