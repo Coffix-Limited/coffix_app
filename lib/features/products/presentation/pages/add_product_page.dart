@@ -128,13 +128,11 @@ class _AddProductViewState extends State<AddProductView> {
               children: [
                 widget.product.imageUrl != null &&
                         widget.product.imageUrl!.isNotEmpty
-                    ? ClipOval(
-                        child: AppCachedNetworkImage(
-                          imageUrl: widget.product.imageUrl!,
-                          width: 300,
-                          height: 300,
-                          fit: BoxFit.fill,
-                        ),
+                    ? AppCachedNetworkImage(
+                        imageUrl: widget.product.imageUrl!,
+                        width: 300,
+                        height: 300,
+                        fit: BoxFit.cover,
                       )
                     : Container(
                         color: AppColors.softGrey,
@@ -326,6 +324,8 @@ class _AddProductViewState extends State<AddProductView> {
                               basePrice: newItem.basePrice,
                               modifierPriceSnapshot:
                                   newItem.modifierPriceSnapshot,
+                              modifierLabelSnapshot:
+                                  newItem.modifierLabelSnapshot,
                               unitTotal: newItem.unitTotal,
                               lineTotal: newItem.lineTotal,
                             );

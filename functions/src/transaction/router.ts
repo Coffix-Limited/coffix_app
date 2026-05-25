@@ -3,7 +3,11 @@ import { requirePost } from "../middleware/method";
 import { EmailService } from "../email/service";
 import FirebaseService from "../firebase/service";
 
-import { invoiceTransactionSchema, reprintTransactionSchema } from "./schema";
+import {
+  invoiceTransactionSchema,
+  refundTransactionSchema,
+  reprintTransactionSchema,
+} from "./schema";
 import { logger } from "firebase-functions";
 import {
   buildAndSendGiftInvoice,
@@ -13,6 +17,7 @@ import {
 import { ReceiptService } from "../receipt/service";
 import { getPaymentMethod } from "../order/service";
 import { formatNzTime } from "../utils/nz_time";
+import { generateTransactionNumber } from "../utils/generate_order_number";
 
 const router = express.Router();
 
@@ -59,6 +64,27 @@ router.post(
           transactionNumber,
           customerId,
         );
+      } else if (type === "refund") {
+        const customer = await firebaseService.findUserByCustomerId(customerId);
+        if (!customer?.email) {
+          return response
+            .status(404)
+            .json({ success: false, message: "Customer not found" });
+        }
+        await emailService.sendRefundInvoice({
+          to: customer.email,
+          userId: customerId,
+          transactionNumber,
+          originalTransactionNumber:
+            (transaction.originalTransactionNumber as string) ?? "",
+          amount: (transaction.amount as number) ?? 0,
+          storeInvoiceText: transaction.storeInvoiceText as string | undefined,
+          gst: transaction.gst as number | undefined,
+          gstAmount: transaction.gstAmount as number | undefined,
+          gstNumber: transaction.gstNumber as string | undefined,
+          isCoffixCredit:
+            (transaction.paymentMethod as string) === "coffixCredit",
+        });
       } else {
         await buildAndSendOrderInvoice(
           firebaseService,
@@ -153,6 +179,100 @@ router.post(
       return response.status(500).json({
         success: false,
         message: e.message ?? "Failed to create print queue",
+      });
+    }
+  },
+);
+
+router.post(
+  "/refund",
+  requirePost,
+  async (request: Request, response: Response) => {
+    const validation = refundTransactionSchema.safeParse(request.body);
+    if (!validation.success) {
+      const errors = validation.error.issues
+        .map((i) => `${i.path.join(".")}: ${i.message}`)
+        .join(", ");
+      return response.status(400).json({ success: false, errors });
+    }
+
+    try {
+      const { transactionNumber } = validation.data;
+      const firebaseService = new FirebaseService();
+      const emailService = new EmailService();
+
+      const transaction = await firebaseService.findTransactionByTransactionNumber(transactionNumber);
+      if (!transaction) {
+        return response
+          .status(404)
+          .json({ success: false, message: "Transaction not found" });
+      }
+
+      if (transaction.type !== "order") {
+        return response.status(400).json({
+          success: false,
+          message: "Only order transactions can be refunded",
+        });
+      }
+
+      const existingRefund =
+        await firebaseService.findRefundByOriginalTransactionNumber(
+          transactionNumber,
+        );
+      if (existingRefund) {
+        return response.status(400).json({
+          success: false,
+          message: "This transaction has already been refunded",
+        });
+      }
+
+      const customerId = transaction.customerId as string;
+      const customer = await firebaseService.findUserByCustomerId(customerId);
+      if (!customer?.email) {
+        return response
+          .status(404)
+          .json({ success: false, message: "Customer not found" });
+      }
+
+      const amount = (transaction.amount as number) ?? 0;
+      const originalTransactionNumber = (transaction.transactionNumber as string) ?? transactionNumber;
+      const refundTransactionNumber = await generateTransactionNumber();
+
+      const refundTransactionId = await firebaseService.createRefundTransaction({
+        customerId,
+        originalTransactionNumber,
+        amount,
+        storeInvoiceText: transaction.storeInvoiceText as string | undefined,
+        gst: transaction.gst as number | undefined,
+        gstAmount: transaction.gstAmount as number | undefined,
+        gstNumber: transaction.gstNumber as string | undefined,
+        storeId: transaction.storeId as string | undefined,
+        transactionNumber: refundTransactionNumber,
+      });
+
+      await emailService.sendRefundInvoice({
+        to: customer.email,
+        userId: customerId,
+        transactionNumber: refundTransactionNumber,
+        originalTransactionNumber,
+        amount,
+        storeInvoiceText: transaction.storeInvoiceText as string | undefined,
+        gst: transaction.gst as number | undefined,
+        gstAmount: transaction.gstAmount as number | undefined,
+        gstNumber: transaction.gstNumber as string | undefined,
+        isCoffixCredit: (transaction.paymentMethod as string) === "coffixCredit",
+      });
+
+      return response.status(200).json({
+        success: true,
+        message: "Refund processed",
+        refundTransactionId,
+      });
+    } catch (e: any) {
+      logger.error("Failed to process refund:", e);
+      return response.status(500).json({
+        success: false,
+        message: e.message ?? "Failed to process refund",
       });
     }
   },

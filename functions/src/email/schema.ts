@@ -46,6 +46,19 @@ export interface GiftEmailParams {
   storeInvoiceText?: string;
 }
 
+export interface SendRefundEmailParams {
+  to: string;
+  userId: string;
+  transactionNumber: string;
+  originalTransactionNumber: string;
+  amount: number;
+  storeInvoiceText?: string;
+  gst?: number;
+  gstAmount?: number;
+  gstNumber?: string;
+  isCoffixCredit: boolean;
+}
+
 
 
 export type SendGiftEmailSchema = z.infer<typeof sendGiftEmailSchema>;

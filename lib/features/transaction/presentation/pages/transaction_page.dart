@@ -9,6 +9,7 @@ import 'package:coffix_app/features/transaction/logic/transaction_cubit.dart';
 import 'package:coffix_app/features/transaction/presentation/widgets/expired_transaction.dart';
 import 'package:coffix_app/features/transaction/presentation/widgets/gift_transaction.dart';
 import 'package:coffix_app/features/transaction/presentation/widgets/order_transaction.dart';
+import 'package:coffix_app/features/transaction/presentation/widgets/refund_transaction.dart';
 import 'package:coffix_app/features/transaction/presentation/widgets/top_up_transaction.dart';
 import 'package:coffix_app/presentation/atoms/app_loading.dart';
 import 'package:coffix_app/presentation/atoms/app_notification.dart';
@@ -66,7 +67,7 @@ class _TransactionViewState extends State<TransactionView> {
             return state.when(
               initial: () => const Center(child: Text('Pull to load')),
               loading: () => const Center(child: CircularProgressIndicator()),
-              loaded: (transactions) {
+              loaded: (transactions, _) {
                 final isLoading = context.watch<OrderCubit>().state.maybeWhen(
                   loading: (orders) => true,
                   orElse: () => false,
@@ -96,6 +97,8 @@ class _TransactionViewState extends State<TransactionView> {
                       return GiftTransaction(transaction: transaction);
                     } else if (transaction.type == "expired") {
                       return ExpiredTransaction(transaction: transaction);
+                    } else if (transaction.type == "refund") {
+                      return RefundTransaction(transaction: transaction);
                     }
                     return OrderTransaction(transaction: transaction);
                   },

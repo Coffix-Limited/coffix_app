@@ -52,6 +52,7 @@ class Transaction {
   double? gst;
   double? gstAmount;
   String? gstNumber;
+  String? originalTransactionNumber;
 
   Transaction({
     this.docId,
@@ -75,6 +76,7 @@ class Transaction {
     this.gst,
     this.gstAmount,
     this.gstNumber,
+    this.originalTransactionNumber,
   });
 
   factory Transaction.fromJson(Map<String, dynamic> json) =>

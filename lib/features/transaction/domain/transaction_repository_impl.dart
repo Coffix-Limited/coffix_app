@@ -39,4 +39,17 @@ class TransactionRepositoryImpl implements TransactionRepository {
         .map((doc) => ts.Transaction.fromJson(doc.data()))
         .toList();
   }
+
+  @override
+  Future<ts.Transaction?> getTransactionByNumber(
+    String transactionNumber,
+  ) async {
+    final snapshot = await _firestore
+        .collection('transactions')
+        .where('transactionNumber', isEqualTo: transactionNumber)
+        .limit(1)
+        .get();
+    if (snapshot.docs.isEmpty) return null;
+    return ts.Transaction.fromJson(snapshot.docs.first.data());
+  }
 }

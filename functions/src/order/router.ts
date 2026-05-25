@@ -251,6 +251,44 @@ async function sendTopupInvoice(
   return response.status(200).json({ success: true, message: "Invoice sent" });
 }
 
+async function sendRefundInvoice(
+  firebaseService: FirebaseService,
+  emailService: EmailService,
+  customerId: string,
+  transactionNumber: string,
+  response: Response,
+) {
+  const transaction =
+    await firebaseService.findTransactionByTransactionNumber(transactionNumber);
+  if (!transaction) {
+    return response
+      .status(404)
+      .json({ success: false, message: "Transaction not found" });
+  }
+
+  const customer = await firebaseService.findUserByCustomerId(customerId);
+  if (!customer?.email) {
+    return response
+      .status(404)
+      .json({ success: false, message: "Customer not found" });
+  }
+
+  await emailService.sendRefundInvoice({
+    to: customer.email,
+    userId: customerId,
+    transactionNumber: transaction.transactionNumber as string,
+    originalTransactionNumber: transaction.originalTransactionNumber as string,
+    amount: transaction.amount as number,
+    storeInvoiceText: transaction.storeInvoiceText as string | undefined,
+    gst: transaction.gst as number | undefined,
+    gstAmount: transaction.gstAmount as number | undefined,
+    gstNumber: transaction.gstNumber as string | undefined,
+    isCoffixCredit: true,
+  });
+
+  return response.status(200).json({ success: true, message: "Invoice sent" });
+}
+
 router.post(
   "/invoice",
   requirePost,
@@ -294,6 +332,16 @@ router.post(
 
       if (type === "topup") {
         return sendTopupInvoice(
+          firebaseService,
+          emailService,
+          customerId,
+          transactionNumber,
+          response,
+        );
+      }
+
+      if (type === "refund") {
+        return sendRefundInvoice(
           firebaseService,
           emailService,
           customerId,

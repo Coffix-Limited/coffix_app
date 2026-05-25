@@ -24,4 +24,20 @@ class TransactionCubit extends Cubit<TransactionState> {
       emit(TransactionState.error(message: e.toString()));
     }
   }
+
+  Future<void> fetchOriginalTransaction(String originalTransactionNumber) async {
+    final current = state.whenOrNull(
+      loaded: (txns, originals) => (txns, originals),
+    );
+    if (current == null) return;
+    if (current.$2.containsKey(originalTransactionNumber)) return;
+    final original = await _transactionRepository.getTransactionByNumber(
+      originalTransactionNumber,
+    );
+    if (original == null) return;
+    emit(TransactionState.loaded(
+      transactions: current.$1,
+      originalTransactions: {...current.$2, originalTransactionNumber: original},
+    ));
+  }
 }

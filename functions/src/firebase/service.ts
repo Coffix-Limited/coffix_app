@@ -659,6 +659,69 @@ class FirebaseService {
     });
   }
 
+  async findRefundByOriginalTransactionNumber(
+    originalTransactionNumber: string,
+  ): Promise<Record<string, any> | null> {
+    const snap = await firestore
+      .collection("transactions")
+      .where("originalTransactionNumber", "==", originalTransactionNumber)
+      .where("type", "==", "refund")
+      .limit(1)
+      .get();
+    if (snap.empty) return null;
+    return snap.docs[0].data();
+  }
+
+  async createRefundTransaction({
+    customerId,
+    originalTransactionNumber,
+    amount,
+    storeInvoiceText,
+    gst,
+    gstAmount,
+    gstNumber,
+    storeId,
+    transactionNumber,
+  }: {
+    customerId: string;
+    originalTransactionNumber: string;
+    amount: number;
+    storeInvoiceText?: string;
+    gst?: number;
+    gstAmount?: number;
+    gstNumber?: string;
+    storeId?: string;
+    transactionNumber: string;
+  }): Promise<string> {
+    const customerRef = firestore.collection("customers").doc(customerId);
+    const refundRef = firestore.collection("transactions").doc();
+    const now = new Date();
+
+    await firestore.runTransaction(async (tx) => {
+      const customerSnap = await tx.get(customerRef);
+      const current = (customerSnap.data()?.creditAvailable ?? 0) as number;
+      tx.set(customerRef, { creditAvailable: current + amount }, { merge: true });
+      tx.set(refundRef, {
+        docId: refundRef.id,
+        customerId,
+        originalTransactionNumber,
+        amount,
+        type: "refund",
+        status: "approved",
+        paymentMethod: "coffixCredit",
+        createdAt: now,
+        transactionNumber,
+        storeInvoiceText: storeInvoiceText ?? "",
+        gst: gst ?? 0,
+        gstAmount: gstAmount ?? 0,
+        gstNumber: gstNumber ?? "",
+        storeId: storeId ?? "",
+      });
+    });
+
+    return refundRef.id;
+  }
+
   async expireCredits(): Promise<{ expiredCount: number }> {
     const customersSnap = await firestore
       .collection("customers")

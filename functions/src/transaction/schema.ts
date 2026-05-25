@@ -12,3 +12,9 @@ export const reprintTransactionSchema = z.object({
 });
 
 export type ReprintTransactionSchema = z.infer<typeof reprintTransactionSchema>;
+
+export const refundTransactionSchema = z.object({
+  transactionNumber: z.string().min(1),
+});
+
+export type RefundTransactionSchema = z.infer<typeof refundTransactionSchema>;

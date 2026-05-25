@@ -32,6 +32,7 @@ Transaction _$TransactionFromJson(Map<String, dynamic> json) => Transaction(
   gst: (json['gst'] as num?)?.toDouble(),
   gstAmount: (json['gstAmount'] as num?)?.toDouble(),
   gstNumber: json['gstNumber'] as String?,
+  originalTransactionNumber: json['originalTransactionNumber'] as String?,
 );
 
 Map<String, dynamic> _$TransactionToJson(Transaction instance) =>
@@ -59,6 +60,7 @@ Map<String, dynamic> _$TransactionToJson(Transaction instance) =>
       'gst': instance.gst,
       'gstAmount': instance.gstAmount,
       'gstNumber': instance.gstNumber,
+      'originalTransactionNumber': instance.originalTransactionNumber,
     };
 
 const _$TransactionStatusEnumMap = {

@@ -36,4 +36,7 @@ export interface Transaction {
 
   storeInvoiceText?: string | null;
   storeId?: string | null;
+
+  // we use this for refund transactions
+  originalTransactionNumber?: string | null; 
 }
