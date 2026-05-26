@@ -42,6 +42,8 @@ export interface GiftEmailParams {
   userId: string;
   amount: number;
   recipientFullName?: string;
+  senderFullName?: string;
+  isSender?: boolean;
   transactionNumber?: string;
   storeInvoiceText?: string;
 }

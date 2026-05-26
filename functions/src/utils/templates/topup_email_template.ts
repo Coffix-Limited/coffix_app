@@ -160,7 +160,6 @@ export const topupEmailTemplate = `<!doctype html>
       </div>
 
       <div class="thank-you-section">
-        <p class="thank-you-text">Thank you for your purchase</p>
         <p class="website-text">coffix.co.nz</p>
       </div>
     </div>

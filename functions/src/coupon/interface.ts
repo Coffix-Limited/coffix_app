@@ -7,4 +7,5 @@ export interface Coupon {
   customerEmail?: string;
   notes?: string;
   type?: string; // referral | admin
+  userId?: string;
 }

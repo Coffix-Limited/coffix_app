@@ -5,8 +5,6 @@ import FirebaseService from "../firebase/service";
 import { InsufficientCreditError, MinCreditError } from "./errors";
 import { EmailService } from "../email/service";
 import { generateTransactionNumber } from "../utils/generate_order_number";
-import { ReceiptService } from "../receipt/service";
-import { formatNzTime, nowNZ } from "../utils/nz_time";
 
 export { InsufficientCreditError, MinCreditError };
 
@@ -219,6 +217,8 @@ export class CoffixCreditService {
           amount,
           transactionNumber,
           recipientFullName,
+          senderFullName,
+          isSender: false,
           storeInvoiceText,
         })
         .catch((emailError) =>
@@ -233,6 +233,8 @@ export class CoffixCreditService {
           amount,
           transactionNumber,
           recipientFullName,
+          senderFullName,
+          isSender: true,
           storeInvoiceText,
         })
         .catch((emailError) =>

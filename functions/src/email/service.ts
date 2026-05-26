@@ -142,9 +142,13 @@ export class EmailService {
 
   // send gift notification email
   async sendGift(params: GiftEmailParams): Promise<void> {
+    const giftLabel = params.isSender
+      ? `Gift to ${params.recipientFullName ?? ""}`
+      : `${params.senderFullName ?? ""} gave you a gift`;
+
     const invoiceHtml = renderTemplate(giftEmailTemplate, {
       transaction_number: params.transactionNumber ?? "",
-      recipient_full_name: params.recipientFullName ?? "",
+      gift_label: giftLabel,
       gift_amount: params.amount.toFixed(2),
       date: nowNZ(),
       invoice_text: params.storeInvoiceText ?? "",
@@ -156,7 +160,7 @@ export class EmailService {
       variables: {
         gift_amount: params.amount.toFixed(2),
         transaction_number: params.transactionNumber ?? "",
-        recipient_full_name: params.recipientFullName ?? "",
+        gift_label: giftLabel,
         invoice: invoiceHtml,
       },
     });
@@ -281,7 +285,7 @@ export class EmailService {
         const paymentMethod = (tx.paymentMethod as string | undefined) ?? "";
         if (type === "topup") return status === "approved";
         if (type === "gift" && paymentMethod === "coffixCredit")
-          return status === "sent" || status === "claimed";
+          return status === "sent" || status === "claimed" || status === "completed";
         if (type === "order" && paymentMethod === "coffixCredit")
           return (
             status === "approved" || status === "paid" || status === "completed"
@@ -305,9 +309,20 @@ export class EmailService {
       } else {
         runningBalance -= amount;
       }
+      let transactionLabel: string;
+      if (type === "gift") {
+        const isReceiving = status === "claimed";
+        const counterparty = isReceiving
+          ? (tx.senderFullName as string | undefined) ?? "Someone"
+          : (tx.recipientFullName as string | undefined) ?? "Someone";
+        transactionLabel = `#${tx.transactionNumber ?? ""} ${isReceiving ? "Gift from" : "Gift to"} ${counterparty}`;
+      } else {
+        transactionLabel = `#${tx.transactionNumber ?? ""} ${type.charAt(0).toUpperCase() + type.slice(1)}`;
+      }
+
       return {
         time: formatNzTime(toDate(tx.createdAt)),
-        transaction: `#${tx.transactionNumber ?? ""} ${type.charAt(0).toUpperCase() + type.slice(1)}`,
+        transaction: transactionLabel,
         amount: isCredit
           ? `$${totalAmount.toFixed(2)}`
           : `-$${amount.toFixed(2)}`,
@@ -322,8 +337,8 @@ export class EmailService {
         (r) => `<tr>
           <td style="padding:8px 12px;border:1px solid #e0e0e0;">${r.time}</td>
           <td style="padding:8px 12px;border:1px solid #e0e0e0;">${r.transaction}</td>
-          <td style="padding:8px 12px;border:1px solid #e0e0e0;">${r.amount}</td>
-          <td style="padding:8px 12px;border:1px solid #e0e0e0;">${r.balance}</td>
+          <td style="padding:8px 12px;border:1px solid #e0e0e0;text-align:right;">${r.amount}</td>
+          <td style="padding:8px 12px;border:1px solid #e0e0e0;text-align:right;">${r.balance}</td>
         </tr>`,
       )
       .join("\n");
@@ -336,8 +351,8 @@ export class EmailService {
           <tr style="background-color:#f5f5f5;">
             <th style="padding:8px 12px;border:1px solid #e0e0e0;text-align:left;">Time</th>
             <th style="padding:8px 12px;border:1px solid #e0e0e0;text-align:left;">Transaction</th>
-            <th style="padding:8px 12px;border:1px solid #e0e0e0;text-align:left;">Amount</th>
-            <th style="padding:8px 12px;border:1px solid #e0e0e0;text-align:left;">Balance</th>
+            <th style="padding:8px 12px;border:1px solid #e0e0e0;text-align:right;">Amount</th>
+            <th style="padding:8px 12px;border:1px solid #e0e0e0;text-align:right;">Balance</th>
           </tr>
         </thead>
         <tbody>

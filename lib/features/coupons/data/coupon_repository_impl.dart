@@ -16,7 +16,7 @@ class CouponRepositoryImpl implements CouponRepository {
     }
     return _firestore
         .collection('coupons')
-        .where('userIds', arrayContains: userId)
+        .where('userId', isEqualTo: userId)
         .snapshots()
         .map((snapshot) {
           final now = DateTime.now();
@@ -28,19 +28,6 @@ class CouponRepositoryImpl implements CouponRepository {
   }
 
   bool _isEligible(Coupon coupon, DateTime now) {
-    final notExpired =
-        coupon.expiryDate == null || coupon.expiryDate!.isAfter(now);
-    if (!notExpired) return false;
-
-    final isReferral = coupon.source == 'referral' || coupon.referralId != null;
-    if (isReferral) {
-      final notUsed = coupon.isUsed != true;
-      final hasUsage = coupon.usageLimit == null ||
-          coupon.usageCount == null ||
-          coupon.usageCount! < coupon.usageLimit!;
-      if (!notUsed || !hasUsage) return false;
-    }
-
-    return true;
+    return coupon.expiryDate == null || coupon.expiryDate!.isAfter(now);
   }
 }

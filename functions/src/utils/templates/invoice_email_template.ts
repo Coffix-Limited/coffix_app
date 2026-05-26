@@ -14,7 +14,7 @@ export const invoiceEmailTemplate = `<!doctype html>
       }
       .wrapper {
         max-width: 480px;
-        margin: 40px auto;
+        margin: 10px auto 40px;
         background-color: #ffffff;
         border: 1px solid #cccccc;
       }
@@ -135,7 +135,6 @@ export const invoiceEmailTemplate = `<!doctype html>
   <body>
     <div class="wrapper">
       <div class="store-header">
-        <p class="store-name">Coffix</p>
         <p class="store-address">{{invoiceText}}</p>
         {{gstNumberLine}}
       </div>
@@ -160,7 +159,6 @@ export const invoiceEmailTemplate = `<!doctype html>
       </div>
 
       <div class="thank-you-section">
-        <p class="thank-you-text">Thank you for your purchase</p>
         <p class="website-text">coffix.co.nz</p>
       </div>
     </div>

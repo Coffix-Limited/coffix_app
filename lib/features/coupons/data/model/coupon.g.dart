@@ -8,36 +8,24 @@ part of 'coupon.dart';
 
 Coupon _$CouponFromJson(Map<String, dynamic> json) => Coupon(
   docId: json['docId'] as String?,
-  code: json['code'] as String?,
-  type: json['type'] as String?,
   amount: (json['amount'] as num?)?.toDouble(),
+  createdAt: const DateTimeConverter().fromJson(json['createdAt']),
+  customerEmail: json['customerEmail'] as String?,
   expiryDate: const DateTimeConverter().fromJson(json['expiryDate']),
   storeId: json['storeId'] as String?,
+  type: json['type'] as String?,
   notes: json['notes'] as String?,
-  userIds: (json['userIds'] as List<dynamic>?)
-      ?.map((e) => e as String)
-      .toList(),
-  usageLimit: (json['usageLimit'] as num?)?.toInt(),
-  usageCount: (json['usageCount'] as num?)?.toInt(),
-  source: json['source'] as String?,
-  referralId: json['referralId'] as String?,
-  isUsed: json['isUsed'] as bool?,
-  createdAt: const DateTimeConverter().fromJson(json['createdAt']),
+  userId: json['userId'] as String?,
 );
 
 Map<String, dynamic> _$CouponToJson(Coupon instance) => <String, dynamic>{
   'docId': instance.docId,
-  'code': instance.code,
-  'type': instance.type,
   'amount': instance.amount,
+  'createdAt': const DateTimeConverter().toJson(instance.createdAt),
+  'customerEmail': instance.customerEmail,
   'expiryDate': const DateTimeConverter().toJson(instance.expiryDate),
   'storeId': instance.storeId,
+  'type': instance.type,
   'notes': instance.notes,
-  'userIds': instance.userIds,
-  'usageLimit': instance.usageLimit,
-  'usageCount': instance.usageCount,
-  'source': instance.source,
-  'referralId': instance.referralId,
-  'isUsed': instance.isUsed,
-  'createdAt': const DateTimeConverter().toJson(instance.createdAt),
+  'userId': instance.userId,
 };

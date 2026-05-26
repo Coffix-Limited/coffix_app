@@ -39,16 +39,6 @@ class RefundTransactionState extends State<RefundTransaction> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    final originalNum = widget.transaction.originalTransactionNumber;
-    final originalTxn = context.watch<TransactionCubit>().state.whenOrNull(
-      loaded: (_, originals) =>
-          originalNum != null ? originals[originalNum] : null,
-    );
-    final resolvedOrderId = originalTxn?.orderId ?? widget.transaction.orderId;
-    final order = context.watch<OrderCubit>().state.orders.firstWhereOrNull(
-      (order) => order.docId == resolvedOrderId,
-    );
-
     return Container(
       padding: const EdgeInsets.all(AppSizes.md),
       decoration: BoxDecoration(
@@ -106,146 +96,11 @@ class RefundTransactionState extends State<RefundTransaction> {
           const SizedBox(height: AppSizes.sm),
           Row(
             children: [
-              order?.items != null && order!.items!.isNotEmpty
-                  ? Expanded(
-                      child: ListView.builder(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        itemCount: order.items!.length,
-                        itemBuilder: (context, index) {
-                          final Item item = order.items![index];
-                          final imageUrl = item.productImageUrl ?? '';
-                          final List<ItemModifier> modifiers =
-                              item.modifiers ?? [];
-
-                          return Padding(
-                            padding: const EdgeInsets.only(bottom: AppSizes.sm),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                if (imageUrl.isNotEmpty)
-                                  ClipRRect(
-                                    borderRadius: BorderRadius.circular(
-                                      AppSizes.sm,
-                                    ),
-                                    child: SizedBox(
-                                      width: 48,
-                                      height: 48,
-                                      child: Image.network(
-                                        imageUrl,
-                                        fit: BoxFit.cover,
-                                      ),
-                                    ),
-                                  )
-                                else
-                                  Container(
-                                    width: 48,
-                                    height: 48,
-                                    decoration: BoxDecoration(
-                                      color: AppColors.softGrey,
-                                      borderRadius: BorderRadius.circular(
-                                        AppSizes.sm,
-                                      ),
-                                    ),
-                                    child: const Icon(
-                                      Icons.coffee,
-                                      color: AppColors.lightGrey,
-                                      size: AppSizes.iconSizeSmall,
-                                    ),
-                                  ),
-                                const SizedBox(width: AppSizes.sm),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Row(
-                                        children: [
-                                          Expanded(
-                                            child: RichText(
-                                              text: TextSpan(
-                                                style: AppTypography.bodyM600
-                                                    .copyWith(
-                                                      color: AppColors
-                                                          .textBlackColor,
-                                                    ),
-                                                text:
-                                                    "${item.productName} (x${item.quantity}) ",
-                                                children: [],
-                                              ),
-                                            ),
-                                          ),
-                                          Text.rich(
-                                            item.basePrice
-                                                    ?.toCurrencySuperscript(
-                                                      style: AppTypography
-                                                          .body2XS
-                                                          .copyWith(
-                                                            color: AppColors
-                                                                .textBlackColor,
-                                                          ),
-                                                    ) ??
-                                                0.00.toCurrencySuperscript(
-                                                  style: AppTypography.body2XS
-                                                      .copyWith(
-                                                        color: AppColors
-                                                            .textBlackColor,
-                                                      ),
-                                                ),
-                                          ),
-                                        ],
-                                      ),
-                                      if (modifiers.isNotEmpty) ...[
-                                        const SizedBox(height: AppSizes.xs),
-
-                                        Column(
-                                          children: modifiers.asMap().entries.map((
-                                            entry,
-                                          ) {
-                                            return Row(
-                                              children: [
-                                                Expanded(
-                                                  child: Text(
-                                                    entry.value.name ?? '—',
-                                                    style: AppTypography.body3XS
-                                                        .copyWith(
-                                                          color: AppColors
-                                                              .textBlackColor,
-                                                        ),
-                                                  ),
-                                                ),
-
-                                                if (entry.value.priceDelta !=
-                                                        null &&
-                                                    entry.value.priceDelta !=
-                                                        0) ...[
-                                                  const SizedBox(
-                                                    width: AppSizes.xs,
-                                                  ),
-                                                  Text.rich(
-                                                    entry.value.priceDelta!
-                                                        .toCurrencySuperscript(
-                                                          style: AppTypography
-                                                              .body3XS,
-                                                        ),
-                                                  ),
-                                                ],
-                                              ],
-                                            );
-                                          }).toList(),
-                                        ),
-                                      ],
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          );
-                        },
-                      ),
-                    )
-                  : const Expanded(child: Text('No items')),
-
+              Expanded(
+                child: Text(
+                  "Order #${widget.transaction.originalTransactionNumber ?? 'N/A'} has been credited",
+                ),
+              ),
               SizedBox(width: AppSizes.md),
               Column(
                 children: [
@@ -264,13 +119,6 @@ class RefundTransactionState extends State<RefundTransaction> {
                 ],
               ),
             ],
-          ),
-          Text(
-            order?.storeName ?? '',
-            style: AppTypography.body2XS.copyWith(
-              color: AppColors.textBlackColor,
-            ),
-            textAlign: TextAlign.center,
           ),
         ],
       ),

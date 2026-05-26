@@ -29,7 +29,7 @@ function buildItemsHtml(items: Array<Record<string, any>>): string {
               <div class="item-name">${item.productName} (${item.quantity}x)</div>
               ${modifierHtml}
             </div>
-            <div class="item-right">$${(item.price as number).toFixed(2)}</div>
+            <div class="item-right">$${((item.price as number) * (item.quantity as number)).toFixed(2)}</div>
           </div>`;
     })
     .join("\n");

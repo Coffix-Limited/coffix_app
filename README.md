@@ -270,7 +270,7 @@ After successful payment:
 Android: flutter build apk --flavor dev --target=lib/main_dev.dart
 IOS: flutter build ipa --flavor dev --target=lib/main_dev.dart
 
-Android: flutter build apk --flavor prod --target=lib/main_prod.dart
+Android: flutter build appbundle --flavor prod --target=lib/main_prod.dart
 IOS: flutter build ipa --flavor prod --target=lib/main_prod.dart
 
 # CHOOSE FIREBASE PROJECTS

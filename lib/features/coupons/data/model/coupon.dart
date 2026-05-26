@@ -6,37 +6,27 @@ part 'coupon.g.dart';
 @JsonSerializable()
 class Coupon {
   final String? docId;
-  final String? code;
-  final String? type;
   final double? amount;
   @DateTimeConverter()
-  final DateTime? expiryDate;
-  final String? storeId;
-  final String? notes;
-  final List<String>? userIds;
-  final int? usageLimit;
-  final int? usageCount;
-  final String? source;
-  final String? referralId;
-  final bool? isUsed;
+  DateTime? createdAt;
+  final String? customerEmail;
   @DateTimeConverter()
-  final DateTime? createdAt;
+  DateTime? expiryDate;
+  final String? storeId;
+  final String? type; // admin | referral
+  final String? notes;
+  final String? userId;
 
   Coupon({
     this.docId,
-    this.code,
-    this.type,
     this.amount,
+    this.createdAt,
+    this.customerEmail,
     this.expiryDate,
     this.storeId,
+    this.type,
     this.notes,
-    this.userIds,
-    this.usageLimit,
-    this.usageCount,
-    this.source,
-    this.referralId,
-    this.isUsed,
-    this.createdAt,
+    this.userId,
   });
 
   factory Coupon.fromJson(Map<String, dynamic> json) => _$CouponFromJson(json);

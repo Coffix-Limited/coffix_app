@@ -7,7 +7,7 @@ import { createOrderBodySchema, CreateOrderBodySchema } from "./schema";
 import { InsufficientCreditError } from "../coffixCredit/errors";
 import { scheduledAtNZ } from "../utils/nz_time";
 import * as admin from "firebase-admin";
-import { Timestamp } from "firebase-admin/firestore";
+import { FieldValue, Timestamp } from "firebase-admin/firestore";
 import { AppUser } from "../user/interface";
 import { GLOBAL_COLLECTION_ID } from "../constant/constant";
 import { logger } from "firebase-functions";
@@ -242,7 +242,7 @@ class FirebaseService {
     // Fetch eligible coupons outside the transaction (reads before transaction opens)
     const couponSnap = await firestore
       .collection("coupons")
-      .where("userIds", "array-contains", customerId)
+      .where("userId", "==", customerId)
       .get();
 
     const eligibleCouponRefs = couponSnap.docs
@@ -251,12 +251,21 @@ class FirebaseService {
         const notExpired =
           !c.expiryDate ||
           (c.expiryDate as admin.firestore.Timestamp).toDate() > now;
-        const notUsed = c.isUsed !== true;
-        const hasUsage =
-          c.usageLimit == null ||
-          c.usageCount == null ||
-          (c.usageCount as number) < (c.usageLimit as number);
-        return notExpired && notUsed && hasUsage;
+        const hasAmount = (c.amount ?? 0) > 0;
+        return notExpired && hasAmount;
+      })
+      .sort((a, b) => {
+        const aExpiry = a.data().expiryDate
+          ? (a.data().expiryDate as admin.firestore.Timestamp)
+              .toDate()
+              .getTime()
+          : Infinity;
+        const bExpiry = b.data().expiryDate
+          ? (b.data().expiryDate as admin.firestore.Timestamp)
+              .toDate()
+              .getTime()
+          : Infinity;
+        return aExpiry - bExpiry;
       })
       .map((doc) => doc.ref);
 
@@ -279,7 +288,6 @@ class FirebaseService {
         ref: admin.firestore.DocumentReference;
         couponId: string;
         amountUsed: number;
-        newUsageCount: number;
       }> = [];
 
       for (const snap of couponSnaps) {
@@ -289,12 +297,8 @@ class FirebaseService {
         const notExpired =
           !cd.expiryDate ||
           (cd.expiryDate as admin.firestore.Timestamp).toDate() > now;
-        const notUsed = cd.isUsed !== true;
-        const hasUsage =
-          cd.usageLimit == null ||
-          cd.usageCount == null ||
-          (cd.usageCount as number) < (cd.usageLimit as number);
-        if (!notExpired || !notUsed || !hasUsage) continue;
+        const hasAmount = (cd.amount ?? 0) > 0;
+        if (!notExpired || !hasAmount) continue;
 
         const couponAmount = (cd.amount ?? 0) as number;
         const amountUsed = Math.min(couponAmount, remaining);
@@ -303,7 +307,6 @@ class FirebaseService {
           ref: snap.ref,
           couponId: snap.id,
           amountUsed,
-          newUsageCount: ((cd.usageCount ?? 0) as number) + 1,
         });
       }
 
@@ -315,12 +318,9 @@ class FirebaseService {
       }
 
       // WRITE phase
-      // Mark each consumed coupon as used
+      // Deduct used amount from each consumed coupon (amount hits 0 when fully spent)
       for (const c of couponsToConsume) {
-        tx.update(c.ref, {
-          isUsed: true,
-          usageCount: c.newUsageCount,
-        });
+        tx.update(c.ref, { amount: FieldValue.increment(-c.amountUsed) });
       }
 
       // Deduct remaining from creditAvailable (may be 0 if coupons covered it all)
@@ -700,7 +700,11 @@ class FirebaseService {
     await firestore.runTransaction(async (tx) => {
       const customerSnap = await tx.get(customerRef);
       const current = (customerSnap.data()?.creditAvailable ?? 0) as number;
-      tx.set(customerRef, { creditAvailable: current + amount }, { merge: true });
+      tx.set(
+        customerRef,
+        { creditAvailable: current + amount },
+        { merge: true },
+      );
       tx.set(refundRef, {
         docId: refundRef.id,
         customerId,

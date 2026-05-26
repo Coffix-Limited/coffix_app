@@ -1,6 +1,6 @@
 import { logger } from "firebase-functions";
-import { Log } from "../log/interface/log";
 import { firestore } from "../config/firebaseAdmin";
+import { Log } from "../log/interface";
 
 class LogService {
   // general write for all logs

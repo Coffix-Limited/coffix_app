@@ -121,7 +121,7 @@ export const giftEmailTemplate = `<!doctype html>
 
       <div class="items-section">
         <div class="item-row">
-          <span class="item-left">Gift to {{recipient_full_name}}</span>
+          <span class="item-left">{{gift_label}}</span>
           <span class="item-right">\${{gift_amount}}</span>
         </div>
       </div>
@@ -136,7 +136,6 @@ export const giftEmailTemplate = `<!doctype html>
       </div>
 
       <div class="thank-you-section">
-        <p class="thank-you-text">Thank you for your purchase</p>
         <p class="website-text">coffix.co.nz</p>
       </div>
     </div>

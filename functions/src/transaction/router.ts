@@ -18,8 +18,10 @@ import { ReceiptService } from "../receipt/service";
 import { getPaymentMethod } from "../order/service";
 import { formatNzTime } from "../utils/nz_time";
 import { generateTransactionNumber } from "../utils/generate_order_number";
+import LogService from "../log/service";
 
 const router = express.Router();
+const logService = new LogService();
 
 router.post(
   "/invoice",
@@ -201,7 +203,10 @@ router.post(
       const firebaseService = new FirebaseService();
       const emailService = new EmailService();
 
-      const transaction = await firebaseService.findTransactionByTransactionNumber(transactionNumber);
+      const transaction =
+        await firebaseService.findTransactionByTransactionNumber(
+          transactionNumber,
+        );
       if (!transaction) {
         return response
           .status(404)
@@ -235,20 +240,23 @@ router.post(
       }
 
       const amount = (transaction.amount as number) ?? 0;
-      const originalTransactionNumber = (transaction.transactionNumber as string) ?? transactionNumber;
+      const originalTransactionNumber =
+        (transaction.transactionNumber as string) ?? transactionNumber;
       const refundTransactionNumber = await generateTransactionNumber();
 
-      const refundTransactionId = await firebaseService.createRefundTransaction({
-        customerId,
-        originalTransactionNumber,
-        amount,
-        storeInvoiceText: transaction.storeInvoiceText as string | undefined,
-        gst: transaction.gst as number | undefined,
-        gstAmount: transaction.gstAmount as number | undefined,
-        gstNumber: transaction.gstNumber as string | undefined,
-        storeId: transaction.storeId as string | undefined,
-        transactionNumber: refundTransactionNumber,
-      });
+      const refundTransactionId = await firebaseService.createRefundTransaction(
+        {
+          customerId,
+          originalTransactionNumber,
+          amount,
+          storeInvoiceText: transaction.storeInvoiceText as string | undefined,
+          gst: transaction.gst as number | undefined,
+          gstAmount: transaction.gstAmount as number | undefined,
+          gstNumber: transaction.gstNumber as string | undefined,
+          storeId: transaction.storeId as string | undefined,
+          transactionNumber: refundTransactionNumber,
+        },
+      );
 
       await emailService.sendRefundInvoice({
         to: customer.email,
@@ -260,7 +268,16 @@ router.post(
         gst: transaction.gst as number | undefined,
         gstAmount: transaction.gstAmount as number | undefined,
         gstNumber: transaction.gstNumber as string | undefined,
-        isCoffixCredit: (transaction.paymentMethod as string) === "coffixCredit",
+        isCoffixCredit:
+          (transaction.paymentMethod as string) === "coffixCredit",
+      });
+
+      await logService.log({
+        customerId,
+        category: "refund",
+        severityLevel: "info",
+        action: "Refund processed",
+        notes: `Refunded ${amount} for transaction ${transactionNumber}`,
       });
 
       return response.status(200).json({
