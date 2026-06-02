@@ -1,18 +1,18 @@
 import { firestore } from "../config/firebaseAdmin";
 import { Log } from "./interface";
 
-class LogService {
-  async log(log: Log) {
-    const logRef = firestore.collection("logs");
-    const logDoc = logRef.doc();
-    await logDoc.set(
-      {
-        ...log,
-        createdAt: new Date(),
-      },
-      { merge: true },
-    );
+export class LogService {
+  async log(log: Log): Promise<Log> {
+    const logDocRef = firestore.collection("logs").doc();
+
+    const logDoc: Log = {
+      ...log,
+      docId: logDocRef.id,
+      time: new Date(),
+    };
+
+    await logDocRef.set(logDoc);
+
+    return logDoc;
   }
 }
-
-export default LogService;

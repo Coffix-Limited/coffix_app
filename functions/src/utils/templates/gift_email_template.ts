@@ -111,7 +111,6 @@ export const giftEmailTemplate = `<!doctype html>
   <body>
     <div class="wrapper">
       <div class="store-header">
-        <p class="store-name">Coffix</p>
         <p class="store-address">{{invoice_text}}</p>
       </div>
 

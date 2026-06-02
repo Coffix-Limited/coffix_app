@@ -115,6 +115,10 @@ class _LayoutViewState extends State<LayoutView> {
           user.user.finishedOnboarding == true,
       orElse: () => false,
     );
+    final isCreditAvailable = context.watch<AuthCubit>().state.maybeWhen(
+      authenticated: (user) => user.user.coffixCreditAvailable ?? true,
+      orElse: () => false,
+    );
     final aboutUrl = context.watch<AppCubit>().state.maybeWhen(
       loaded: (global, _) => global.aboutUrl ?? '',
       orElse: () => '',
@@ -163,10 +167,35 @@ class _LayoutViewState extends State<LayoutView> {
                       ? const SizedBox.shrink()
                       : BlocBuilder<AuthCubit, AuthState>(
                           builder: (context, state) {
+                            final visibleTabs = LayoutPageTab.values
+                                .where(
+                                  (tab) =>
+                                      tab != LayoutPageTab.coffixCredit ||
+                                      isCreditAvailable,
+                                )
+                                .toList();
+                            final currentVisualIndex = visibleTabs.indexWhere(
+                              (tab) =>
+                                  LayoutPageTab.values.indexOf(tab) ==
+                                  widget.shell.currentIndex,
+                            );
+                            final orderCount =
+                                context
+                                    .watch<CartCubit>()
+                                    .state
+                                    .cart
+                                    ?.items
+                                    ?.length ??
+                                0;
                             return BottomNavigationBar(
-                              currentIndex: widget.shell.currentIndex,
-                              onTap: (index) {
-                                if (index == LayoutPageTab.order.index) {
+                              currentIndex: currentVisualIndex < 0
+                                  ? 0
+                                  : currentVisualIndex,
+                              onTap: (visualIndex) {
+                                final tab = visibleTabs[visualIndex];
+                                final branchIndex = LayoutPageTab.values
+                                    .indexOf(tab);
+                                if (tab == LayoutPageTab.order) {
                                   if (!isAuthenticated) {
                                     showDialog(
                                       context: context,
@@ -175,19 +204,18 @@ class _LayoutViewState extends State<LayoutView> {
                                     );
                                   } else {
                                     widget.shell.goBranch(
-                                      index,
+                                      branchIndex,
                                       initialLocation: true,
                                     );
                                   }
                                 } else {
-                                  if (index ==
-                                      LayoutPageTab.coffixCredit.index) {
+                                  if (tab == LayoutPageTab.coffixCredit) {
                                     context.read<CreditCubit>().showTopUpField(
                                       false,
                                     );
                                   }
                                   widget.shell.goBranch(
-                                    index,
+                                    branchIndex,
                                     initialLocation: true,
                                   );
                                 }
@@ -199,21 +227,12 @@ class _LayoutViewState extends State<LayoutView> {
                                   .copyWith(color: AppColors.textBlackColor),
                               unselectedLabelStyle: AppTypography.body2XS
                                   .copyWith(color: AppColors.textBlackColor),
-                              items: LayoutPageTab.values.map((tab) {
-                                final orderCount =
-                                    context
-                                        .watch<CartCubit>()
-                                        .state
-                                        .cart
-                                        ?.items
-                                        ?.length ??
-                                    0;
+                              items: visibleTabs.map((tab) {
+                                final branchIndex = LayoutPageTab.values
+                                    .indexOf(tab);
                                 return BottomNavigationBarItem(
                                   icon: tab == LayoutPageTab.order
-                                      ? widget.shell.currentIndex ==
-                                                LayoutPageTab.values.indexOf(
-                                                  tab,
-                                                )
+                                      ? widget.shell.currentIndex == branchIndex
                                             ? Badge.count(
                                                 count: orderCount,
                                                 child: Image.asset(
@@ -230,8 +249,7 @@ class _LayoutViewState extends State<LayoutView> {
                                                   height: 24,
                                                 ),
                                               )
-                                      : widget.shell.currentIndex ==
-                                            LayoutPageTab.values.indexOf(tab)
+                                      : widget.shell.currentIndex == branchIndex
                                       ? Image.asset(
                                           tab.selectedIcon,
                                           width: 24,

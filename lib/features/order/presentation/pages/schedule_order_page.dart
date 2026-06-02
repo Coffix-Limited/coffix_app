@@ -78,7 +78,7 @@ class _ScheduleOrderViewState extends State<ScheduleOrderView> {
       _selected = PickupOption.now;
     }
     return Scaffold(
-      appBar: AppBackHeader(title: "Pickup time"),
+      appBar: AppBackHeader(title: "Pickup time", showLocation: false),
       body: Column(
         children: [
           Expanded(

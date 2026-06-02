@@ -20,6 +20,7 @@ import 'package:coffix_app/presentation/organisms/app_layout_body.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shimmer_animation/shimmer_animation.dart';
 
 class AddProductPage extends StatelessWidget {
   static String route = 'add_product_route';
@@ -130,8 +131,6 @@ class _AddProductViewState extends State<AddProductView> {
                         widget.product.imageUrl!.isNotEmpty
                     ? AppCachedNetworkImage(
                         imageUrl: widget.product.imageUrl!,
-                        width: 300,
-                        height: 300,
                         fit: BoxFit.cover,
                       )
                     : Container(

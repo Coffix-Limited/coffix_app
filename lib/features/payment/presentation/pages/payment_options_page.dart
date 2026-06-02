@@ -79,6 +79,10 @@ class _PaymentOptionsPageViewState extends State<PaymentOptionsPageView> {
     final totalBalance = creditAvailable + totalCoupon;
     final insufficientCredit =
         paymentMethod == PaymentMethod.coffixCredit && totalBalance < total;
+    final coffixCreditAvailable = context.watch<AuthCubit>().state.maybeWhen(
+      authenticated: (u) => u.user.coffixCreditAvailable ?? true,
+      orElse: () => false,
+    );
 
     return Scaffold(
       appBar: AppBackHeader(title: "Payment"),
@@ -150,42 +154,44 @@ class _PaymentOptionsPageViewState extends State<PaymentOptionsPageView> {
                               style: theme.textTheme.titleMedium,
                             ),
                             const SizedBox(height: AppSizes.lg),
-                            PaymentOption(
-                              selected:
-                                  paymentMethod == PaymentMethod.coffixCredit,
-                              onTap: () {
-                                LogService().selectPaymentMethod();
-                                context.read<CartCubit>().setPaymentMethod(
-                                  PaymentMethod.coffixCredit,
-                                );
-                              },
-                              icon: Icons.account_balance_wallet_outlined,
-                              title: 'Coffix Credit',
-                              subtitle: 'Save 10–20% on your order',
-                              trailing: Column(
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: [
-                                  Text.rich(
-                                    totalBalance.toCurrencySuperscript(
-                                      style: AppTypography.labelM,
+                            if (coffixCreditAvailable) ...[
+                              PaymentOption(
+                                selected:
+                                    paymentMethod == PaymentMethod.coffixCredit,
+                                onTap: () {
+                                  LogService().selectPaymentMethod();
+                                  context.read<CartCubit>().setPaymentMethod(
+                                    PaymentMethod.coffixCredit,
+                                  );
+                                },
+                                icon: Icons.account_balance_wallet_outlined,
+                                title: 'Coffix Credit',
+                                subtitle: 'Save 10–20% on your order',
+                                trailing: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  children: [
+                                    Text.rich(
+                                      totalBalance.toCurrencySuperscript(
+                                        style: AppTypography.labelM,
+                                      ),
                                     ),
-                                  ),
-                                  AppButton(
-                                    textStyle: AppTypography.labelS.copyWith(
-                                      color: AppColors.white,
+                                    AppButton(
+                                      textStyle: AppTypography.labelS.copyWith(
+                                        color: AppColors.white,
+                                      ),
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: AppSizes.md,
+                                        vertical: AppSizes.xs,
+                                      ),
+                                      label: "TopUp",
+                                      onPressed: () {
+                                        context.pushNamed(CreditPage.route);
+                                      },
                                     ),
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: AppSizes.md,
-                                      vertical: AppSizes.xs,
-                                    ),
-                                    label: "TopUp",
-                                    onPressed: () {
-                                      context.pushNamed(CreditPage.route);
-                                    },
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
-                            ),
+                            ],
                             if (insufficientCredit)
                               Padding(
                                 padding: const EdgeInsets.only(

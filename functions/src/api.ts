@@ -11,6 +11,7 @@ import orderRouter from "./order/router";
 import notificationRouter from "./notification/router";
 import emailRouter from "./email/router";
 import transactionRouter from "./transaction/router";
+import logRouter from "./log/router";
 import { globalLimiter } from "./middleware/rateLimiter";
 import { app } from "firebase-functions";
 
@@ -56,3 +57,4 @@ api.use("/notification", notificationRouter);
 api.use("/referrals", referralsRouter);
 api.use("/email", emailRouter);
 api.use("/transaction", transactionRouter);
+api.use("/log", logRouter);

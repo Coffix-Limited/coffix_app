@@ -18,7 +18,7 @@ import { ReceiptService } from "../receipt/service";
 import { getPaymentMethod } from "../order/service";
 import { formatNzTime } from "../utils/nz_time";
 import { generateTransactionNumber } from "../utils/generate_order_number";
-import LogService from "../log/service";
+import { LogService } from "../log/service";
 
 const router = express.Router();
 const logService = new LogService();

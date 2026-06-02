@@ -96,6 +96,7 @@ class _ProfileViewState extends State<ProfileView> {
         : "${user?.firstName} ${user?.lastName}".length > 20
         ? "${"${user?.firstName} ${user?.lastName}".substring(0, 20)}..."
         : "${user?.firstName} ${user?.lastName}";
+    final bool coffixCreditAvailable = user?.coffixCreditAvailable ?? true;
 
     return Scaffold(
       appBar: AppBackHeader(title: isAuthenticated ? fullName : "My Account"),
@@ -104,69 +105,76 @@ class _ProfileViewState extends State<ProfileView> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(
-              "My Coffix Credit Balance",
-              style: AppTypography.bodyM.copyWith(fontWeight: FontWeight.bold),
-              textAlign: TextAlign.center,
-            ),
-            AppCard(
-              color: AppColors.primary.withValues(alpha: 0.1),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
+            if (coffixCreditAvailable)
+              Column(
                 children: [
-                  BlocBuilder<CouponCubit, CouponState>(
-                    builder: (context, couponState) {
-                      final coupons = couponState.maybeWhen(
-                        loaded: (coupons) => coupons,
-                        orElse: () => <Coupon>[],
-                      );
-                      final totalCoupon = coupons.fold(
-                        0.0,
-                        (sum, c) => sum + (c.amount ?? 0.0),
-                      );
-                      return Text.rich(
-                        textAlign: TextAlign.center,
-                        TextSpan(
-                          children: [
-                            creditBalance.toCurrencySuperscript(
-                              style: AppTypography.headlineXl,
-                            ),
-                            if (totalCoupon > 0) ...[
-                              TextSpan(
-                                text: " + ",
-                                style: AppTypography.headlineXl,
-                              ),
-                              totalCoupon.toCurrencySuperscript(
-                                style: AppTypography.headlineXl,
-                              ),
-                              TextSpan(
-                                text: " Coupon",
-                                style: AppTypography.bodyXS,
-                              ),
-                            ],
-                          ],
-                        ),
-                      );
-                    },
-                  ),
-                  const SizedBox(height: AppSizes.md),
-                  if (user?.creditExpiry != null)
-                    Text(
-                      "Expiration Date: ${user?.creditExpiry?.formatDate()}",
-                      textAlign: TextAlign.center,
+                  Text(
+                    "My Coffix Credit Balance",
+                    style: AppTypography.bodyM.copyWith(
+                      fontWeight: FontWeight.bold,
                     ),
-
-                  AppButton.primary(
-                    onPressed: () {
-                      context.read<CreditCubit>().showTopUpField(false);
-                      context.goNamed(CreditPage.route);
-                    },
-                    label: 'TopUp',
+                    textAlign: TextAlign.center,
                   ),
+                  AppCard(
+                    color: AppColors.primary.withValues(alpha: 0.1),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        BlocBuilder<CouponCubit, CouponState>(
+                          builder: (context, couponState) {
+                            final coupons = couponState.maybeWhen(
+                              loaded: (coupons) => coupons,
+                              orElse: () => <Coupon>[],
+                            );
+                            final totalCoupon = coupons.fold(
+                              0.0,
+                              (sum, c) => sum + (c.amount ?? 0.0),
+                            );
+                            return Text.rich(
+                              textAlign: TextAlign.center,
+                              TextSpan(
+                                children: [
+                                  creditBalance.toCurrencySuperscript(
+                                    style: AppTypography.headlineXl,
+                                  ),
+                                  if (totalCoupon > 0) ...[
+                                    TextSpan(
+                                      text: " + ",
+                                      style: AppTypography.headlineXl,
+                                    ),
+                                    totalCoupon.toCurrencySuperscript(
+                                      style: AppTypography.headlineXl,
+                                    ),
+                                    TextSpan(
+                                      text: " Coupon",
+                                      style: AppTypography.bodyXS,
+                                    ),
+                                  ],
+                                ],
+                              ),
+                            );
+                          },
+                        ),
+                        const SizedBox(height: AppSizes.md),
+                        if (user?.creditExpiry != null)
+                          Text(
+                            "Expiration Date: ${user?.creditExpiry?.formatDate()}",
+                            textAlign: TextAlign.center,
+                          ),
+
+                        AppButton.primary(
+                          onPressed: () {
+                            context.read<CreditCubit>().showTopUpField(false);
+                            context.goNamed(CreditPage.route);
+                          },
+                          label: 'TopUp',
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: AppSizes.xxl),
                 ],
               ),
-            ),
-            const SizedBox(height: AppSizes.xxl),
 
             ProfileTile(
               label: 'Profile',
@@ -183,42 +191,45 @@ class _ProfileViewState extends State<ProfileView> {
                 context.pushNamed(TransactionPage.route);
               },
               icon: AppImages.transaction,
-              trailingIcon: sendingTransactionEmail
-                  ? AppLoading()
-                  : AppClickable(
-                      onPressed: () async {
-                        try {
-                          setState(() {
-                            sendingTransactionEmail = true;
-                          });
-                          await getIt<DownloadTransaction>().call(
-                            const NoParams(),
-                          );
-                          setState(() {
-                            sendingTransactionEmail = false;
-                          });
-                          AppNotification.show(
-                            context,
-                            'Transaction email sent successfully',
-                          );
-                        } catch (e) {
-                          setState(() {
-                            sendingTransactionEmail = false;
-                          });
-                          AppNotification.error(context, e.toString());
-                        }
-                      },
-                      showSplash: false,
-                      child: Image.asset(
-                        AppImages.transactionDownload,
-                        width: AppSizes.iconSizeMedium,
-                        height: AppSizes.iconSizeMedium,
-                      ),
-                    ),
+              trailingIcon: coffixCreditAvailable
+                  ? sendingTransactionEmail
+                        ? AppLoading()
+                        : AppClickable(
+                            onPressed: () async {
+                              try {
+                                setState(() {
+                                  sendingTransactionEmail = true;
+                                });
+                                await getIt<DownloadTransaction>().call(
+                                  const NoParams(),
+                                );
+                                setState(() {
+                                  sendingTransactionEmail = false;
+                                });
+                                AppNotification.show(
+                                  context,
+                                  'Transaction email sent successfully',
+                                );
+                              } catch (e) {
+                                setState(() {
+                                  sendingTransactionEmail = false;
+                                });
+                                AppNotification.error(context, e.toString());
+                              }
+                            },
+                            showSplash: false,
+                            child: Image.asset(
+                              AppImages.transactionDownload,
+                              width: AppSizes.iconSizeMedium,
+                              height: AppSizes.iconSizeMedium,
+                            ),
+                          )
+                  : null,
             ),
             Divider(height: 0, color: AppColors.textBlackColor),
 
-            if (user?.shareCredit == null || user?.shareCredit == true) ...[
+            if ((user?.shareCredit == null || user?.shareCredit == true) &&
+                coffixCreditAvailable) ...[
               ProfileTile(
                 label: 'Share your balance',
                 onTap: () {

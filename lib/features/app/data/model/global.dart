@@ -19,6 +19,7 @@ class AppGlobal extends Equatable {
   final String? specialUrl;
   final String? storeUrl;
   final String? tcUrl;
+  final double? topupLevel1;
   final double? topupLevel2;
   final double? topupLevel3;
   final double? withdrawalFee;
@@ -39,6 +40,7 @@ class AppGlobal extends Equatable {
     this.specialUrl,
     this.storeUrl,
     this.tcUrl,
+    this.topupLevel1,
     this.topupLevel2,
     this.topupLevel3,
     this.withdrawalFee,

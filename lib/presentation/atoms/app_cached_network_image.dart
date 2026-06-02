@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:shimmer_animation/shimmer_animation.dart';
 
 class AppCachedNetworkImage extends StatelessWidget {
   const AppCachedNetworkImage({
@@ -29,6 +30,9 @@ class AppCachedNetworkImage extends StatelessWidget {
       width: width,
       height: height,
       fit: fit,
+      progressIndicatorBuilder: (context, url, progress) => Shimmer(
+        child: SizedBox(width: width, height: height),
+      ),
       placeholder: placeholder != null ? (_, _) => placeholder! : null,
       errorWidget: errorWidget != null ? (_, _, _) => errorWidget! : null,
     );
