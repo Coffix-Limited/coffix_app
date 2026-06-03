@@ -1,10 +1,7 @@
 import 'package:coffix_app/core/constants/colors.dart';
 import 'package:coffix_app/core/constants/images.dart';
 import 'package:coffix_app/core/constants/sizes.dart';
-import 'package:coffix_app/core/di/service_locator.dart';
-import 'package:coffix_app/core/extensions/location_extensions.dart';
 import 'package:coffix_app/core/theme/typography.dart';
-import 'package:coffix_app/data/repositories/store_repository.dart';
 import 'package:coffix_app/features/auth/logic/auth_cubit.dart';
 import 'package:coffix_app/features/cart/logic/cart_cubit.dart';
 import 'package:coffix_app/features/home/presentation/pages/home_page.dart';
@@ -20,6 +17,7 @@ import 'package:coffix_app/presentation/atoms/app_field.dart';
 import 'package:coffix_app/presentation/molecules/app_guest_bottom_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
 
 class StoreList extends StatelessWidget {
@@ -64,13 +62,26 @@ class StoreList extends StatelessWidget {
       }
     }
 
-    final user = context.watch<AuthCubit>().state.maybeWhen(
-      authenticated: (user) => user,
-      orElse: () => null,
-    );
+    Future<Position> getCurrentLocation() async {
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        return Future.error("Location services are disabled.");
+      }
 
-    final lat = user?.store?.location?.latitude;
-    final lng = user?.store?.location?.longitude;
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          return Future.error("Location permissions are denied.");
+        }
+      }
+
+      if (permission == LocationPermission.deniedForever) {
+        return Future.error("Location permissions are denied forever.");
+      }
+
+      return await Geolocator.getCurrentPosition();
+    }
 
     return SingleChildScrollView(
       padding: AppSizes.defaultPadding,
@@ -93,7 +104,19 @@ class StoreList extends StatelessWidget {
               AppClickable(
                 showSplash: false,
                 onPressed: () async {
-                  await getIt<StoreRepository>().openMap(lat ?? 0, lng ?? 0);
+                  try {
+                    final position = await getCurrentLocation();
+                    if (!context.mounted) return;
+                    await context.read<StoreCubit>().sortStoresByDistance(
+                      position: position,
+                    );
+                  } catch (e) {
+                    if (!context.mounted) return;
+                    AppNotification.show(
+                      context,
+                      "Enable location access to sort stores by distance",
+                    );
+                  }
                 },
                 child: Image.asset(AppImages.target),
               ),
