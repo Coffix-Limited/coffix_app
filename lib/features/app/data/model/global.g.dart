@@ -26,6 +26,15 @@ AppGlobal _$AppGlobalFromJson(Map<String, dynamic> json) => AppGlobal(
   invoiceCounter: (json['invoiceCounter'] as num?)?.toInt(),
   creditExpiryDuration: (json['creditExpiryDuration'] as num?)?.toDouble(),
   referralExpiryDays: (json['referralExpiryDays'] as num?)?.toDouble(),
+  coffixCreditAvailable: json['coffixCreditAvailable'] as bool?,
+  defScheduleOrder: json['defScheduleOrder'] as bool?,
+  defShareCredit: json['defShareCredit'] as bool?,
+  defWithdrawBalance: json['defWithdrawBalance'] as bool?,
+  defCoffixCreditAvailable: json['defCoffixCreditAvailable'] as bool?,
+  defGetPurchaseInfoByMail: json['defGetPurchaseInfoByMail'] as bool?,
+  defGetPromotions: json['defGetPromotions'] as bool?,
+  defAllowWinACoffee: json['defAllowWinACoffee'] as bool?,
+  defAllowCoffeeForHome: json['defAllowCoffeeForHome'] as bool?,
 );
 
 Map<String, dynamic> _$AppGlobalToJson(AppGlobal instance) => <String, dynamic>{
@@ -48,4 +57,13 @@ Map<String, dynamic> _$AppGlobalToJson(AppGlobal instance) => <String, dynamic>{
   'invoiceCounter': instance.invoiceCounter,
   'creditExpiryDuration': instance.creditExpiryDuration,
   'referralExpiryDays': instance.referralExpiryDays,
+  'coffixCreditAvailable': instance.coffixCreditAvailable,
+  'defScheduleOrder': instance.defScheduleOrder,
+  'defShareCredit': instance.defShareCredit,
+  'defWithdrawBalance': instance.defWithdrawBalance,
+  'defCoffixCreditAvailable': instance.defCoffixCreditAvailable,
+  'defGetPurchaseInfoByMail': instance.defGetPurchaseInfoByMail,
+  'defGetPromotions': instance.defGetPromotions,
+  'defAllowWinACoffee': instance.defAllowWinACoffee,
+  'defAllowCoffeeForHome': instance.defAllowCoffeeForHome,
 };

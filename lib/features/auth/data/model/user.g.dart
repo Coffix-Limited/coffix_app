@@ -34,6 +34,7 @@ AppUser _$AppUserFromJson(Map<String, dynamic> json) => AppUser(
   shareCredit: json['shareCredit'] as bool?,
   withdrawBalance: json['withdrawBalance'] as bool?,
   coffixCreditAvailable: json['coffixCreditAvailable'] as bool?,
+  allowCoffeeForHome: json['allowCoffeeForHome'] as bool?,
 );
 
 Map<String, dynamic> _$AppUserToJson(AppUser instance) => <String, dynamic>{
@@ -64,4 +65,5 @@ Map<String, dynamic> _$AppUserToJson(AppUser instance) => <String, dynamic>{
   'shareCredit': instance.shareCredit,
   'withdrawBalance': instance.withdrawBalance,
   'coffixCreditAvailable': instance.coffixCreditAvailable,
+  'allowCoffeeForHome': instance.allowCoffeeForHome,
 };

@@ -51,7 +51,7 @@ class _CreditViewState extends State<CreditView> {
   double calculateTopUp(double amount, AppGlobal global) {
     double totalAmount = amount;
 
-    if (amount < (global.minTopUp ?? 0)) {
+    if (amount < (global.topupLevel1 ?? 0)) {
       return totalAmount;
     } else if (amount < (global.topupLevel2 ?? 0)) {
       totalAmount += amount * ((global.basicDiscount ?? 0) / 100);

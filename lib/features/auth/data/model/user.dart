@@ -36,6 +36,7 @@ class AppUser {
   final bool? shareCredit;
   final bool? withdrawBalance;
   final bool? coffixCreditAvailable;
+  final bool? allowCoffeeForHome;
 
   AppUser({
     this.creditAvailable,
@@ -65,6 +66,7 @@ class AppUser {
     this.shareCredit,
     this.withdrawBalance,
     this.coffixCreditAvailable,
+    this.allowCoffeeForHome,
   });
 
   factory AppUser.fromJson(Map<String, dynamic> json) =>

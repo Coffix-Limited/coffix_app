@@ -1,5 +1,4 @@
 import 'package:coffix_app/core/di/service_locator.dart';
-import 'package:coffix_app/features/cart/logic/cart_cubit.dart';
 import 'package:coffix_app/features/home/presentation/pages/home_page.dart';
 import 'package:coffix_app/features/stores/logic/store_cubit.dart';
 import 'package:coffix_app/features/stores/presentation/widgets/store_list.dart';
@@ -40,16 +39,7 @@ class _StoresViewState extends State<StoresView> {
           context.goNamed(HomePage.route);
         },
       ),
-      body: BlocConsumer<StoreCubit, StoreState>(
-        listener: (context, state) {
-          state.whenOrNull(
-            loaded: (stores) {
-              if (stores.isNotEmpty) {
-                context.read<CartCubit>().resetCart();
-              }
-            },
-          );
-        },
+      body: BlocBuilder<StoreCubit, StoreState>(
         builder: (context, state) {
           return state.when(
             initial: () => const SizedBox.shrink(),

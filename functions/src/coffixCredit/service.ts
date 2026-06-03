@@ -55,6 +55,7 @@ export class CoffixCreditService {
     const basicDiscount = ((globalData.basicDiscount ?? 0) / 100) as number;
     const discountLevel2 = ((globalData.discountLevel2 ?? 0) / 100) as number;
     const discountLevel3 = ((globalData.discountLevel3 ?? 0) / 100) as number;
+    const topupLevel1 = (globalData.topupLevel1 ?? Infinity) as number;
     const topupLevel2 = (globalData.topupLevel2 ?? Infinity) as number;
     const topupLevel3 = (globalData.topupLevel3 ?? Infinity) as number;
     const creditExpiryDuration = (globalData.creditExpiryDuration ??
@@ -65,7 +66,9 @@ export class CoffixCreditService {
     }
 
     let bonus: number;
-    if (amount < topupLevel2) {
+    if (amount < topupLevel1) {
+      bonus = amount;
+    } else if (amount < topupLevel2) {
       bonus = amount * basicDiscount;
     } else if (amount < topupLevel3) {
       bonus = amount * discountLevel2;

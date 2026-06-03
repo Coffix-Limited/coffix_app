@@ -5,10 +5,12 @@ import 'dart:math' hide log;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:coffix_app/core/api/api_client.dart';
 import 'package:coffix_app/core/api/model/endpoints.dart';
+import 'package:coffix_app/core/constants/constants.dart';
 import 'package:coffix_app/core/errors/auth_exceptions.dart';
 import 'package:coffix_app/core/utils/time_utils.dart';
 import 'package:coffix_app/data/repositories/auth_repository.dart';
 import 'package:coffix_app/domain/firestore_service.dart';
+import 'package:coffix_app/features/app/data/model/global.dart';
 import 'package:coffix_app/features/auth/data/model/user.dart';
 import 'package:crypto/crypto.dart';
 import 'package:dio/dio.dart';
@@ -256,16 +258,37 @@ class AuthRepositoryImpl extends ApiClient implements AuthRepository {
     required String docId,
     required String email,
   }) async {
+    final globalSnap = await _firestore
+        .collection('global')
+        .doc(AppConstants.globalCollectionDocId)
+        .get();
+    final global = AppGlobal.fromJson(globalSnap.data() ?? {});
+
     final ref = _firestore.collection('customers').doc(docId);
-    // final existing = await ref.get();
-    // if (!existing.exists) {
-    await ref.set({
-      'docId': docId,
-      'email': email,
-      'createdAt': TimeUtils.now(),
-      'qrId': generateQrId(docId),
-    }, SetOptions(merge: true));
-    // }
+    final user = AppUser(
+      docId: docId,
+      email: email,
+      createdAt: TimeUtils.now(),
+      qrId: generateQrId(docId),
+      fcmToken: await _firebaseMessaging.getToken(),
+      finishedOnboarding: false,
+      creditExpiry: TimeUtils.now().add(Duration(days: 30)),
+      disabled: false,
+      emailVerified: false,
+      lastLogin: TimeUtils.now(),
+      creditAvailable: 0,
+      scheduleOrder: global.defScheduleOrder ?? true,
+      shareCredit: global.defShareCredit ?? true,
+      withdrawBalance: global.defWithdrawBalance ?? true,
+      coffixCreditAvailable: global.defCoffixCreditAvailable ?? true,
+      getPurchaseInfoByMail: global.defGetPurchaseInfoByMail ?? true,
+      getPromotions: global.defGetPromotions ?? true,
+      allowWinACoffee: global.defAllowWinACoffee ?? true,
+      allowWithdrawBalance: global.defAllowWinACoffee ?? true,
+      allowCoffeeForHome: global.defAllowCoffeeForHome ?? true,
+    );
+
+    await ref.set(user.toJson(), SetOptions(merge: true));
   }
 
   @override

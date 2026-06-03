@@ -1,0 +1,30 @@
+export interface AppGlobal {
+  GST?: number;
+  appVersion?: string;
+  basicDiscount?: number;
+  discountLevel2?: number;
+  discountLevel3?: number;
+  maxDayBetweenLogin?: number;
+  minCreditToShare?: number;
+  minTopUp?: number;
+  aboutUrl?: string;
+  specialUrl?: string;
+  storeUrl?: string;
+  tcUrl?: string;
+  topupLevel1?: number;
+  topupLevel2?: number;
+  topupLevel3?: number;
+  withdrawalFee?: number;
+  invoiceCounter?: number;
+  creditExpiryDuration?: number;
+  referralExpiryDays?: number;
+  coffixCreditAvailable?: boolean;
+  defScheduleOrder?: boolean;
+  defShareCredit?: boolean;
+  defWithdrawBalance?: boolean;
+  defCoffixCreditAvailable?: boolean;
+  defGetPurchaseInfoByMail?: boolean;
+  defGetPromotions?: boolean;
+  defAllowWinACoffee?: boolean;
+  defAllowCoffeeForHome?: boolean;
+}

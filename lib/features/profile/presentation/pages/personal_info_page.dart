@@ -206,17 +206,17 @@ class _PersonalInfoViewState extends State<PersonalInfoView> {
           inactiveTrackColor: AppColors.white,
           inactiveThumbColor: AppColors.primary,
         ),
-        FormBuilderSwitch(
-          name: 'allowWinACoffee',
-          title: Text(
-            'Receive purchase messages',
-            style: theme.textTheme.bodyMedium,
-          ),
-          activeColor: AppColors.white,
-          activeTrackColor: AppColors.success,
-          inactiveTrackColor: AppColors.white,
-          inactiveThumbColor: AppColors.primary,
-        ),
+        // FormBuilderSwitch(
+        //   name: 'allowWinACoffee',
+        //   title: Text(
+        //     'Receive purchase messages',
+        //     style: theme.textTheme.bodyMedium,
+        //   ),
+        //   activeColor: AppColors.white,
+        //   activeTrackColor: AppColors.success,
+        //   inactiveTrackColor: AppColors.white,
+        //   inactiveThumbColor: AppColors.primary,
+        // ),
         const SizedBox(height: AppSizes.xxl),
         AppButton.primary(onPressed: _onSave, label: 'Save'),
         const SizedBox(height: AppSizes.xxl),

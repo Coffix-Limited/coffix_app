@@ -44,6 +44,7 @@ export function scheduledAtNZ(minutes: number): Date {
  * Returns the given date formatted as "MM-DD-YYYY HH:mm AM/PM" in NZ time.
  */
 export function formatNzTime(date: Date): string {
+  if (!date || isNaN(date.getTime())) return "";
   const parts = new Intl.DateTimeFormat("en-NZ", {
     timeZone: NZ_TZ,
     year: "numeric",
@@ -64,6 +65,7 @@ export function formatNzTime(date: Date): string {
  * Returns the given date formatted as "MM-DD-YYYY" in NZ time.
  */
 export function formatNzDate(date: Date): string {
+  if (!date || isNaN(date.getTime())) return "";
   const parts = new Intl.DateTimeFormat("en-NZ", {
     timeZone: NZ_TZ,
     year: "numeric",

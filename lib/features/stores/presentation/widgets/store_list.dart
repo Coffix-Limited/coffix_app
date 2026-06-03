@@ -6,7 +6,10 @@ import 'package:coffix_app/core/extensions/location_extensions.dart';
 import 'package:coffix_app/core/theme/typography.dart';
 import 'package:coffix_app/data/repositories/store_repository.dart';
 import 'package:coffix_app/features/auth/logic/auth_cubit.dart';
+import 'package:coffix_app/features/cart/logic/cart_cubit.dart';
 import 'package:coffix_app/features/home/presentation/pages/home_page.dart';
+import 'package:coffix_app/features/products/data/model/product_with_category.dart';
+import 'package:coffix_app/features/products/logic/product_cubit.dart';
 import 'package:coffix_app/features/stores/data/model/store.dart';
 import 'package:coffix_app/features/stores/logic/store_cubit.dart';
 import 'package:coffix_app/presentation/atoms/app_cached_network_image.dart';
@@ -34,10 +37,26 @@ class StoreList extends StatelessWidget {
     );
     void updateStore(String storeId) async {
       try {
+        // Reconcile the cart against the new store before switching: drop
+        // items not available there, keep + re-stamp the rest.
+        final catalog = context.read<ProductCubit>().state.maybeWhen(
+          loaded: (products, _, _) => products,
+          orElse: () => <ProductWithCategory>[],
+        );
+        final removed = context.read<CartCubit>().reconcileForStore(
+          newStoreId: storeId,
+          catalog: catalog,
+        );
+
         await context.read<StoreCubit>().updatePreferredStore(storeId: storeId);
         if (context.mounted) {
           context.goNamed(HomePage.route);
-          AppNotification.show(context, "Preferred store updated");
+          AppNotification.show(
+            context,
+            removed > 0
+                ? "Some items were removed — not available at this store"
+                : "Preferred store updated",
+          );
         }
       } catch (e) {
         if (!context.mounted) return;
@@ -146,7 +165,9 @@ class StoreList extends StatelessWidget {
                                         : "MON-SUN is closed";
                                   }(),
                             style: AppTypography.body2XS.copyWith(
-                              color: AppColors.primary,
+                              color: isOpen
+                                  ? AppColors.success
+                                  : AppColors.error,
                             ),
                           ),
                         ],

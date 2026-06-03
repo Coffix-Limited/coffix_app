@@ -261,25 +261,29 @@ class _ProfileViewState extends State<ProfileView> {
             ),
             Divider(height: 0, color: AppColors.textBlackColor),
 
-            ProfileTile(
-              label: 'Coffee on US',
-              onTap: () {
-                context.pushNamed(CoffeeOnUsPage.route);
-              },
-              icon: AppImages.coffee,
-            ),
+            if (user?.allowWinACoffee ?? true) ...[
+              ProfileTile(
+                label: 'Coffee on US',
+                onTap: () {
+                  context.pushNamed(CoffeeOnUsPage.route);
+                },
+                icon: AppImages.coffee,
+              ),
+            ],
             Divider(height: 0, color: AppColors.textBlackColor),
 
-            ProfileTile(
-              label: 'Coffee for Home',
-              onTap: () {
-                context.pushNamed(
-                  CoffeeForHomePage.route,
-                  extra: {'url': global?.storeUrl ?? ''},
-                );
-              },
-              icon: AppImages.bag,
-            ),
+            if (user?.allowCoffeeForHome ?? true) ...[
+              ProfileTile(
+                label: 'Coffee for Home',
+                onTap: () {
+                  context.pushNamed(
+                    CoffeeForHomePage.route,
+                    extra: {'url': global?.storeUrl ?? ''},
+                  );
+                },
+                icon: AppImages.bag,
+              ),
+            ],
             Divider(height: 0, color: AppColors.textBlackColor),
 
             const SizedBox(height: AppSizes.sm),

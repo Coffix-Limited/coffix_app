@@ -104,6 +104,24 @@ class CartItem extends Equatable {
   @override
   List<Object?> get props => [id];
 
+  /// Returns a copy stamped to a different [storeId] with a recomputed [id].
+  /// Used when the cart moves to a new store. All pricing/modifier data is kept.
+  CartItem reStamped({required String storeId, required String id}) => CartItem(
+    id: id,
+    storeId: storeId,
+    productId: productId,
+    productName: productName,
+    productImageUrl: productImageUrl,
+    quantity: quantity,
+    selectedByGroup: selectedByGroup,
+    basePrice: basePrice,
+    modifierPriceSnapshot: modifierPriceSnapshot,
+    modifierLabelSnapshot: modifierLabelSnapshot,
+    unitTotal: unitTotal,
+    lineTotal: lineTotal,
+    createdAt: createdAt,
+  );
+
   CartItem copyWith({
     int? quantity,
     Map<String, String>? selectedByGroup,

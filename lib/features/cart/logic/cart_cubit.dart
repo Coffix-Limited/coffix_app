@@ -1,7 +1,10 @@
 import 'package:bloc/bloc.dart';
+import 'package:coffix_app/core/extensions/product_extensions.dart';
 import 'package:coffix_app/features/cart/data/model/cart.dart';
 import 'package:coffix_app/features/cart/data/model/cart_item.dart';
+import 'package:coffix_app/features/cart/domain/helper.dart';
 import 'package:coffix_app/features/payment/data/model/payment.dart';
+import 'package:coffix_app/features/products/data/model/product_with_category.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'cart_cubit.freezed.dart';
@@ -102,6 +105,67 @@ class CartCubit extends Cubit<CartState> {
 
   void resetCart() {
     emit(state.copyWith(cart: null));
+  }
+
+  /// Reconciles the cart when the preferred store changes to [newStoreId].
+  /// Removes items not available at the new store and re-stamps kept items
+  /// (storeId + recomputed id) so the cart is usable at the new store.
+  /// Returns the number of items removed.
+  int reconcileForStore({
+    required String newStoreId,
+    required List<ProductWithCategory> catalog,
+  }) {
+    final Cart? currentCart = state.cart;
+    final items = currentCart?.items;
+    if (currentCart == null || items == null || items.isEmpty) return 0;
+
+    // Already on this store -> nothing to do.
+    if (currentCart.storeId == newStoreId) return 0;
+
+    // Without a loaded catalog we cannot tell what is available, so keep
+    // everything but still re-stamp so the cart stays usable at the new store.
+    final Set<String>? availableProductIds = catalog.isEmpty
+        ? null
+        : catalog
+              .productsByStore(
+                storeId: newStoreId,
+                preferredStoreId: newStoreId,
+              )
+              .map((p) => p.product.docId)
+              .whereType<String>()
+              .toSet();
+
+    final helper = CartHelper();
+    final kept = <CartItem>[];
+    for (final item in items) {
+      final productId = item.productId;
+      if (productId == null) continue;
+      final isAvailable =
+          availableProductIds == null ||
+          availableProductIds.contains(productId);
+      if (!isAvailable) continue;
+
+      // Re-stamp to the new store (storeId + recomputed hashed id).
+      final newId = helper.buildCartItemIdHashed(
+        storeId: newStoreId,
+        productId: productId,
+        selectedByGroup: item.selectedByGroup,
+      );
+      kept.add(item.reStamped(storeId: newStoreId, id: newId));
+    }
+
+    final removedCount = items.length - kept.length;
+
+    if (kept.isEmpty) {
+      emit(state.copyWith(cart: null));
+    } else {
+      emit(
+        state.copyWith(
+          cart: currentCart.copyWith(storeId: newStoreId, items: kept),
+        ),
+      );
+    }
+    return removedCount;
   }
 
   void pickTime(double duration) {

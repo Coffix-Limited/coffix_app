@@ -26,6 +26,15 @@ class AppGlobal extends Equatable {
   final int? invoiceCounter;
   final double? creditExpiryDuration;
   final double? referralExpiryDays;
+  final bool? coffixCreditAvailable;
+  final bool? defScheduleOrder;
+  final bool? defShareCredit;
+  final bool? defWithdrawBalance;
+  final bool? defCoffixCreditAvailable;
+  final bool? defGetPurchaseInfoByMail;
+  final bool? defGetPromotions;
+  final bool? defAllowWinACoffee;
+  final bool? defAllowCoffeeForHome;
 
   const AppGlobal({
     this.GST,
@@ -47,6 +56,15 @@ class AppGlobal extends Equatable {
     this.invoiceCounter,
     this.creditExpiryDuration,
     this.referralExpiryDays,
+    this.coffixCreditAvailable,
+    this.defScheduleOrder,
+    this.defShareCredit,
+    this.defWithdrawBalance,
+    this.defCoffixCreditAvailable,
+    this.defGetPurchaseInfoByMail,
+    this.defGetPromotions,
+    this.defAllowWinACoffee,
+    this.defAllowCoffeeForHome,
   });
 
   factory AppGlobal.fromJson(Map<String, dynamic> json) =>
@@ -72,6 +90,15 @@ class AppGlobal extends Equatable {
     int? invoiceCounter,
     double? creditExpiryDuration,
     double? referralExpiryDays,
+    bool? coffixCreditAvailable,
+    bool? defScheduleOrder,
+    bool? defShareCredit,
+    bool? defWithdrawBalance,
+    bool? defCoffixCreditAvailable,
+    bool? defGetPurchaseInfoByMail,
+    bool? defGetPromotions,
+    bool? defAllowWinACoffee,
+    bool? defAllowCoffeeForHome,
   }) => AppGlobal(
     GST: GST ?? this.GST,
     appVersion: appVersion ?? this.appVersion,
@@ -91,6 +118,15 @@ class AppGlobal extends Equatable {
     invoiceCounter: invoiceCounter ?? this.invoiceCounter,
     creditExpiryDuration: creditExpiryDuration ?? this.creditExpiryDuration,
     referralExpiryDays: referralExpiryDays ?? this.referralExpiryDays,
+    coffixCreditAvailable: coffixCreditAvailable ?? this.coffixCreditAvailable,
+    defScheduleOrder: defScheduleOrder ?? this.defScheduleOrder,
+    defShareCredit: defShareCredit ?? this.defShareCredit,
+    defWithdrawBalance: defWithdrawBalance ?? this.defWithdrawBalance,
+    defCoffixCreditAvailable: defCoffixCreditAvailable ?? this.defCoffixCreditAvailable,
+    defGetPurchaseInfoByMail: defGetPurchaseInfoByMail ?? this.defGetPurchaseInfoByMail,
+    defGetPromotions: defGetPromotions ?? this.defGetPromotions,
+    defAllowWinACoffee: defAllowWinACoffee ?? this.defAllowWinACoffee,
+    defAllowCoffeeForHome: defAllowCoffeeForHome ?? this.defAllowCoffeeForHome,
   );
 
   @override
@@ -113,5 +149,14 @@ class AppGlobal extends Equatable {
     invoiceCounter,
     creditExpiryDuration,
     referralExpiryDays,
+    coffixCreditAvailable,
+    defScheduleOrder,
+    defShareCredit,
+    defWithdrawBalance,
+    defCoffixCreditAvailable,
+    defGetPurchaseInfoByMail,
+    defGetPromotions,
+    defAllowWinACoffee,
+    defAllowCoffeeForHome,
   ];
 }
