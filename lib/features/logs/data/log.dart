@@ -15,7 +15,7 @@ class Log {
   /// [1] - low level (login, forgot password etc.)
   /// [3] - mid level (errors, payment decline, etc.)
   /// [5] - high level (financial transactions etc.)
-  final String? severityLevel;
+  final int? severityLevel;
   // used for admin controlling staff not customers in web app
   final String? userId;
 
@@ -26,13 +26,6 @@ class Log {
   final String? notes;
   @DateTimeConverter()
   final DateTime? time;
-
-  //   •⁠ ⁠action: (purchase, gift, topup, referral, draft, credit, invoice request, login etc)
-  // •⁠ ⁠category: (Apperror, WebError, App, Web etc)
-  // •⁠ ⁠⁠page ( the reference to the page action taken)
-  // •⁠ ⁠⁠notes: English description with reference (order number etc)
-  // •⁠ ⁠⁠security level: categorise them by importance for long term. 1 will be the lowest so will be deleted more often (like login, password recovery etc). 5- mid level such as errors, payment decline etc). 9 - will be kept long term (financial transactions etc)
-  // •⁠ ⁠⁠time: timestamp
 
   Log({
     this.docId,
@@ -48,4 +41,16 @@ class Log {
 
   factory Log.fromJson(Map<String, dynamic> json) => _$LogFromJson(json);
   Map<String, dynamic> toJson() => _$LogToJson(this);
+
+  Log copyWith({String? customerId}) => Log(
+    docId: docId,
+    page: page,
+    customerId: customerId ?? this.customerId,
+    category: category,
+    severityLevel: severityLevel,
+    userId: userId,
+    action: action,
+    notes: notes,
+    time: time,
+  );
 }

@@ -1,12 +1,17 @@
+import 'dart:developer' as dev;
+
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:coffix_app/core/api/api_client.dart';
 import 'package:coffix_app/core/utils/time_utils.dart';
 import 'package:coffix_app/domain/firestore_service.dart';
 import 'package:coffix_app/features/logs/data/log.dart';
 import 'package:coffix_app/features/products/data/model/product.dart';
+import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
-class LogService {
+class LogService extends ApiClient {
+  LogService() : super(dio: Dio());
   final FirebaseFirestore _firestore = FirestoreService.instance;
   String? _appVersion;
 
@@ -20,17 +25,13 @@ class LogService {
   Future<void> write(Log log) async {
     try {
       final uid = FirebaseAuth.instance.currentUser?.uid;
-      final appVersion = await _getAppVersion();
 
-      final data = log.toJson()
-        ..remove('docId')
-        ..['customerId'] ??= uid
-        ..['appVersion'] = appVersion
-        ..['time'] = TimeUtils.now();
-
-      await _firestore.collection('logs').add(data);
-    } catch (_) {
+      final data = log.copyWith(customerId: uid).toJson()
+        ..removeWhere((key, value) => value == null);
+      await post("/log/create", data: data);
+    } catch (e) {
       // Never let a log failure crash the app.
+      dev.log("Error writing log: $e");
     }
   }
 
@@ -39,10 +40,10 @@ class LogService {
     write(
       Log(
         page: "login_page",
-        category: "auth",
-        severityLevel: "info",
-        action: "User clicked `Next` CTA button on login form.",
-        notes: "User logged in or create account.",
+        category: "App",
+        severityLevel: 1,
+        action: "login",
+        notes: "User logged in or create account using email and password.",
       ),
     );
   }
@@ -51,10 +52,9 @@ class LogService {
     write(
       Log(
         page: "forgot_password_page",
-        category: "auth",
-        severityLevel: "info",
-        action:
-            "User clicked `Forgot Password` CTA button on forgot password page.",
+        category: "App",
+        severityLevel: 1,
+        action: "forgot_password",
         notes: "User requested forgot password.",
       ),
     );
@@ -64,9 +64,9 @@ class LogService {
     write(
       Log(
         page: "profile_page",
-        category: "auth",
-        severityLevel: "info",
-        action: "User clicked `Delete Account` CTA button on profile page.",
+        category: "App",
+        severityLevel: 1,
+        action: "delete_account",
         notes: "User deleted account.",
       ),
     );
@@ -76,9 +76,9 @@ class LogService {
     write(
       Log(
         page: "login_page",
-        category: "auth",
-        severityLevel: "info",
-        action: "User clicked `Google SSO` CTA button on login form.",
+        category: "App",
+        severityLevel: 1,
+        action: "login",
         notes: "User logged in or create account using Google SSO.",
       ),
     );
@@ -88,9 +88,9 @@ class LogService {
     write(
       Log(
         page: "login_page",
-        category: "auth",
-        severityLevel: "info",
-        action: "User clicked `Apple SSO` CTA button on login form.",
+        category: "App",
+        severityLevel: 1,
+        action: "login",
         notes: "User logged in or create account using Apple SSO.",
       ),
     );
@@ -100,8 +100,8 @@ class LogService {
     write(
       Log(
         page: "login_page | profile_page | otp_page",
-        category: "auth",
-        severityLevel: "info",
+        category: "App",
+        severityLevel: 1,
         action: "User clicked `Logout` CTA button on profile page.",
         notes: "User logged out of the app.",
       ),
@@ -113,8 +113,8 @@ class LogService {
     write(
       Log(
         page: "otp_page",
-        category: "auth",
-        severityLevel: "info",
+        category: "App",
+        severityLevel: 1,
         action:
             "After entering email and email is not verified, user redirected to OTP page",
         notes: "User requested OTP for email verification to verify email.",
@@ -126,8 +126,8 @@ class LogService {
     write(
       Log(
         page: "otp_page",
-        category: "auth",
-        severityLevel: "info",
+        category: "App",
+        severityLevel: 1,
         action: "User entered OTP and clicked `Verify` button.",
         notes: "User verified OTP for email verification.",
       ),
@@ -139,9 +139,9 @@ class LogService {
     write(
       Log(
         page: "profile_page",
-        category: "profile",
-        severityLevel: "info",
-        action: "User updated profile information.",
+        category: "App",
+        severityLevel: 1,
+        action: "updateProfile",
         notes: "User updated profile information.",
       ),
     );
@@ -151,12 +151,12 @@ class LogService {
   Future<void> emailCoffixCreditTransactions() async {
     write(
       Log(
-        page: "transactions_page",
-        category: "transactions",
-        severityLevel: "info",
-        action:
-            "User clicked `Email Transactions` Icon CTA button on transactions page.",
-        notes: "User emailed Coffix credit transactions.",
+        page: "profile_page",
+        category: "App",
+        severityLevel: 1,
+        action: "transactionEmail",
+        notes:
+            "User clicked the Email Transactions Icon CTA button to email Coffix credit transactions.",
       ),
     );
   }
@@ -165,11 +165,11 @@ class LogService {
     write(
       Log(
         page: "transactions_page",
-        category: "transactions",
-        severityLevel: "info",
-        action:
-            "User clicked `Email Transactions` Icon CTA button on transactions page.",
-        notes: "User emailed transaction: $transactionNumber.",
+        category: "App",
+        severityLevel: 1,
+        action: "transactionEmail",
+        notes:
+            "User clicked the Email Transactions Icon CTA button to email transaction: $transactionNumber.",
       ),
     );
   }
@@ -182,8 +182,8 @@ class LogService {
     write(
       Log(
         page: "gift_page",
-        category: "gift",
-        severityLevel: "info",
+        category: "App",
+        severityLevel: 5,
         action: "User clicked `Gift Coffix Credit` CTA button on gift page.",
         notes:
             "User gifted Coffix credit to $recipientEmail with amount: $amount.",
@@ -192,14 +192,14 @@ class LogService {
   }
 
   /// [STORES] --------------------------------------------
-  Future<void> updateStore() async {
+  Future<void> updateStore({required String storeName}) async {
     write(
       Log(
         page: "store_page",
-        category: "stores",
-        severityLevel: "info",
-        action: "User updated store information.",
-        notes: "User updated store information.",
+        category: "App",
+        severityLevel: 1,
+        action: "updateStore",
+        notes: "User updated store information into $storeName.",
       ),
     );
   }
@@ -209,10 +209,10 @@ class LogService {
     write(
       Log(
         page: "order_page",
-        category: "order",
-        severityLevel: "info",
-        action: "User click `ReOrder` CTA button on order page.",
-        notes: "User reordered an order.",
+        category: "App",
+        severityLevel: 1,
+        action: "reOrder",
+        notes: "User click the Reorder CTA button.",
       ),
     );
   }
@@ -222,9 +222,9 @@ class LogService {
     write(
       Log(
         page: "credit_page",
-        category: "coffix_credit",
-        severityLevel: "info",
-        action: "User clicked `Top Up` CTA button on credit page.",
+        category: "App",
+        severityLevel: 5,
+        action: "topUp",
         notes: "User topped up credit with amount: $amount.",
       ),
     );
@@ -235,8 +235,8 @@ class LogService {
     write(
       Log(
         page: "products_page",
-        category: "products",
-        severityLevel: "info",
+        category: "App",
+        severityLevel: 1,
         action: "User selected category: $category. from rows of categories",
         notes: "User selected category: $category.",
       ),
@@ -247,8 +247,8 @@ class LogService {
     write(
       Log(
         page: "products_page",
-        category: "products",
-        severityLevel: "info",
+        category: "App",
+        severityLevel: 1,
         action: "User viewed product: ${product.name}. from list of products",
         notes: "User viewed product: ${product.name}.",
       ),
@@ -262,8 +262,8 @@ class LogService {
     write(
       Log(
         page: "product_page",
-        category: "products",
-        severityLevel: "info",
+        category: "App",
+        severityLevel: 1,
         action: "User click `Add To Order` CTA button on product page.",
         notes:
             "User added product: ${product.name} to cart with quantity: $quantity.",
@@ -277,8 +277,8 @@ class LogService {
     write(
       Log(
         page: "customise_page",
-        category: "products",
-        severityLevel: "info",
+        category: "App",
+        severityLevel: 1,
         action: "User click `Update` CTA button on  customise product page.",
         notes:
             "User customised product with selected modifiers: $selectedModifiers.",
@@ -290,8 +290,8 @@ class LogService {
     write(
       Log(
         page: "cart_page",
-        category: "products",
-        severityLevel: "info",
+        category: "App",
+        severityLevel: 1,
         action: "User click `X` CTA button on cart page.",
         notes: "User removed product: ${product.name} from cart.",
       ),
@@ -302,10 +302,10 @@ class LogService {
     write(
       Log(
         page: "cart_page",
-        category: "products",
-        severityLevel: "info",
-        action: "User click `Save Draft` CTA button on cart page.",
-        notes: "User saved draft of cart.",
+        category: "App",
+        severityLevel: 1,
+        action: "draft",
+        notes: "User saved the current cart as a draft.",
       ),
     );
   }
@@ -315,8 +315,8 @@ class LogService {
     write(
       Log(
         page: "drafts_page",
-        category: "drafts",
-        severityLevel: "info",
+        category: "App",
+        severityLevel: 1,
         action: "User click `X` CTA button on drafts page.",
         notes: "User removed item from draft.",
       ),
@@ -324,50 +324,40 @@ class LogService {
   }
 
   /// [PAYMENT]
-  Future<void> selectPickupTime() async {
+  Future<void> createPaymentSession() async {
     write(
       Log(
-        page: "payment_page",
-        category: "payment",
-        severityLevel: "info",
-        action: "User selected pickup time from list of pickup times.",
-        notes: "User selected pickup time.",
+        page: "payment_options_page",
+        category: "App",
+        severityLevel: 5,
+        action: "payment",
+        notes:
+            "User click the Pay CTA button to create a payment session for ordering a product.",
       ),
     );
   }
 
-  Future<void> selectPaymentMethod() async {
+  Future<void> payUsingCoffixCredit() async {
     write(
       Log(
-        page: "payment_method_page",
-        category: "payment",
-        severityLevel: "info",
-        action: "User selected payment method from list of payment methods.",
-        notes: "User selected payment method.",
-      ),
-    );
-  }
-
-  Future<void> openPaymentSession() async {
-    write(
-      Log(
-        page: "payment_method_page",
-        category: "payment",
-        severityLevel: "info",
-        action: "User clicked `Pay` CTA button on payment method page.",
-        notes: "User opened payment session.",
+        page: "payment_options_page",
+        category: "App",
+        severityLevel: 5,
+        action: "payment",
+        notes: "User click the Pay CTA button to pay using Coffix Credit.",
       ),
     );
   }
 
   /// [NAVIGATION] --------------------------------------------
   Future<void> navigate({required String page}) async {
+    if (page.isEmpty) return;
     write(
       Log(
         page: "${page}_page",
-        category: "navigation",
-        severityLevel: "info",
-        action: "User navigated to $page page.",
+        category: "App",
+        severityLevel: 1,
+        action: "navigation",
         notes: "User navigated to $page page.",
       ),
     );
@@ -379,8 +369,8 @@ class LogService {
     write(
       Log(
         page: "login_page",
-        category: "auth",
-        severityLevel: "error",
+        category: "AppError",
+        severityLevel: 3,
         action: action,
         notes: "User encountered an error while $action.",
       ),
@@ -391,8 +381,8 @@ class LogService {
     write(
       Log(
         page: "otp_page",
-        category: "auth",
-        severityLevel: "error",
+        category: "AppError",
+        severityLevel: 3,
         action: "User entered invalid OTP and clicked `Verify` button.",
         notes: "User entered invalid OTP for email verification.",
       ),
@@ -403,8 +393,8 @@ class LogService {
     write(
       Log(
         page: "otp_page",
-        category: "auth",
-        severityLevel: "error",
+        category: "AppError",
+        severityLevel: 3,
         action: "User entered expired OTP and clicked `Verify` button.",
         notes: "User entered expired OTP for email verification.",
       ),

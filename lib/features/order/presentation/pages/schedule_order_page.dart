@@ -113,7 +113,6 @@ class _ScheduleOrderViewState extends State<ScheduleOrderView> {
                       padding: const EdgeInsets.only(bottom: AppSizes.sm),
                       child: AppClickable(
                         onPressed: () {
-                          LogService().selectPickupTime();
                           setState(() => _selected = option);
                         },
                         borderRadius: BorderRadius.circular(AppSizes.md),

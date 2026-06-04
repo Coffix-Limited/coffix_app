@@ -10,10 +10,11 @@ export interface Log {
 
   /**
    * 1 - low level: login, forgot password, etc.
-   * 3 or 5 - mid level: errors, payment decline, etc.
+   * 3 - errors
+   * 5 - mid level: payment, transaction, etc.
    * 9 - high level: financial transactions, kept long term
    */
-  severityLevel?: string;
+  severityLevel?: number;
 
   /**
    * Used for admin controlling staff, not customers in web app

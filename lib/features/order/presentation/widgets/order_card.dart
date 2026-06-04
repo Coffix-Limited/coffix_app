@@ -28,7 +28,6 @@ class OrderCard extends StatelessWidget {
   final Order order;
 
   void _reorder(BuildContext context, {required Order order}) {
-    LogService().reOrder();
     final productCubit = context.read<ProductCubit>();
     final products = productCubit.allProducts;
 
@@ -140,6 +139,7 @@ class OrderCard extends StatelessWidget {
       return;
     }
 
+    LogService().reOrder();
     context.goNamed(CartPage.route);
   }
 

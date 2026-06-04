@@ -48,7 +48,6 @@ class _LoginViewState extends State<LoginView> {
 
   void _onLogin() {
     if (_formKey.currentState?.saveAndValidate() ?? false) {
-      LogService().checkAccount();
       context.read<AuthCubit>().signInWithEmailAndPassword(
         email: _formKey.currentState!.value['email'] as String,
         password: _formKey.currentState!.value['password'] as String,

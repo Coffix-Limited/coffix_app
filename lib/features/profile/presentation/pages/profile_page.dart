@@ -197,6 +197,7 @@ class _ProfileViewState extends State<ProfileView> {
                         : AppClickable(
                             onPressed: () async {
                               try {
+                                LogService().emailCoffixCreditTransactions();
                                 setState(() {
                                   sendingTransactionEmail = true;
                                 });

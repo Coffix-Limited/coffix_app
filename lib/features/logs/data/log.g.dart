@@ -11,7 +11,7 @@ Log _$LogFromJson(Map<String, dynamic> json) => Log(
   page: json['page'] as String?,
   customerId: json['customerId'] as String?,
   category: json['category'] as String?,
-  severityLevel: json['severityLevel'] as String?,
+  severityLevel: (json['severityLevel'] as num?)?.toInt(),
   userId: json['userId'] as String?,
   action: json['action'] as String?,
   notes: json['notes'] as String?,

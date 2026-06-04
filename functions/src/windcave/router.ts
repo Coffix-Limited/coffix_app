@@ -17,9 +17,10 @@ import { paymentLimiter } from "../middleware/rateLimiter";
 import { formatNzTime, scheduledAtNZ } from "../utils/nz_time";
 import { buildAndSendOrderInvoice } from "../order/router";
 import { EmailService } from "../email/service";
-
+import { LogService } from "../log/service";
 const router = express.Router();
 
+const logService = new LogService();
 router.post(
   "/session",
   requirePost,
@@ -168,6 +169,11 @@ router.post(
           scheduledAt,
         };
 
+        await logService.createTopUpPaymentSessionSuccess(
+          customerId,
+          totalAmount,
+        );
+
         return response.status(200).json({
           success: true,
           data: {
@@ -201,6 +207,11 @@ router.post(
         storeId: validation.data.storeId,
       });
 
+      await logService.createOrderPaymentSessionSuccess(
+        customerId,
+        totalAmount,
+      );
+
       return response.status(200).json({
         success: true,
         data: {
@@ -210,6 +221,7 @@ router.post(
         },
       });
     } catch (error) {
+      await logService.createPaymentSessionFailed(customerId);
       if (error instanceof InsufficientCreditError) {
         return response.status(400).json({
           success: false,

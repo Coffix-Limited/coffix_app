@@ -1,5 +1,6 @@
 import 'package:coffix_app/core/constants/colors.dart';
 import 'package:coffix_app/core/constants/sizes.dart';
+import 'package:coffix_app/core/services/log_service.dart';
 import 'package:coffix_app/core/theme/typography.dart';
 import 'package:coffix_app/features/auth/logic/auth_cubit.dart';
 import 'package:coffix_app/features/auth/logic/otp_cubit.dart';
@@ -49,15 +50,9 @@ class _EmailVerificationFormState extends State<EmailVerificationForm> {
     return BlocConsumer<OtpCubit, OtpState>(
       listenWhen: (previous, current) => previous != current,
       listener: (context, state) {
-        // state.whenOrNull(
-        //   otpSent: (email) => AppNotification.show(
-        //     context,
-        //     'OTP sent to $email. Please check your email.',
-        //   ),
-        //   error: (message) => AppNotification.error(context, message),
-        //   verified: () =>
-        //       context.goNamed(PersonalInfoPage.route, extra: {"canBack": true}),
-        // );
+        state.whenOrNull(
+          error: (message) => AppNotification.error(context, message),
+        );
       },
       builder: (context, state) {
         return Padding(
@@ -135,6 +130,7 @@ class _EmailVerificationFormState extends State<EmailVerificationForm> {
                                 setState(() {
                                   _pin = '';
                                 });
+                                LogService().getOTP();
                                 await context
                                     .read<OtpCubit>()
                                     .sendEmailVerification();

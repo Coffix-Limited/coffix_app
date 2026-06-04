@@ -1,6 +1,7 @@
 import 'package:coffix_app/core/constants/colors.dart';
 import 'package:coffix_app/core/constants/images.dart';
 import 'package:coffix_app/core/constants/sizes.dart';
+import 'package:coffix_app/core/services/log_service.dart';
 import 'package:coffix_app/core/theme/typography.dart';
 import 'package:coffix_app/features/auth/logic/auth_cubit.dart';
 import 'package:coffix_app/features/cart/logic/cart_cubit.dart';
@@ -33,7 +34,8 @@ class StoreList extends StatelessWidget {
           user.user.finishedOnboarding == true,
       orElse: () => false,
     );
-    void updateStore(String storeId) async {
+
+    void updateStore(String storeId, String storeName) async {
       try {
         // Reconcile the cart against the new store before switching: drop
         // items not available there, keep + re-stamp the rest.
@@ -46,6 +48,7 @@ class StoreList extends StatelessWidget {
           catalog: catalog,
         );
 
+        LogService().updateStore(storeName: storeName);
         await context.read<StoreCubit>().updatePreferredStore(storeId: storeId);
         if (context.mounted) {
           context.goNamed(HomePage.route);
@@ -143,7 +146,7 @@ class StoreList extends StatelessWidget {
                       message: "Please sign in to continue",
                     );
                   } else if (isOpen) {
-                    updateStore(store.docId);
+                    updateStore(store.docId, store.name ?? "");
                   }
                 },
                 child: Row(

@@ -14,6 +14,7 @@ import { renderTemplate } from "../utils/renderEmailTemplate";
 import { wrapInEmailShell } from "../utils/emailShell";
 import { nowNZ } from "../utils/nz_time";
 import { EmailService } from "../email/service";
+import { LogService } from "../log/service";
 
 export const otpRouter = express.Router();
 otpRouter.use(express.json());
@@ -24,6 +25,8 @@ function generateOtp6(): string {
     .toString()
     .padStart(6, "0");
 }
+
+const logService = new LogService();
 
 otpRouter.post(
   "/send",
@@ -98,6 +101,8 @@ otpRouter.post(
         userId: uid,
         otp: otpCode,
       });
+
+      await logService.otp(uid, email, otpCode);
 
       return response.status(200).json({
         success: true,
@@ -198,12 +203,15 @@ otpRouter.post(
         console.error("Error activating referral:", err);
       });
 
+      await logService.verifyOtpSuccess(uid, email);
+
       return response.status(200).json({
         success: true,
         message: "OTP verified",
       });
     } catch (e) {
       console.log(e);
+      await logService.verifyOtpFailed(uid);
       return response.status(500).json({
         success: false,
         message: "Internal server error",

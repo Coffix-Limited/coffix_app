@@ -19,6 +19,7 @@ import { getPaymentMethod } from "../order/service";
 import { wrapInEmailShell } from "../utils/emailShell";
 import { topupEmailTemplate } from "../utils/templates/topup_email_template";
 import admin from "firebase-admin";
+import { LogService } from "../log/service";
 
 function toDate(value: unknown): Date {
   if (value instanceof Date) return value;
@@ -39,6 +40,7 @@ export class WebhookService {
   private readonly notificationService: NotificationService;
   private readonly referralService: ReferralService;
   private readonly emailService: EmailService;
+  private readonly logService: LogService;
 
   constructor() {
     this.windcaveService = new WindcaveService();
@@ -48,6 +50,7 @@ export class WebhookService {
     this.notificationService = new NotificationService();
     this.referralService = new ReferralService();
     this.emailService = new EmailService();
+    this.logService = new LogService();
   }
 
   private async sendTopupEmail(
@@ -80,7 +83,8 @@ export class WebhookService {
         ? `Credit Card ${cardNumber.slice(-4)}`
         : "Credit Card";
       const storeInvoiceText = (transaction.storeInvoiceText as string) ?? "";
-      const totalAmountWithBonus = (transaction.totalAmount as number) ?? amount;
+      const totalAmountWithBonus =
+        (transaction.totalAmount as number) ?? amount;
       const bonusAmount = totalAmountWithBonus - amount;
       invoiceHtml = topupEmailTemplate
         .replace("{{invoiceText}}", storeInvoiceText)
@@ -92,7 +96,10 @@ export class WebhookService {
         .replace("{{paymentMethod}}", paymentMethod)
         .replace("{{createdAt}}", createdAt)
         .replace("{{bonusAmount}}", `$${bonusAmount.toFixed(2)}`)
-        .replace("{{totalCoffixCredit}}", `$${totalAmountWithBonus.toFixed(2)}`);
+        .replace(
+          "{{totalCoffixCredit}}",
+          `$${totalAmountWithBonus.toFixed(2)}`,
+        );
     } else {
       const amount = transaction.amount as number;
       invoiceHtml = wrapInEmailShell(
@@ -333,6 +340,7 @@ export class WebhookService {
             Date.now() + (orderDoc?.duration ?? 0) * 60_000,
           ),
         });
+
         await this.firebaseService.updateTransaction(transactionDoc.docId, {
           status: "approved",
           updatedAt: new Date(),
@@ -344,6 +352,7 @@ export class WebhookService {
           orderNumber: orderDoc?.orderNumber,
           card,
         });
+        this.logService.createTransactionSuccess(customerId ?? "", amount);
 
         const formattedPaymentMethod = getPaymentMethod(
           paymentMethod,
@@ -398,8 +407,14 @@ export class WebhookService {
             );
           })
           .catch((err) => logger.error("Invoice email failed:", err));
+
+        this.logService.createOrderPaymentSessionSuccess(
+          customerId ?? "",
+          amount,
+        );
         return;
       } else {
+        this.logService.handleOrderPaymentFailed(customerId ?? "", amount);
         await this.firebaseService.updateTransaction(transactionDoc.docId, {
           status: "declined",
           updatedAt: new Date(),
@@ -462,6 +477,8 @@ export class WebhookService {
         card,
       });
 
+      this.logService.handleTopUpPaymentSuccess(customerId ?? "", amount);
+
       this.notificationService
         .sendNotification({
           customerId,
@@ -495,6 +512,7 @@ export class WebhookService {
           message: "Your top-up has been failed",
         })
         .catch((err) => logger.error("Notification failed:", err));
+      this.logService.handleTopUpPaymentFailed(customerId ?? "", amount);
       this.sendTopupEmail(
         customerId,
         transactionDoc.transactionNumber,

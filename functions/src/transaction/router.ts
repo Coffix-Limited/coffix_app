@@ -275,7 +275,7 @@ router.post(
       await logService.log({
         customerId,
         category: "refund",
-        severityLevel: "info",
+        severityLevel: 3,
         action: "Refund processed",
         notes: `Refunded ${amount} for transaction ${transactionNumber}`,
       });

@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:coffix_app/core/constants/colors.dart';
 import 'package:coffix_app/core/constants/images.dart';
 import 'package:coffix_app/core/constants/sizes.dart';
+import 'package:coffix_app/core/services/log_service.dart';
 import 'package:coffix_app/core/theme/typography.dart';
 import 'package:coffix_app/features/auth/logic/auth_cubit.dart';
 import 'package:coffix_app/presentation/atoms/app_button.dart';
@@ -27,6 +28,7 @@ class _LoginFormState extends State<LoginForm> {
     if (widget.formKey.currentState?.saveAndValidate() ?? false) {
       final fields = widget.formKey.currentState!.value;
       widget.formKey.currentState?.reset();
+      LogService().checkAccount();
       await context.read<AuthCubit>().createOrLoginAccount(
         email: fields['email'] as String,
         password: fields['password'] as String,
@@ -134,6 +136,7 @@ class _LoginFormState extends State<LoginForm> {
                       AppIconButton.withSvgPath(
                         AppImages.google,
                         onPressed: () {
+                          LogService().loginGoogleSSO();
                           context.read<AuthCubit>().signInWithGoogle();
                         },
                         backgroundColor: Colors.white,
