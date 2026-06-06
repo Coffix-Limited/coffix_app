@@ -205,7 +205,7 @@ class _CreditViewState extends State<CreditView> {
                           const SizedBox(height: AppSizes.lg),
                           TierCard(
                             amount: double.parse(
-                              global?.minTopUp?.toString() ?? '0',
+                              global?.topupLevel1?.toString() ?? '0',
                             ),
                             percent: '${global?.basicDiscount?.toInt()}%',
                           ),

@@ -66,14 +66,14 @@ export class CoffixCreditService {
     }
 
     let bonus: number;
-    if (amount < topupLevel1) {
-      bonus = amount;
-    } else if (amount < topupLevel2) {
-      bonus = amount * basicDiscount;
-    } else if (amount < topupLevel3) {
-      bonus = amount * discountLevel2;
-    } else {
+    if (amount >= topupLevel3) {
       bonus = amount * discountLevel3;
+    } else if (amount >= topupLevel2) {
+      bonus = amount * discountLevel2;
+    } else if (amount >= topupLevel1) {
+      bonus = amount * basicDiscount;
+    } else {
+      bonus = 0;
     }
     const totalAmount = amount + bonus;
 
