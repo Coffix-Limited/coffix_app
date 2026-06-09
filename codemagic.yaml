@@ -20,6 +20,7 @@ workflows:
       - name: Set up .env files
         script: |
           echo "API_BASE_URL=$API_BASE_URL" > "$CM_BUILD_DIR/.env.dev"
+          echo "API_BASE_URL=$API_BASE_URL" > "$CM_BUILD_DIR/.env"
       - name: Get Flutter packages
         script: |
           flutter pub get
