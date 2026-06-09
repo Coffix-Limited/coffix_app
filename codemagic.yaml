@@ -7,6 +7,8 @@ workflows:
       flutter: stable
       android_signing:
         - Coffix Keystore
+      groups:
+        - android
     scripts:
       - name: Set up local.properties
         script: |
@@ -17,9 +19,9 @@ workflows:
       - name: Get Flutter packages
         script: |
           flutter pub get
-      - name: Build AAB with Flutter
-        script: |
-          flutter build appbundle --flavor dev --target=lib/main_dev.dart
+      # - name: Build AAB with Flutter
+      #   script: |
+      #     flutter build appbundle --flavor dev --target=lib/main_dev.dart
       - name: Build universal apk
         script: |
           android-app-bundle build-universal=apk \
@@ -32,6 +34,22 @@ workflows:
       - build/**/outputs/**/*.aab
       - build/**/outputs/**/mapping.txt
       - flutter_drive.log
+    publishing:
+      firebase:
+        # use this line to authenticate via service account
+        firebase_service_account: $FIREBASE_SERVICE_ACCOUNT_DEV
+
+        android:
+          app_id: 1:659645318299:android:2f3c3d6e9b16841911323e
+
+          # groups:
+          # - internal
+      email:
+        recipients:
+          - pajunar0@gmail.com
+        notify:
+          success: true
+          failure: true
 
   ios-worklow-id:
     name: IOS Workflow
