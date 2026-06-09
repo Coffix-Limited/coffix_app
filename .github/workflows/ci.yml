@@ -1,23 +1,23 @@
 name: CI
 
 on:
-  push:
-    branches:
-      - main
-      - dev
-    paths:
-      - "lib/**"
-      - "test/**"
-      - "android/**"
-      - "ios/**"
-      - "assets/**"
-      - "pubspec.yaml"
-      - "pubspec.lock"
-      - "analysis_options.yaml"
-      - ".env"
-      - ".env.dev"
-      - ".github/workflows/ci.yml"
-      - "functions/**"
+  # push:
+  #   branches:
+  #     - main
+  #     - dev
+  #   paths:
+  #     - "lib/**"
+  #     - "test/**"
+  #     - "android/**"
+  #     - "ios/**"
+  #     - "assets/**"
+  #     - "pubspec.yaml"
+  #     - "pubspec.lock"
+  #     - "analysis_options.yaml"
+  #     - ".env"
+  #     - ".env.dev"
+  #     - ".github/workflows/ci.yml"
+  #     - "functions/**"
   pull_request:
     branches:
       - main
@@ -48,7 +48,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
- 
+
       - uses: subosito/flutter-action@v2
         with:
           channel: stable

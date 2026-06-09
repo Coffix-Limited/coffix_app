@@ -1,0 +1,7 @@
+workflows:
+  android-workflow-id:
+    name: Android Workflow
+    max_build_duration: 120
+    instance_type: mac_mini_m2
+  ios-worklow-id:
+    name: IOS Workflow
