@@ -3,5 +3,32 @@ workflows:
     name: Android Workflow
     max_build_duration: 120
     instance_type: mac_mini_m2
+    environment:
+      flutter: stable
+      android_signing:
+        - Coffix Keystore
+    scripts:
+      - name: Set up local.properties
+        script: |
+          echo "flutter.sdk=$HOME/programs/flutter" > "$CM_BUILD_DIR/android/local.properties"
+      - name: Get Flutter packages
+        script: |
+          flutter pub get
+      - name: Build AAB with Flutter
+        script: |
+          flutter build appbundle --flavor dev --target=lib/main_dev.dart
+      - name: Build universal apk
+        script: |
+          android-app-bundle build-universal=apk \
+            --bundle 'project_directory/build/**/outputs/**/*.aab' \
+            --ks /tmp/keystore.keystore \
+            --ks-pass $CM_KEYSTORE_PASSWORD \
+            --key-alias $CM_KEYSTORE_ALIAS \
+            --key-pass $CM_KEYSTORE_PASSWORD
+    artifacts:
+      - build/**/outputs/**/*.aab
+      - build/**/outputs/**/mapping.txt
+      - flutter_drive.log
+
   ios-worklow-id:
     name: IOS Workflow

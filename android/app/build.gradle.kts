@@ -22,6 +22,7 @@ if (keystorePropertiesFile.exists()) {
 }
 
 android {
+    val appVersionCode = (System.getenv()["NEW_BUILD_NUMBER"] ?: "1").toInt()
     namespace = "com.example.coffix_app"
     compileSdk = 36
     ndkVersion = flutter.ndkVersion
@@ -36,17 +37,25 @@ android {
         applicationId = "com.coffix.app"
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
-        versionCode = flutter.versionCode
+        versionCode = appVersionCode
         versionName = flutter.versionName
     }
 
     signingConfigs {
         create("release") {
-            keyAlias = keystoreProperties["keyAlias"] as? String
-            keyPassword = keystoreProperties["keyPassword"] as? String
-            val storeFilePath = keystoreProperties["storeFile"] as? String
-            storeFile = if (storeFilePath != null) file(storeFilePath) else null
-            storePassword = keystoreProperties["storePassword"] as? String
+            if (System.getenv()["CI"].toBoolean()) { // CI=true is exported by Codemagic
+                storeFile = file(System.getenv())["CM_KEYSTORE_PATH"]
+                storePassword = file(System.getenv())["CM_KEYSTORE_PASSWORD"]
+                keyAlias = file(System.getenv())["CM_KEYSTORE_ALIAS"]
+                keyPassword = file(System.getenv())["CM_KEYSTORE_PASSWORD"]
+            } else {
+                keyAlias = keystoreProperties["keyAlias"] as? String
+                keyPassword = keystoreProperties["keyPassword"] as? String
+                val storeFilePath = keystoreProperties["storeFile"] as? String
+                storeFile = if (storeFilePath != null) file(storeFilePath) else null
+                storePassword = keystoreProperties["storePassword"] as? String
+            }
+            
         }
     }
 
