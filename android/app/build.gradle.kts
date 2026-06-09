@@ -44,10 +44,10 @@ android {
     signingConfigs {
         create("release") {
             if (System.getenv()["CI"].toBoolean()) { // CI=true is exported by Codemagic
-                storeFile = file(System.getenv())["CM_KEYSTORE_PATH"]
-                storePassword = file(System.getenv())["CM_KEYSTORE_PASSWORD"]
-                keyAlias = file(System.getenv())["CM_KEYSTORE_ALIAS"]
-                keyPassword = file(System.getenv())["CM_KEYSTORE_PASSWORD"]
+                storeFile = System.getenv("CM_KEYSTORE_PATH")?.let { file(it) }
+                storePassword = System.getenv("CM_KEYSTORE_PASSWORD")
+                keyAlias = System.getenv("CM_KEYSTORE_ALIAS")
+                keyPassword = System.getenv("CM_KEYSTORE_PASSWORD")
             } else {
                 keyAlias = keystoreProperties["keyAlias"] as? String
                 keyPassword = keystoreProperties["keyPassword"] as? String
