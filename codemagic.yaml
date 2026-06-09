@@ -1,6 +1,6 @@
 workflows:
-  android-workflow-id:
-    name: Android Workflow
+  android-dev-workflow-id:
+    name: Android Dev Workflow
     max_build_duration: 120
     instance_type: mac_mini_m2
     environment:
@@ -11,6 +11,9 @@ workflows:
       - name: Set up local.properties
         script: |
           echo "flutter.sdk=$HOME/programs/flutter" > "$CM_BUILD_DIR/android/local.properties"
+      - name: Set up google-services.json
+        script: |
+          echo "$GOOGLE_SERVICES_JSON_DEV" | base64 --decode > "$CM_BUILD_DIR/android/app/src/dev/google-services.json"
       - name: Get Flutter packages
         script: |
           flutter pub get
