@@ -46,8 +46,8 @@ android {
             if (System.getenv()["CI"].toBoolean()) { // CI=true is exported by Codemagic
                 storeFile = System.getenv("CM_KEYSTORE_PATH")?.let { file(it) }
                 storePassword = System.getenv("CM_KEYSTORE_PASSWORD")
-                keyAlias = System.getenv("CM_KEYSTORE_ALIAS")
-                keyPassword = System.getenv("CM_KEYSTORE_PASSWORD")
+                keyAlias = System.getenv("CM_KEY_ALIAS")
+                keyPassword = System.getenv("CM_KEY_PASSWORD")
             } else {
                 keyAlias = keystoreProperties["keyAlias"] as? String
                 keyPassword = keystoreProperties["keyPassword"] as? String
