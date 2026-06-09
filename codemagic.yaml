@@ -9,6 +9,7 @@ workflows:
         - Coffix Keystore
       groups:
         - Android
+        - Environment Dev
     scripts:
       - name: Set up local.properties
         script: |
@@ -16,6 +17,9 @@ workflows:
       - name: Set up google-services.json
         script: |
           echo "$GOOGLE_SERVICES_JSON_DEV" | base64 --decode > "$CM_BUILD_DIR/android/app/src/dev/google-services.json"
+      - name: Set up .env files
+        script: |
+          echo "API_BASE_URL=$API_BASE_URL" > "$CM_BUILD_DIR/.env.dev"
       - name: Get Flutter packages
         script: |
           flutter pub get
