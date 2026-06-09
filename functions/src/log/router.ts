@@ -13,7 +13,6 @@ router.post(
   requirePost,
   async (request: Request, response: Response) => {
     const validation = createLogSchema.safeParse(request.body);
-    logger.info(validation.data);
     if (!validation.success) {
       const errors = validation.error.issues
         .map((i) => `${i.path.join(".")}: ${i.message}`)
@@ -21,16 +20,14 @@ router.post(
       return response.status(400).json({ success: false, errors });
     }
 
-    try {
-      await logService.log(validation.data);
-
-      return response.status(200).json({ success: true });
-    } catch (e) {
+    // Fire-and-forget: respond immediately and write to Firestore in the
+    // background. Logging is high-volume and non-critical, so we don't hold the
+    // instance (or block the caller) waiting on the write. Failures are logged.
+    logService.log(validation.data).catch((e) => {
       logger.error("[log/create] error:", e);
-      return response
-        .status(500)
-        .json({ success: false, message: "Internal server error" });
-    }
+    });
+
+    return response.status(200).json({ success: true });
   },
 );
 
