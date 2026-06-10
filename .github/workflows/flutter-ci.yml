@@ -71,6 +71,6 @@ jobs:
         uses: emertozd/Firebase-Distribution-Github-Action@v2
         with:
           appId: ${{ secrets.FIREBASE_APP_ID_ANDROID_DEV}}
-          serviceCredentialsFile: ${{ secrets.FIREBASE_APP_DISTRIBUTION_CREDENTIAL_FILE_CONTENT }}
+          serviceCredentialsFileContent: ${{ secrets.FIREBASE_APP_DISTRIBUTION_CREDENTIAL_FILE_CONTENT }}
           groups: internal-testers
           file: build/app/outputs/flutter-apk/app-dev-release.apk
