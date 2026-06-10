@@ -43,19 +43,11 @@ android {
 
     signingConfigs {
         create("release") {
-            if (System.getenv()["CI"].toBoolean()) { // CI=true is exported by Codemagic
-                storeFile = System.getenv("CM_KEYSTORE_PATH")?.let { file(it) }
-                storePassword = System.getenv("CM_KEYSTORE_PASSWORD")
-                keyAlias = System.getenv("CM_KEY_ALIAS")
-                keyPassword = System.getenv("CM_KEY_PASSWORD")
-            } else {
-                keyAlias = keystoreProperties["keyAlias"] as? String
-                keyPassword = keystoreProperties["keyPassword"] as? String
-                val storeFilePath = keystoreProperties["storeFile"] as? String
-                storeFile = if (storeFilePath != null) file(storeFilePath) else null
-                storePassword = keystoreProperties["storePassword"] as? String
-            }
-            
+            keyAlias = keystoreProperties["keyAlias"] as? String
+            keyPassword = keystoreProperties["keyPassword"] as? String
+            val storeFilePath = keystoreProperties["storeFile"] as? String
+            storeFile = if (storeFilePath != null) file(storeFilePath) else null
+            storePassword = keystoreProperties["storePassword"] as? String
         }
     }
 
