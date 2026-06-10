@@ -48,6 +48,18 @@ jobs:
         run: |
           echo "API_BASE_URL=${{ secrets.API_BASE_URL }}" > .env.dev
           echo "API_BASE_URL=${{ secrets.API_BASE_URL }}" > .env
+
+      - name: Create Android signing files
+        run: |
+          printf '%s' "${{ secrets.ANDROID_KEYSTORE }}" | base64 --decode > android/app/upload-keystore.jks
+
+          cat > android/key.properties <<EOF
+          storeFile=upload-keystore.jks
+          storePassword=${{ secrets.ANDROID_KEYSTORE_PASSWORD}}
+          keyAlias=${{ secrets.ANDROID_KEY_ALIAS}}
+          keyPassword=${{ secrets.ANDROID_KEY_PASSWORD}}
+          EOF
+
       - name: Create google-services.json
         run: |
           mkdir -p android/app/src/dev
