@@ -50,7 +50,7 @@ jobs:
       - name: Create google-services.json
         run: |
           mkdir -p android/app/src/dev
-          echo "${{ secrets.GOOGLE_SERVICES_JSON_DEV }}" | base64 --decode > android/app/src/dev/google-services.json
+          printf '%s' "${{ secrets.GOOGLE_SERVICES_JSON_DEV }}" | base64 --decode > android/app/src/dev/google-services.json
       - run: flutter clean
       - run: flutter pub get
       - run: flutter build apk --flavor dev --target=lib/main_dev.dart
