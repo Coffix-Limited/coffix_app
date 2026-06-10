@@ -67,6 +67,15 @@ jobs:
       - run: flutter clean
       - run: flutter pub get
       - run: flutter build apk --flavor dev --target=lib/main_dev.dart
+
+      - name: Create release notes
+        run: |
+          VERSION=$(grep '^version:' pubspec.yaml | awk '{print $2}')
+
+
+          cat > release-notes.txt <<EOF
+          Coffix Dev Release v$VERSION
+
       - name: Upload artifact to Firebase App Distribution
         uses: emertozd/Firebase-Distribution-Github-Action@v2
         with:
