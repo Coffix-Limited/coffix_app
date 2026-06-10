@@ -21,7 +21,7 @@ jobs:
         with:
           channel: "stable"
           cache: true
-      - name: Create .env file
+      - name: Create .env files
         run: |
           echo "API_BASE_URL=${{ secrets.API_BASE_URL }}" > .env.dev
           echo "API_BASE_URL=${{ secrets.API_BASE_URL }}" > .env
@@ -43,10 +43,14 @@ jobs:
         with:
           channel: "stable"
           cache: true
-      - name: Create .env file
+      - name: Create .env files
         run: |
           echo "API_BASE_URL=${{ secrets.API_BASE_URL }}" > .env.dev
           echo "API_BASE_URL=${{ secrets.API_BASE_URL }}" > .env
+      - name: Create google-services.json
+        run: |
+          mkdir -p android/app/src/dev
+          echo "${{ secrets.GOOGLE_SERVICES_JSON_DEV }}" | base64 --decode > android/app/src/dev/google-services.json
       - run: flutter clean
       - run: flutter pub get
       - run: flutter build apk --flavor dev --target=lib/main_dev.dart
