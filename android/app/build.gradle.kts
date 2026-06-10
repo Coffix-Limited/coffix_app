@@ -22,7 +22,6 @@ if (keystorePropertiesFile.exists()) {
 }
 
 android {
-    val appVersionCode = (System.getenv()["NEW_BUILD_NUMBER"] ?: flutter.versionCode).toInt()
     namespace = "com.example.coffix_app"
     compileSdk = 36
     ndkVersion = flutter.ndkVersion
@@ -37,7 +36,7 @@ android {
         applicationId = "com.coffix.app"
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
-        versionCode = appVersionCode
+        versionCode = flutter.versionCode
         versionName = flutter.versionName
     }
 
