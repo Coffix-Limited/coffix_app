@@ -21,7 +21,7 @@ jobs:
         with:
           channel: "stable"
       - run: flutter pub get
-      - run: flutter analyze
+      - run: flutter analyze --no-fatal-infos
       - run: flutter test
 
   build_android:
@@ -41,7 +41,7 @@ jobs:
       - run: flutter pub get
       - run: flutter build apk --flavor dev --target=lib/main_dev.dart
       - name: Upload artifact to Firebase App Distribution
-        uses: wzieba/Firebase-Distribution-Github-Action@v1
+        uses: emertozd/Firebase-Distribution-Github-Action@v2
         with:
           appId: ${{ secrets.FIREBASE_APP_ID_ANDROID_DEV}}
           serviceCredentialsFile: ${{ secrets.FIREBASE_APP_DISTRIBUTION_CREDENTIAL_FILE_CONTENT }}

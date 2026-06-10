@@ -1,26 +1,15 @@
 import 'dart:developer' as dev;
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:coffix_app/core/api/api_client.dart';
-import 'package:coffix_app/core/utils/time_utils.dart';
-import 'package:coffix_app/domain/firestore_service.dart';
 import 'package:coffix_app/features/logs/data/log.dart';
 import 'package:coffix_app/features/products/data/model/product.dart';
 import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:package_info_plus/package_info_plus.dart';
 
 class LogService extends ApiClient {
   LogService() : super(dio: Dio());
-  final FirebaseFirestore _firestore = FirestoreService.instance;
-  String? _appVersion;
 
-  Future<String> _getAppVersion() async {
-    _appVersion ??= await PackageInfo.fromPlatform().then(
-      (info) => '${info.version}+${info.buildNumber}',
-    );
-    return _appVersion!;
-  }
+   
 
   Future<void> write(Log log) async {
     try {

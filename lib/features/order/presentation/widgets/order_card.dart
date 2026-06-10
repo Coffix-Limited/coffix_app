@@ -76,8 +76,9 @@ class OrderCard extends StatelessWidget {
       final disabledStores = product.disabledStores;
       final availableStores = product.availableToStores;
       if (disabledStores != null && disabledStores.contains(storeId)) continue;
-      if (availableStores != null && !availableStores.contains(storeId))
+      if (availableStores != null && !availableStores.contains(storeId)) {
         continue;
+      }
 
       final selectedByGroup = item.selectedModifiers ?? {};
       final modifierMap = <String, Modifier>{

@@ -47,7 +47,7 @@ class ProfileTile extends StatelessWidget {
                 ],
               ),
             ),
-            if (trailingIcon != null) trailingIcon!,
+            ?trailingIcon,
           ],
         ),
       ),
