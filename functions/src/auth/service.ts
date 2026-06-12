@@ -18,6 +18,24 @@ export class AuthService {
     }
   }
 
+  /**
+   * Returns the list of sign-in provider IDs linked to the account for this
+   * email (e.g. ["password", "google.com"]). Empty array when no account
+   * exists. Lets the client distinguish an SSO-only account from a genuine
+   * password typo.
+   */
+  async getProvidersForEmail({ email }: { email: string }): Promise<string[]> {
+    try {
+      const user = await getAuth().getUserByEmail(email);
+      return user.providerData.map((p) => p.providerId);
+    } catch (error: any) {
+      if (error.code === "auth/user-not-found") {
+        return [];
+      }
+      throw error;
+    }
+  }
+
   async blackListCustomer({ email }: { email: string }) {
     const blacklistedEmails = await firestore
       .collection("blacklistedEmails")
@@ -30,7 +48,11 @@ export class AuthService {
     return blacklistedEmails.docs.some((doc) => doc.data().email === email);
   }
 
-  async generateResetToken({ email }: { email: string }): Promise<string | null> {
+  async generateResetToken({
+    email,
+  }: {
+    email: string;
+  }): Promise<string | null> {
     try {
       const user = await getAuth().getUserByEmail(email);
       const token = crypto.randomBytes(32).toString("hex");
@@ -54,7 +76,9 @@ export class AuthService {
     }
   }
 
-  async verifyResetToken(token: string): Promise<
+  async verifyResetToken(
+    token: string,
+  ): Promise<
     | { valid: true; uid: string; docId: string }
     | { valid: false; reason: "not_found" | "used" | "expired" }
   > {
@@ -98,7 +122,20 @@ export class AuthService {
       `${pad(now.getUTCSeconds())}`;
     const obfuscatedEmail = `${timestamp}-${originalEmail}`;
 
+    // Federated providers (e.g. google.com, apple.com) resolve a future SSO
+    // sign-in back to this uid. Unlink them so the next sign-in with the same
+    // provider creates a brand-new account, mirroring how a freed email lets a
+    // password account re-register. The "password" provider is kept so the
+    // disabled+obfuscated record stays intact for audit.
+    const providersToUnlink = user.providerData
+      .map((p) => p.providerId)
+      .filter((providerId) => providerId !== "password");
+
     await getAuth().updateUser(uid, { disabled: true, email: obfuscatedEmail });
+
+    if (providersToUnlink.length > 0) {
+      await getAuth().updateUser(uid, { providersToUnlink });
+    }
 
     await firestore
       .collection("customers")

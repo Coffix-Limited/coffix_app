@@ -14,6 +14,14 @@ abstract class AuthRepository {
   Future<void> signInWithGoogle();
   Future<void> signInWithFacebook();
   Future<void> signInWithApple();
+
+  /// Re-authenticates an existing email/password account and links the pending
+  /// SSO credential (captured during a failed [signInWithGoogle] /
+  /// [signInWithApple]) to it, so both providers share one Firebase UID.
+  Future<void> linkPendingCredentialWithPassword({
+    required String email,
+    required String password,
+  });
   Future<void> createUserDoc({required String docId, required String email});
   Future<bool> isUserDisabled({required UserCredential credential});
   Stream<AppUser?> getUser();
@@ -23,6 +31,10 @@ abstract class AuthRepository {
   Future<void> deleteAccount();
   Future<String> getFirebaseToken();
   Future<bool> customerHasAccount({required String email});
+
+  /// Returns the sign-in provider IDs linked to the account for [email]
+  /// (e.g. `['password', 'google.com']`). Empty when no account exists.
+  Future<List<String>> getProvidersForEmail({required String email});
   Future<String> sendPasswordResetEmail({required String email});
   Future<void> updateFcmToken();
   Future<void> updateUser({required String uid});

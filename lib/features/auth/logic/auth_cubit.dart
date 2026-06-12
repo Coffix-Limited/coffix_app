@@ -41,6 +41,17 @@ class AuthCubit extends Cubit<AuthState> {
     });
   }
 
+  /// Case 1 copy: the email is registered only via SSO. Routes the user to the
+  /// provider they actually signed up with.
+  String _ssoOnlyMessage(List<String> providers) {
+    if (providers.contains('apple.com')) {
+      return 'An account already exists with this email. Please continue '
+          'with Apple, then add a password in your account settings.';
+    }
+    return 'An account already exists with this email. Please continue '
+        'with Google, then add a password in your account settings.';
+  }
+
   AuthExceptions _handleAuthException(FirebaseAuthException e) {
     debugPrint('auth exception code: ${e.stackTrace}');
     return AuthExceptions(
@@ -100,6 +111,9 @@ class AuthCubit extends Cubit<AuthState> {
     } on UserCancelledSignIn {
       emit(AuthState.unauthenticated());
       return;
+    } on AccountExistsWithDifferentCredential catch (e) {
+      emit(AuthState.linkRequired(email: e.email, provider: e.provider));
+      return;
     } on GoogleSignInException catch (e) {
       emit(AuthState.error(message: e.code.name));
     } catch (e) {
@@ -111,6 +125,9 @@ class AuthCubit extends Cubit<AuthState> {
     emit(AuthState.loading());
     try {
       await _authRepository.signInWithApple();
+    } on AccountExistsWithDifferentCredential catch (e) {
+      emit(AuthState.linkRequired(email: e.email, provider: e.provider));
+      return;
     } on SignInWithAppleAuthorizationException catch (e) {
       if (e.code == AuthorizationErrorCode.canceled) {
         emit(AuthState.initial());
@@ -136,6 +153,26 @@ class AuthCubit extends Cubit<AuthState> {
     }
   }
 
+  /// Re-authenticates the existing email/password account and links the
+  /// pending SSO credential to it, then loads the (unchanged) user.
+  Future<void> linkAccountWithPassword({
+    required String email,
+    required String password,
+  }) async {
+    emit(AuthState.loading());
+    try {
+      await _authRepository.linkPendingCredentialWithPassword(
+        email: email,
+        password: password,
+      );
+      getUser();
+    } on FirebaseAuthException catch (e) {
+      emit(AuthState.error(message: _handleAuthException(e).message));
+    } catch (e) {
+      emit(AuthState.error(message: 'Something went wrong. Please try again.'));
+    }
+  }
+
   void updateLastLogin() async {
     await _authRepository.updateLastLogin();
   }
@@ -147,9 +184,6 @@ class AuthCubit extends Cubit<AuthState> {
     _userWithStoreSubscription = stream.listen(
       (AppUserWithStore? user) {
         emit(AuthState.authenticated(userWithStore: user!));
-        if (user.user.qrId == null || user.user.email == null) {
-          _authRepository.updateUser(uid: user.user.docId!);
-        }
       },
       onError: (error) {
         emit(AuthState.error(message: error.toString()));
@@ -185,7 +219,20 @@ class AuthCubit extends Cubit<AuthState> {
   }) async {
     emit(AuthState.loading());
     try {
-      final hasAccount = await _authRepository.customerHasAccount(email: email);
+      final providers = await _authRepository.getProvidersForEmail(
+        email: email,
+      );
+      final hasAccount = providers.isNotEmpty;
+      final hasPassword = providers.contains('password');
+
+      // Case 1: the email exists but only via SSO (no password provider).
+      // Don't attempt a password sign-in (it would fail) or a sign-up (it
+      // would create a duplicate). Instruct the user to continue with SSO.
+      if (hasAccount && !hasPassword) {
+        emit(AuthState.error(message: _ssoOnlyMessage(providers)));
+        return;
+      }
+
       if (hasAccount) {
         await _authRepository.signInWithEmailAndPassword(
           email: email,

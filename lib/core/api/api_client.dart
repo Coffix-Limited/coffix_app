@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:developer';
 
+import 'package:coffix_app/core/api/model/api_interceptors.dart';
 import 'package:coffix_app/core/api/model/endpoints.dart';
 import 'package:coffix_app/core/api/model/api_exceptions.dart';
 import 'package:coffix_app/core/api/model/api_response.dart';
@@ -24,7 +25,7 @@ abstract class ApiClient {
       connectTimeout: const Duration(seconds: 30),
       sendTimeout: const Duration(seconds: 30),
     );
-    // dio.interceptors.add(ApiInterceptors());
+    dio.interceptors.add(ApiInterceptors());
   }
 
   /// Cancel a specific request by its key

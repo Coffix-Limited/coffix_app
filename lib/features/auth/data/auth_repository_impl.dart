@@ -6,7 +6,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:coffix_app/core/api/api_client.dart';
 import 'package:coffix_app/core/api/model/endpoints.dart';
 import 'package:coffix_app/core/constants/constants.dart';
-import 'package:coffix_app/core/errors/auth_exceptions.dart';
+import 'package:coffix_app/core/errors/auth_exceptions.dart'
+    show UserCancelledSignIn, AccountExistsWithDifferentCredential;
 import 'package:coffix_app/core/utils/time_utils.dart';
 import 'package:coffix_app/data/repositories/auth_repository.dart';
 import 'package:coffix_app/domain/firestore_service.dart';
@@ -27,6 +28,12 @@ class AuthRepositoryImpl extends ApiClient implements AuthRepository {
   final GoogleSignIn _googleSignIn = GoogleSignIn.instance;
   final FirebaseFirestore _firestore = FirestoreService.instance;
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
+
+  /// Holds the SSO credential (Google/Apple) that could not be signed in
+  /// because the email already belongs to an existing email/password account.
+  /// It is consumed by [linkPendingCredentialWithPassword] after the user
+  /// re-authenticates with their password.
+  AuthCredential? _pendingCredential;
 
   AuthRepositoryImpl() : super(dio: Dio());
 
@@ -136,9 +143,13 @@ class AuthRepositoryImpl extends ApiClient implements AuthRepository {
       }
     } on FirebaseAuthException catch (e) {
       if (e.code == 'account-exists-with-different-credential') {
-        throw Exception(
-          'An account already exists with this email. '
-          'Please sign in with your email and password first, then link your Apple account from settings.',
+        // An email/password account already exists for this email. Hold the
+        // pending Apple credential so it can be linked once the user
+        // re-authenticates with their password.
+        _pendingCredential = e.credential;
+        throw AccountExistsWithDifferentCredential(
+          email: e.email ?? '',
+          provider: 'apple.com',
         );
       }
       rethrow;
@@ -169,8 +180,38 @@ class AuthRepositoryImpl extends ApiClient implements AuthRepository {
   }
 
   @override
+  Future<void> linkPendingCredentialWithPassword({
+    required String email,
+    required String password,
+  }) async {
+    final pending = _pendingCredential;
+    if (pending == null) {
+      throw Exception('No pending credential to link.');
+    }
+    try {
+      final userCred = await _auth.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+      final isDisabled = await isUserDisabled(credential: userCred);
+      if (isDisabled) {
+        await _auth.signOut();
+        throw FirebaseAuthException(
+          code: 'user-disabled',
+          message: 'User is disabled',
+        );
+      }
+      // Attach the SSO provider to the existing UID. The customer doc already
+      // exists, so we intentionally do NOT call createUserDoc here.
+      await userCred.user!.linkWithCredential(pending);
+      _pendingCredential = null;
+    } on FirebaseAuthException {
+      rethrow;
+    }
+  }
+
+  @override
   Future<void> signInWithFacebook() {
-    // TODO: implement signInWithFacebook
     throw UnimplementedError();
   }
 
@@ -217,9 +258,13 @@ class AuthRepositoryImpl extends ApiClient implements AuthRepository {
         return credentialResult;
       } on FirebaseAuthException catch (e) {
         if (e.code == 'account-exists-with-different-credential') {
-          throw Exception(
-            'An account already exists with this email. '
-            'Please sign in with your email and password first, then link your Google account from settings.',
+          // An email/password account already exists for this email. Hold the
+          // pending Google credential so it can be linked once the user
+          // re-authenticates with their password.
+          _pendingCredential = e.credential;
+          throw AccountExistsWithDifferentCredential(
+            email: e.email ?? '',
+            provider: 'google.com',
           );
         }
         rethrow;
@@ -265,6 +310,20 @@ class AuthRepositoryImpl extends ApiClient implements AuthRepository {
     final global = AppGlobal.fromJson(globalSnap.data() ?? {});
 
     final ref = _firestore.collection('customers').doc(docId);
+    // Create-only: never overwrite an existing customer's data on a repeat
+    // login. Returning users keep their onboarding/credit/qrId state.
+    //
+    // A stub doc may already exist because `updateLastLogin`/`updateFcmToken`
+    // (triggered by the authStateChanges listener that fires the moment the
+    // auth user is created) merge-write `lastLogin`/`fcmToken`/`appVersion`
+    // before this method runs. Those writes never set `createdAt`, so we use
+    // its presence — not mere document existence — to detect an already
+    // provisioned customer.
+    final existing = await ref.get();
+    if (existing.exists && existing.data()?['createdAt'] != null) {
+      return;
+    }
+
     final user = AppUser(
       docId: docId,
       email: email,
@@ -284,10 +343,12 @@ class AuthRepositoryImpl extends ApiClient implements AuthRepository {
       getPurchaseInfoByMail: global.defGetPurchaseInfoByMail ?? true,
       getPromotions: global.defGetPromotions ?? true,
       allowWinACoffee: global.defAllowWinACoffee ?? true,
-      allowWithdrawBalance: global.defAllowWinACoffee ?? true,
+      allowWithdrawBalance: global.defWithdrawBalance ?? true,
       allowCoffeeForHome: global.defAllowCoffeeForHome ?? true,
     );
 
+    // Merge so a concurrent lastLogin/fcmToken merge-write that may have created
+    // a stub doc first is not clobbered, while the full profile is still written.
     await ref.set(user.toJson(), SetOptions(merge: true));
   }
 
@@ -387,6 +448,13 @@ class AuthRepositoryImpl extends ApiClient implements AuthRepository {
   Future<bool> customerHasAccount({required String email}) async {
     final response = await post('/auth/verify', data: {'email': email});
     return response.data["hasAccount"] as bool;
+  }
+
+  @override
+  Future<List<String>> getProvidersForEmail({required String email}) async {
+    final response = await post('/auth/verify', data: {'email': email});
+    final providers = response.data["providers"] as List?;
+    return providers?.cast<String>() ?? <String>[];
   }
 
   @override

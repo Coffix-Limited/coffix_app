@@ -23,5 +23,6 @@ class DateTimeConverter implements JsonConverter<DateTime?, dynamic> {
   }
 
   @override
-  dynamic toJson(DateTime? object) => object?.toUtc().toIso8601String();
+  dynamic toJson(DateTime? object) =>
+      object == null ? null : Timestamp.fromDate(object.toUtc());
 }

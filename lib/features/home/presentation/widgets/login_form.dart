@@ -6,6 +6,7 @@ import 'package:coffix_app/core/constants/sizes.dart';
 import 'package:coffix_app/core/services/log_service.dart';
 import 'package:coffix_app/core/theme/typography.dart';
 import 'package:coffix_app/features/auth/logic/auth_cubit.dart';
+import 'package:coffix_app/features/home/presentation/widgets/link_account_dialog.dart';
 import 'package:coffix_app/presentation/atoms/app_button.dart';
 import 'package:coffix_app/presentation/atoms/app_field.dart';
 import 'package:coffix_app/presentation/atoms/app_icon_button.dart';
@@ -42,6 +43,15 @@ class _LoginFormState extends State<LoginForm> {
       listener: (context, state) {
         state.whenOrNull(
           authenticated: (_) => widget.formKey.currentState?.reset(),
+          linkRequired: (email, provider) {
+            showDialog(
+              context: context,
+              builder: (_) => BlocProvider.value(
+                value: context.read<AuthCubit>(),
+                child: LinkAccountDialog(email: email, provider: provider),
+              ),
+            );
+          },
         );
       },
       child: Column(

@@ -25,6 +25,13 @@ class AuthState with _$AuthState {
   // OTP sent to email
   const factory AuthState.otpSent({required String email}) = _OtpSent;
 
+  // An SSO sign-in collided with an existing email/password account. The user
+  // must re-authenticate with their password so the SSO provider can be linked.
+  const factory AuthState.linkRequired({
+    required String email,
+    required String provider,
+  }) = _LinkRequired;
+
   // Authentication failed with an error message.
   const factory AuthState.error({required String message}) = _Error;
 
@@ -32,5 +39,6 @@ class AuthState with _$AuthState {
   const factory AuthState.forgotPassword() = _ForgotPassword;
 
   // Password reset email sent
-  const factory AuthState.passwordResetEmailSent({required String message}) = _PasswordResetEmailSent;
+  const factory AuthState.passwordResetEmailSent({required String message}) =
+      _PasswordResetEmailSent;
 }

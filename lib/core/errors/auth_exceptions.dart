@@ -1,5 +1,23 @@
 class UserCancelledSignIn implements Exception {}
 
+/// Thrown when a user tries to sign in with an SSO provider (Google/Apple)
+/// using an email that already belongs to an existing email/password account.
+/// The pending SSO credential is held on the repository so it can be linked
+/// to the existing account once the user re-authenticates with their password.
+class AccountExistsWithDifferentCredential implements Exception {
+  AccountExistsWithDifferentCredential({
+    required this.email,
+    required this.provider,
+  });
+
+  /// The email of the existing account.
+  final String email;
+
+  /// The SSO provider the user attempted to use, e.g. 'google.com' or
+  /// 'apple.com'.
+  final String provider;
+}
+
 String getAuthExceptionMessage(String code) {
   switch (code) {
     case 'user-disabled':

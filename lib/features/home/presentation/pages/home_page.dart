@@ -190,6 +190,8 @@ class _HomeViewState extends State<HomeView> {
                                       : EmailVerificationForm(),
                                   unauthenticated: () =>
                                       LoginForm(formKey: formKey),
+                                  linkRequired: (email, provider) =>
+                                      LoginForm(formKey: formKey),
                                   error: (message) =>
                                       LoginForm(formKey: formKey),
                                 );
@@ -341,7 +343,7 @@ class _HomeContent extends StatelessWidget {
     final theme = Theme.of(context);
     final screenHeight = MediaQuery.of(context).size.height;
     String displayName =
-        user.user.firstName ?? user.user.nickName?.toUpperCase() ?? "";
+        user.user.nickName ?? user.user.firstName?.toUpperCase() ?? "";
 
     if (displayName.length > 15) {
       displayName = '${displayName.substring(0, 15)}...';
