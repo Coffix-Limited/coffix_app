@@ -801,7 +801,7 @@ class FirebaseService {
     const snap = await firestore
       .collection("transactions")
       .where("status", "==", "created")
-      .where("expiresAt", "<=", now).limit(5)
+      .where("expiresAt", "<=", now)
       .get();
 
     if (snap.empty) return { expiredCount: 0 };

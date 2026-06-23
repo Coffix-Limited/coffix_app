@@ -158,14 +158,14 @@ class _ProfileViewState extends State<ProfileView> {
                           },
                         ),
                         const SizedBox(height: AppSizes.md),
-                        if (user?.creditExpiry != null &&
-                            user?.creditAvailable != null &&
-                            user?.creditAvailable != 0)
-                          Text(
-                            "Expiration Date: ${user?.creditExpiry?.formatDate()}",
-                            textAlign: TextAlign.center,
-                          ),
 
+                        // if (user?.creditExpiry != null &&
+                        //     user?.creditAvailable != null &&
+                        //     user?.creditAvailable != 0)
+                        //   Text(
+                        //     "Expiration Date: ${user?.creditExpiry?.formatDate()}",
+                        //     textAlign: TextAlign.center,
+                        //   ),
                         AppButton.primary(
                           onPressed: () {
                             context.read<CreditCubit>().showTopUpField(false);

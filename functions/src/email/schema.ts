@@ -26,6 +26,7 @@ export interface SendEmailParams {
   variables: Record<string, string | number>;
   userId?: string;
   htmlContent?: string;
+  forceSend?: boolean;
 }
 
 export interface GiftEmailParams {

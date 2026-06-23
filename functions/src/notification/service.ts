@@ -3,6 +3,7 @@ import { getMessaging } from "firebase-admin/messaging";
 import { logger } from "firebase-functions";
 import { firestore } from "../config/firebaseAdmin";
 import { Notification } from "./interface";
+import { AppUser } from "../user/interface";
 
 const BATCH_LIMIT = 500;
 
@@ -22,7 +23,15 @@ export class NotificationService {
       .collection("customers")
       .doc(customerId)
       .get();
-    const fcmToken = customerSnap.data()?.fcmToken as string | undefined;
+    const user = customerSnap.exists ? (customerSnap.data() as AppUser) : null;
+    const fcmToken = user?.fcmToken as string | undefined;
+
+    if (user?.allowNotifications === false) {
+      logger.warn(
+        `User ${customerId} has notifications disabled, skipping push send`,
+      );
+      return;
+    }
 
     if (!fcmToken) {
       logger.warn(

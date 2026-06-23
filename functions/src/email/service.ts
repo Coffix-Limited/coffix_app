@@ -109,10 +109,16 @@ export class EmailService {
         : Promise.resolve(null),
     ]);
 
-    const userVariables = buildUserVariables(
-      userSnap?.exists ? (userSnap.data() as AppUser) : null,
-      params.email,
-    );
+    const user = userSnap?.exists ? (userSnap.data() as AppUser) : null;
+
+    const userVariables = buildUserVariables(user, params.email);
+    logger.info(`User variables: ${JSON.stringify(userVariables)}`);
+    if (user?.getPurchaseInfoByMail === false && !params.forceSend) {
+      logger.warn(
+        `User ${params.userId} has purchase info mail disabled, skipping email send`,
+      );
+      return;
+    }
     const now = nowNZ();
     const templateData = templateSnap.data() as EmailTemplate;
     const variables = {
@@ -291,6 +297,7 @@ export class EmailService {
       variables: {
         otp_code: params.otp,
       },
+      forceSend: true,
     });
   }
 

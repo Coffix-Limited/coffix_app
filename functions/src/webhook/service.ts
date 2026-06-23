@@ -391,6 +391,7 @@ export class WebhookService {
           },
         });
 
+
         void this.notificationService
           .sendNotification({
             customerId: customerId ?? "",
@@ -485,19 +486,19 @@ export class WebhookService {
 
       this.logService.handleTopUpPaymentSuccess(customerId ?? "", amount);
 
-      this.notificationService
+      void this.notificationService
         .sendNotification({
           customerId,
           title: "TopUp Payment Successful",
           message: `A payment for topUp #${transactionDoc?.transactionNumber} has been accepted`,
         })
         .catch((err) => logger.error("Notification failed:", err));
-      this.sendTopupEmail(
+      void this.sendTopupEmail(
         customerId,
         transactionDoc.transactionNumber,
         true,
       ).catch((err) => logger.error("Email failed:", err));
-      this.referralService
+      void this.referralService
         .handleFirstPurchase({ customerId })
         .catch((err) =>
           logger.error("Referral first-topup check failed:", err),
