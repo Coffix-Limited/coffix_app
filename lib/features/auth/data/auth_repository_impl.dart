@@ -331,7 +331,6 @@ class AuthRepositoryImpl extends ApiClient implements AuthRepository {
       qrId: generateQrId(docId),
       fcmToken: await _firebaseMessaging.getToken(),
       finishedOnboarding: false,
-      creditExpiry: TimeUtils.now().add(Duration(days: 30)),
       disabled: false,
       emailVerified: false,
       lastLogin: TimeUtils.now(),
@@ -345,6 +344,7 @@ class AuthRepositoryImpl extends ApiClient implements AuthRepository {
       allowWinACoffee: global.defAllowWinACoffee ?? true,
       allowWithdrawBalance: global.defWithdrawBalance ?? true,
       allowCoffeeForHome: global.defAllowCoffeeForHome ?? true,
+      allowNotifications: global.defAllowNotifications ?? true,
     );
 
     // Merge so a concurrent lastLogin/fcmToken merge-write that may have created

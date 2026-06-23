@@ -64,6 +64,8 @@ export class WindcaveService {
     const customerEmail = userDoc.email;
     const firstName = userDoc.firstName;
     const lastName = userDoc.lastName;
+    // 30 minutes
+    const expiresAt = new Date(Date.now() + 1000 * 60 * 30);
     const response = await fetch(`${this.windcaveApiUrl}/api/v1/sessions`, {
       method: "POST",
       headers: {
@@ -82,6 +84,8 @@ export class WindcaveService {
           declined: WINDCAVE_FAILED_URL,
           cancelled: WINDCAVE_CANCELLED_URL,
         },
+        methods: ["card", "applepay", "googlepay"],
+        expires: expiresAt.toISOString(),
         notificationUrl: `${process.env.BASE_URL}/webhook`,
         customer: {
           firstName: firstName ?? "",
@@ -107,6 +111,7 @@ export class WindcaveService {
     return {
       paymentSessionUrl: hppLink.href,
       sessionId: responseData.id,
+      expiresAt,
     };
   }
 

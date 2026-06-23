@@ -63,10 +63,11 @@ class _PersonalInfoViewState extends State<PersonalInfoView> {
         suburb: formValues?['suburb'],
         city: formValues?['city'],
         preferredStoreId: formValues?['preferredStoreId'],
+        allowNotifications:
+            formValues?['allowNotifications'], // notifications
+        getPromotions: formValues?['getPromotions'], // news and promotions
         getPurchaseInfoByMail:
-            formValues?['getPurchaseInfoByMail'], // notifications
-        getPromotions: formValues?['getPromotions'], // promotions
-        allowWinACoffee: formValues?['allowWinACoffee'], // purchase messages
+            formValues?['getPurchaseInfoByMail'], // purchase messages
         allowWithdrawBalance:
             formValues?['allowWithdrawBalance'], // none for now
       );
@@ -185,7 +186,7 @@ class _PersonalInfoViewState extends State<PersonalInfoView> {
           ),
         ),
         FormBuilderSwitch(
-          name: 'getPurchaseInfoByMail',
+          name: 'allowNotifications',
           title: Text(
             'Receive notifications',
             style: theme.textTheme.bodyMedium,
@@ -206,17 +207,17 @@ class _PersonalInfoViewState extends State<PersonalInfoView> {
           inactiveTrackColor: AppColors.white,
           inactiveThumbColor: AppColors.primary,
         ),
-        // FormBuilderSwitch(
-        //   name: 'allowWinACoffee',
-        //   title: Text(
-        //     'Receive purchase messages',
-        //     style: theme.textTheme.bodyMedium,
-        //   ),
-        //   activeColor: AppColors.white,
-        //   activeTrackColor: AppColors.success,
-        //   inactiveTrackColor: AppColors.white,
-        //   inactiveThumbColor: AppColors.primary,
-        // ),
+        FormBuilderSwitch(
+          name: 'getPurchaseInfoByMail',
+          title: Text(
+            'Receive purchase messages',
+            style: theme.textTheme.bodyMedium,
+          ),
+          activeColor: AppColors.white,
+          activeTrackColor: AppColors.success,
+          inactiveTrackColor: AppColors.white,
+          inactiveThumbColor: AppColors.primary,
+        ),
         const SizedBox(height: AppSizes.xxl),
         AppButton.primary(onPressed: _onSave, label: 'Save'),
         const SizedBox(height: AppSizes.xxl),
@@ -266,9 +267,9 @@ class _PersonalInfoViewState extends State<PersonalInfoView> {
               "suburb": user?.suburb,
               "city": user?.city,
               "preferredStoreId": user?.preferredStoreId,
-              "getPurchaseInfoByMail": user?.getPurchaseInfoByMail,
+              "allowNotifications": user?.allowNotifications,
               "getPromotions": user?.getPromotions,
-              "allowWinACoffee": user?.allowWinACoffee,
+              "getPurchaseInfoByMail": user?.getPurchaseInfoByMail,
               "allowWithdrawBalance": user?.allowWithdrawBalance,
             },
             key: _formKey,

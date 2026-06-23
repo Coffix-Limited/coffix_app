@@ -378,6 +378,7 @@ class FirebaseService {
     gstNumber,
     paymentMethod,
     storeId,
+    expiresAt,
   }: {
     customerId: string;
     orderId: string;
@@ -388,6 +389,7 @@ class FirebaseService {
     gstNumber: string;
     paymentMethod: string;
     storeId?: string;
+    expiresAt?: Date;
   }): Promise<string> {
     const transactionRef = firestore.collection("transactions").doc();
 
@@ -410,6 +412,7 @@ class FirebaseService {
       gstAmount,
       paymentMethod,
       storeId: storeId ?? "",
+      ...(expiresAt ? { expiresAt } : {}),
     });
     return transactionRef.id;
   }
@@ -426,11 +429,13 @@ class FirebaseService {
     amount,
     sessionId,
     transactionNumber,
+    expiresAt,
   }: {
     customerId: string;
     amount: number;
     sessionId: string;
     transactionNumber: string;
+    expiresAt?: Date;
   }): Promise<Record<string, any>> {
     const transactionRef = firestore.collection("transactions").doc();
     const [globalDoc, userDoc] = await Promise.all([
@@ -458,6 +463,7 @@ class FirebaseService {
       gstNumber,
       gstAmount,
       storeInvoiceText,
+      ...(expiresAt ? { expiresAt } : {}),
     };
     await transactionRef.set(transactionDoc, { merge: true });
     return transactionDoc;
@@ -778,6 +784,40 @@ class FirebaseService {
 
       await batch.commit();
       expiredCount++;
+    }
+
+    return { expiredCount };
+  }
+
+  /**
+   * Marks any still-pending card transactions whose payment session has lapsed
+   * as "expired". A transaction is eligible when its status is "created" and its
+   * expiresAt is at or before now. Only card/order transactions carry an
+   * expiresAt, so coffixCredit (status "approved") and topup transactions are
+   * naturally excluded.
+   */
+  async expireTransactions(): Promise<{ expiredCount: number }> {
+    const now = new Date();
+    const snap = await firestore
+      .collection("transactions")
+      .where("status", "==", "created")
+      .where("expiresAt", "<=", now).limit(5)
+      .get();
+
+    if (snap.empty) return { expiredCount: 0 };
+
+    // Chunk writes to stay under Firestore's 500-write-per-batch limit.
+    const CHUNK_SIZE = 450;
+    let expiredCount = 0;
+
+    for (let i = 0; i < snap.docs.length; i += CHUNK_SIZE) {
+      const chunk = snap.docs.slice(i, i + CHUNK_SIZE);
+      const batch = firestore.batch();
+      for (const doc of chunk) {
+        batch.update(doc.ref, { status: "expired" });
+      }
+      await batch.commit();
+      expiredCount += chunk.length;
     }
 
     return { expiredCount };

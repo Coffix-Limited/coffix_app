@@ -7,14 +7,6 @@ export const sendGiftEmailSchema = z.object({
   recipientFirstName: z.string().optional(),
 });
 
-export const sendInvoiceSchema = z.object({
-  to: z.email(),
-  userId: z.string().min(1),
-  invoice: z.string().min(1),
-  storeName: z.string().min(1),
-  transactionNumber: z.string().min(1),
-});
-
 export const sendOTPSchema = z.object({
   to: z.email(),
   userId: z.string().min(1),
@@ -26,7 +18,6 @@ export const sendReferralEmailSchema = z.object({
   userId: z.string().min(1),
   referee_name: z.string().min(1),
 });
-
 
 export interface SendEmailParams {
   email: string;
@@ -61,9 +52,15 @@ export interface SendRefundEmailParams {
   isCoffixCredit: boolean;
 }
 
-
+// Shared shape for emails whose HTML body is pre-built by the caller.
+export interface SendBuiltInvoiceParams {
+  to: string;
+  userId: string;
+  invoiceHtml: string;
+  storeName: string;
+  transactionNumber: string;
+}
 
 export type SendGiftEmailSchema = z.infer<typeof sendGiftEmailSchema>;
-export type SendInvoiceSchema = z.infer<typeof sendInvoiceSchema>;
 export type SendOTPSchema = z.infer<typeof sendOTPSchema>;
 export type SendReferralEmailSchema = z.infer<typeof sendReferralEmailSchema>;

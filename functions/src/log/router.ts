@@ -31,4 +31,27 @@ router.post(
   },
 );
 
+router.post(
+  "/settings/cleanup",
+  requirePost,
+  async (request: Request, response: Response) => {
+    const secret = request.headers["x-cron-secret"];
+    if (!secret || secret !== process.env.CRON_SECRET) {
+      return response
+        .status(401)
+        .json({ success: false, message: "Unauthorized" });
+    }
+    try {
+      const result = await logService.cleanupLogs();
+      logger.info("[log/cleanup] run:", result);
+      return response.status(200).json({ success: true, data: result });
+    } catch (e) {
+      logger.error("[log/cleanup] error:", e);
+      return response
+        .status(500)
+        .json({ success: false, message: "Internal server error" });
+    }
+  },
+);
+
 export default router;

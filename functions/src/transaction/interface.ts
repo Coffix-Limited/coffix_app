@@ -38,5 +38,6 @@ export interface Transaction {
   storeId?: string | null;
 
   // we use this for refund transactions
-  originalTransactionNumber?: string | null; 
+  originalTransactionNumber?: string | null;
+  expiresAt?: Date | null;
 }

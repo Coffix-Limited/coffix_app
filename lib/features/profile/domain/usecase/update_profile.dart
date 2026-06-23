@@ -10,9 +10,9 @@ class UpdateProfileParams {
   final String? suburb;
   final String? city;
   final String? preferredStoreId;
-  final bool? getPurchaseInfoByMail;
+  final bool? allowNotifications;
   final bool? getPromotions;
-  final bool? allowWinACoffee;
+  final bool? getPurchaseInfoByMail;
   final bool? allowWithdrawBalance;
 
   UpdateProfileParams({
@@ -24,9 +24,9 @@ class UpdateProfileParams {
     this.suburb,
     this.city,
     this.preferredStoreId,
-    this.getPurchaseInfoByMail,
+    this.allowNotifications,
     this.getPromotions,
-    this.allowWinACoffee,
+    this.getPurchaseInfoByMail,
     this.allowWithdrawBalance,
   });
 }
@@ -48,9 +48,9 @@ class UpdateProfileUseCase implements UseCase<void, UpdateProfileParams> {
       suburb: params.suburb,
       city: params.city,
       preferredStoreId: params.preferredStoreId,
-      getPurchaseInfoByMail: params.getPurchaseInfoByMail,
+      allowNotifications: params.allowNotifications,
       getPromotions: params.getPromotions,
-      allowWinACoffee: params.allowWinACoffee,
+      getPurchaseInfoByMail: params.getPurchaseInfoByMail,
       allowWithdrawBalance: params.allowWithdrawBalance,
     );
   }

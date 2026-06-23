@@ -16,8 +16,8 @@ import { formatNzTime } from "../utils/nz_time";
 import { EmailService } from "../email/service";
 import { buildAndSendOrderInvoice } from "../order/router";
 import { getPaymentMethod } from "../order/service";
-import { wrapInEmailShell } from "../utils/emailShell";
 import { topupEmailTemplate } from "../utils/templates/topup_email_template";
+import { topupFailedTemplate } from "../utils/templates/topup_failed_template";
 import admin from "firebase-admin";
 import { LogService } from "../log/service";
 
@@ -70,7 +70,6 @@ export class WebhookService {
       [customer.firstName, customer.lastName].filter(Boolean).join(" ") ||
       "Guest";
 
-    let invoiceHtml: string;
     if (authorised) {
       const createdAt = formatNzTime(toDate(transaction.createdAt));
       const amount = transaction.amount as number;
@@ -86,7 +85,7 @@ export class WebhookService {
       const totalAmountWithBonus =
         (transaction.totalAmount as number) ?? amount;
       const bonusAmount = totalAmountWithBonus - amount;
-      invoiceHtml = topupEmailTemplate
+      const invoiceHtml = topupEmailTemplate
         .replace("{{invoiceText}}", storeInvoiceText)
         .replace("{{gst}}", gstNumber)
         .replace("{{transactionNumber}}", transactionNumber)
@@ -100,16 +99,24 @@ export class WebhookService {
           "{{totalCoffixCredit}}",
           `$${totalAmountWithBonus.toFixed(2)}`,
         );
-    } else {
-      const amount = transaction.amount as number;
-      invoiceHtml = wrapInEmailShell(
-        `<h2 style="margin:0 0 16px;font-size:18px;font-weight:700;color:#1a1a1a;">Top-up Failed</h2>
-<p style="margin:0 0 16px;font-size:14px;color:#333333;">Hi ${customerName},</p>
-<p style="margin:0 0 16px;font-size:14px;color:#333333;">Unfortunately your top-up of <strong>$${amount.toFixed(2)}</strong> (Transaction #${transactionNumber}) was declined. Please try again or contact support if the issue persists.</p>`,
-      );
+
+      await this.emailService.sendTopUpInvoice({
+        to: customer.email,
+        userId: customerId,
+        invoiceHtml,
+        storeName: "Coffix",
+        transactionNumber,
+      });
+      return;
     }
 
-    await this.emailService.sendInvoice({
+    const amount = transaction.amount as number;
+    const invoiceHtml = topupFailedTemplate
+      .replace("{{customerName}}", customerName)
+      .replace("{{amount}}", `$${amount.toFixed(2)}`)
+      .replace("{{transactionNumber}}", transactionNumber);
+
+    await this.emailService.sendTopUpFailed({
       to: customer.email,
       userId: customerId,
       invoiceHtml,
@@ -384,7 +391,7 @@ export class WebhookService {
           },
         });
 
-        this.notificationService
+        void this.notificationService
           .sendNotification({
             customerId: customerId ?? "",
             title: "Order Payment Successful",
@@ -395,13 +402,12 @@ export class WebhookService {
           })
           .catch((err) => logger.error("Notification failed:", err));
 
-        this.firebaseService
+        void this.firebaseService
           .findUserByCustomerId(customerId ?? "")
           .then((customer) => {
-            if (!customer?.allowWinACoffee) return;
             return buildAndSendOrderInvoice(
               this.firebaseService,
-              new EmailService(),
+              this.emailService,
               customerId ?? "",
               orderDoc.transactionNumber as string,
             );

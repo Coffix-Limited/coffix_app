@@ -51,7 +51,7 @@ router.post(
       const { amount } = validation.data;
       const merchantReference = getTopupMerchantReference(customerId);
 
-      const { paymentSessionUrl, sessionId } =
+      const { paymentSessionUrl, sessionId, expiresAt } =
         await windcaveService.createPaymentSession({
           amount,
           merchantReference,
@@ -65,6 +65,7 @@ router.post(
         amount,
         sessionId,
         transactionNumber,
+        expiresAt,
       });
 
       const data = { paymentSessionUrl, transaction };

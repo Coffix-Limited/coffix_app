@@ -5,8 +5,8 @@ import { wrapInEmailShell } from "../utils/emailShell";
 import { logger } from "firebase-functions";
 import {
   GiftEmailParams,
+  SendBuiltInvoiceParams,
   SendEmailParams,
-  SendInvoiceSchema,
   SendOTPSchema,
   SendReferralEmailSchema,
   SendRefundEmailParams,
@@ -166,12 +166,61 @@ export class EmailService {
     });
   }
 
-  async sendInvoice(
-    params: Omit<SendInvoiceSchema, "invoice"> & { invoiceHtml: string },
+  // top-up paid by credit card
+  async sendTopUpInvoice(params: SendBuiltInvoiceParams): Promise<void> {
+    await this.send({
+      email: params.to,
+      subject: "Your Coffix top-up receipt",
+      documentId: "TOP_UP",
+      userId: params.userId,
+      variables: {
+        store_name: params.storeName,
+        transaction_number: params.transactionNumber,
+      },
+      htmlContent: params.invoiceHtml,
+    });
+  }
+
+  // order paid with Coffix Credit
+  async sendOrderCoffixCreditInvoice(
+    params: SendBuiltInvoiceParams,
   ): Promise<void> {
     await this.send({
       email: params.to,
-      documentId: "COFFIX_CREDIT_INVOICE",
+      subject: "Your Coffix Credit claim",
+      documentId: "ORDER_COFFIX_CREDIT",
+      userId: params.userId,
+      variables: {
+        store_name: params.storeName,
+        transaction_number: params.transactionNumber,
+      },
+      htmlContent: params.invoiceHtml,
+    });
+  }
+
+  // order paid with credit card
+  async sendOrderCreditCardInvoice(
+    params: SendBuiltInvoiceParams,
+  ): Promise<void> {
+    await this.send({
+      email: params.to,
+      subject: "Your Coffix tax invoice",
+      documentId: "ORDER_CREDIT_CARD",
+      userId: params.userId,
+      variables: {
+        store_name: params.storeName,
+        transaction_number: params.transactionNumber,
+      },
+      htmlContent: params.invoiceHtml,
+    });
+  }
+
+  // top-up payment failed / declined
+  async sendTopUpFailed(params: SendBuiltInvoiceParams): Promise<void> {
+    await this.send({
+      email: params.to,
+      subject: "Your Coffix top-up could not be completed",
+      documentId: "TOP_UP_FAILED",
       userId: params.userId,
       variables: {
         store_name: params.storeName,
@@ -285,7 +334,9 @@ export class EmailService {
         const paymentMethod = (tx.paymentMethod as string | undefined) ?? "";
         if (type === "topup") return status === "approved";
         if (type === "gift" && paymentMethod === "coffixCredit")
-          return status === "sent" || status === "claimed" || status === "completed";
+          return (
+            status === "sent" || status === "claimed" || status === "completed"
+          );
         if (type === "order" && paymentMethod === "coffixCredit")
           return (
             status === "approved" || status === "paid" || status === "completed"
@@ -313,8 +364,8 @@ export class EmailService {
       if (type === "gift") {
         const isReceiving = status === "claimed";
         const counterparty = isReceiving
-          ? (tx.senderFullName as string | undefined) ?? "Someone"
-          : (tx.recipientFullName as string | undefined) ?? "Someone";
+          ? ((tx.senderFullName as string | undefined) ?? "Someone")
+          : ((tx.recipientFullName as string | undefined) ?? "Someone");
         transactionLabel = `#${tx.transactionNumber ?? ""} ${isReceiving ? "Gift from" : "Gift to"} ${counterparty}`;
       } else {
         transactionLabel = `#${tx.transactionNumber ?? ""} ${type.charAt(0).toUpperCase() + type.slice(1)}`;
@@ -361,12 +412,16 @@ export class EmailService {
       </table>
     `;
 
-    await this.sendInvoice({
-      to: customerEmail,
+    await this.send({
+      email: customerEmail,
+      subject: "Your Coffix Credit transactions",
+      documentId: "CREDIT_HISTORY",
       userId: customerId,
-      invoiceHtml: content,
-      storeName: "Coffix",
-      transactionNumber: "credit-history",
+      variables: {
+        store_name: "Coffix",
+        transaction_number: "credit-history",
+      },
+      htmlContent: content,
     });
   }
 }

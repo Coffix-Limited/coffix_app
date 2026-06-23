@@ -35,6 +35,7 @@ AppGlobal _$AppGlobalFromJson(Map<String, dynamic> json) => AppGlobal(
   defGetPromotions: json['defGetPromotions'] as bool?,
   defAllowWinACoffee: json['defAllowWinACoffee'] as bool?,
   defAllowCoffeeForHome: json['defAllowCoffeeForHome'] as bool?,
+  defAllowNotifications: json['defAllowNotifications'] as bool?,
 );
 
 Map<String, dynamic> _$AppGlobalToJson(AppGlobal instance) => <String, dynamic>{
@@ -66,4 +67,5 @@ Map<String, dynamic> _$AppGlobalToJson(AppGlobal instance) => <String, dynamic>{
   'defGetPromotions': instance.defGetPromotions,
   'defAllowWinACoffee': instance.defAllowWinACoffee,
   'defAllowCoffeeForHome': instance.defAllowCoffeeForHome,
+  'defAllowNotifications': instance.defAllowNotifications,
 };

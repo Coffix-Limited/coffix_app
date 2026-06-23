@@ -62,7 +62,8 @@ class DraftCard extends StatelessWidget {
       final disabledStores = product.disabledStores;
       final availableStores = product.availableToStores;
       if (disabledStores != null && disabledStores.contains(storeId)) continue;
-      if (availableStores != null && !availableStores.contains(storeId)) continue;
+      if (availableStores != null && !availableStores.contains(storeId))
+        continue;
 
       final modifierMap = <String, Modifier>{
         for (final entry in item.modifierPriceSnapshot.entries)
@@ -175,16 +176,11 @@ class DraftCard extends StatelessWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 if (imageUrl.isNotEmpty)
-                                  ClipRRect(
-                                    borderRadius: BorderRadius.circular(
-                                      AppSizes.sm,
-                                    ),
-                                    child: AppCachedNetworkImage(
-                                      imageUrl: imageUrl,
-                                      width: 48,
-                                      height: 48,
-                                      fit: BoxFit.cover,
-                                    ),
+                                  AppCachedNetworkImage(
+                                    imageUrl: imageUrl,
+                                    width: 48,
+                                    height: 48,
+                                    fit: BoxFit.cover,
                                   )
                                 else
                                   Container(

@@ -39,6 +39,13 @@ class AppBlocObserver extends BlocObserver {
 Future<void> bootstrap(Widget Function() builder) async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  // Enlarge the in-memory image cache so decoded thumbnails survive a quick
+  // background -> foreground round-trip instead of being re-decoded (which
+  // re-triggers the loading shimmer). Flutter still clears the cache on a real
+  // low-memory signal.
+  PaintingBinding.instance.imageCache.maximumSize = 1000;
+  PaintingBinding.instance.imageCache.maximumSizeBytes = 200 << 20; // 200 MB
+
   FirebaseOptions? firebaseOptions;
   if (FlavorConfig.isDev()) {
     debugPrint('Dev flavor');

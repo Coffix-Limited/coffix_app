@@ -32,10 +32,11 @@ class AppLocation extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  AppIcon.withSvgPath(
-                    AppImages.location,
-                    size: AppSizes.iconSizeMedium,
-                  ),
+                  if (user.store != null)
+                    AppIcon.withSvgPath(
+                      AppImages.location,
+                      size: AppSizes.iconSizeMedium,
+                    ),
                   if (user.store != null)
                     Text(
                       "${user.store?.name}",

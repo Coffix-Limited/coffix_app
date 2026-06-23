@@ -21,9 +21,9 @@ class ProfileRepositoryImpl extends ApiClient implements ProfileRepository {
     String? suburb,
     String? city,
     String? preferredStoreId,
-    bool? getPurchaseInfoByMail, // Receive notifications
+    bool? allowNotifications, // Receive notifications
     bool? getPromotions, // Receive news and promotions
-    bool? allowWinACoffee, // Receive purchase messages
+    bool? getPurchaseInfoByMail, // Receive purchase messages
     bool? allowWithdrawBalance // TODO: ASK WHAT IS THE PURPOSE FOR THIS
   }) async {
     try {
@@ -44,9 +44,9 @@ class ProfileRepositoryImpl extends ApiClient implements ProfileRepository {
           'city': ?city,
           'preferredStoreId': ?preferredStoreId,
           'finishedOnboarding': true,
-          'getPurchaseInfoByMail': getPurchaseInfoByMail,
+          'allowNotifications': allowNotifications,
           'getPromotions': getPromotions,
-          'allowWinACoffee': allowWinACoffee,
+          'getPurchaseInfoByMail': getPurchaseInfoByMail,
           'allowWithdrawBalance': allowWithdrawBalance,
         };
         if (data.isNotEmpty) await customerRef.update(data);

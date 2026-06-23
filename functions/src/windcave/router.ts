@@ -139,7 +139,7 @@ router.post(
             });
           });
 
-        notificationService
+        void notificationService
           .sendNotification({
             customerId,
             title: "Order Payment Successful",
@@ -149,10 +149,9 @@ router.post(
             logger.error("Failed to send notification", { customerId, error });
           });
 
-        firebaseService
+        void firebaseService
           .findUserByCustomerId(customerId)
           .then((customer) => {
-            if (!customer?.allowWinACoffee) return;
             return buildAndSendOrderInvoice(
               firebaseService,
               new EmailService(),
@@ -188,7 +187,7 @@ router.post(
 
       const merchantReference = getOrderMerchantReference(customerId, orderId);
 
-      const { paymentSessionUrl, sessionId } =
+      const { paymentSessionUrl, sessionId, expiresAt } =
         await windcaveService.createPaymentSession({
           amount: totalAmount,
           merchantReference,
@@ -205,6 +204,7 @@ router.post(
         gstNumber: orderData.storeGst,
         paymentMethod: validation.data.paymentMethod,
         storeId: validation.data.storeId,
+        expiresAt,
       });
 
       await logService.createOrderPaymentSessionSuccess(
@@ -240,6 +240,36 @@ router.post(
         });
       }
       logger.error("Error creating payment session:", error);
+      return response
+        .status(500)
+        .json({ success: false, message: "Internal server error" });
+    }
+  },
+);
+
+// Cron-triggered: mark any past-due, still-pending card transactions as expired.
+router.post(
+  "/expire-transactions",
+  requirePost,
+  async (request: AuthenticatedRequest, response: Response) => {
+    const secret = request.headers["x-cron-secret"];
+    if (!secret || secret !== process.env.CRON_SECRET) {
+      return response
+        .status(401)
+        .json({ success: false, message: "Unauthorized" });
+    }
+
+    const firebaseService = new FirebaseService();
+    try {
+      const { expiredCount } = await firebaseService.expireTransactions();
+      logger.info(
+        `Transaction expiry run: ${expiredCount} transactions expired`,
+      );
+      return response
+        .status(200)
+        .json({ success: true, data: { expiredCount } });
+    } catch (error) {
+      logger.error("Error expiring transactions:", error);
       return response
         .status(500)
         .json({ success: false, message: "Internal server error" });

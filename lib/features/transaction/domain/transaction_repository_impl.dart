@@ -25,7 +25,6 @@ class TransactionRepositoryImpl implements TransactionRepository {
             ts.TransactionStatus.approved.name,
             ts.TransactionStatus.failed.name,
             ts.TransactionStatus.completed.name,
-            ts.TransactionStatus.expired.name,
             ts.TransactionStatus.sent.name,
             ts.TransactionStatus.claimed.name,
           ],

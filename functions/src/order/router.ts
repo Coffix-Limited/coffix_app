@@ -2,10 +2,10 @@ import express, { Response } from "express";
 import { requiredAuth, type AuthenticatedRequest } from "../middleware/auth";
 import { requirePost } from "../middleware/method";
 import { invoiceSchema } from "./schema";
-import { invoiceEmailTemplate } from "../utils/templates/invoice_email_template";
+import { orderCoffixCreditTemplate } from "../utils/templates/order_coffix_credit_template";
+import { orderCreditCardTemplate } from "../utils/templates/order_credit_card_template";
 import { topupEmailTemplate } from "../utils/templates/topup_email_template";
 import { EmailService } from "../email/service";
-import { wrapInEmailShell } from "../utils/emailShell";
 import { formatNzTime } from "../utils/nz_time";
 import * as admin from "firebase-admin";
 import FirebaseService from "../firebase/service";
@@ -73,35 +73,58 @@ export async function buildAndSendOrderInvoice(
     ? `<p class="meta-line">Service Time: ${formatNzTime(toDate(order.scheduledAt))} ${order.storeName}</p>`
     : `<p class="meta-line">Service Time: ${createdAt} ${order.storeName}</p>`;
 
-  const gst = (transaction?.gst as number) ?? 15;
-  const gstAmount = (transaction?.gstAmount as number) ?? 0;
-
-  const isCoffixCredit = (order.paymentMethod as string) === "coffixCredit";
-  const invoiceLabel = isCoffixCredit ? "Coffix Credit Claim" : "Tax Invoice";
-  const displayGstNumberLine = isCoffixCredit
-    ? ""
-    : `<p class="store-gst">GST: ${(transaction?.gstNumber as string) ?? ""}</p>`;
-  const displayGstLineSection = isCoffixCredit
-    ? ""
-    : `<span class="gst-text">${gst}% GST Included in the total: $${gstAmount.toFixed(2)}</span>`;
-
   const paymentMethod = getPaymentMethod(
     order.paymentMethod as string,
     (transaction?.card as any)?.cardNumber ?? null,
   );
-  const invoice = invoiceEmailTemplate
-    .replace("{{invoiceText}}", r((order.storeInvoiceText as string) ?? ""))
-    .replace("{{gstNumberLine}}", r(displayGstNumberLine))
-    .replace("{{invoiceLabel}}", r(invoiceLabel))
-    .replace("{{transactionNumber}}", r(order.transactionNumber as string))
-    .replace("{{items}}", r(itemsHtml))
-    .replace("{{total}}", r(`$${(order.amount as number).toFixed(2)}`))
-    .replace("{{gstLineSection}}", r(displayGstLineSection))
-    .replace("{{paymentMethod}}", r(paymentMethod))
-    .replace("{{createdAt}}", r(createdAt))
-    .replace("{{serviceTimeLine}}", r(serviceTimeLine));
 
-  await emailService.sendInvoice({
+  const invoiceText = r((order.storeInvoiceText as string) ?? "");
+  const transactionNumberValue = r(order.transactionNumber as string);
+  const items = r(itemsHtml);
+  const total = r(`$${(order.amount as number).toFixed(2)}`);
+  const paymentMethodValue = r(paymentMethod);
+  const createdAtValue = r(createdAt);
+  const serviceTime = r(serviceTimeLine);
+
+  const isCoffixCredit = (order.paymentMethod as string) === "coffixCredit";
+
+  if (isCoffixCredit) {
+    const invoice = orderCoffixCreditTemplate
+      .replace("{{invoiceText}}", invoiceText)
+      .replace("{{transactionNumber}}", transactionNumberValue)
+      .replace("{{items}}", items)
+      .replace("{{total}}", total)
+      .replace("{{paymentMethod}}", paymentMethodValue)
+      .replace("{{createdAt}}", createdAtValue)
+      .replace("{{serviceTimeLine}}", serviceTime);
+
+    await emailService.sendOrderCoffixCreditInvoice({
+      to: customer?.email as string,
+      userId: order.customerId as string,
+      invoiceHtml: invoice,
+      storeName: order.storeName as string,
+      transactionNumber: order.transactionNumber as string,
+    });
+    return;
+  }
+
+  const gst = (transaction?.gst as number) ?? 15;
+  const gstAmount = (transaction?.gstAmount as number) ?? 0;
+  const gstNumberLine = `<p class="store-gst">GST: ${(transaction?.gstNumber as string) ?? ""}</p>`;
+  const gstLineSection = `<span class="gst-text">${gst}% GST Included in the total: $${gstAmount.toFixed(2)}</span>`;
+
+  const invoice = orderCreditCardTemplate
+    .replace("{{invoiceText}}", invoiceText)
+    .replace("{{gstNumberLine}}", r(gstNumberLine))
+    .replace("{{transactionNumber}}", transactionNumberValue)
+    .replace("{{items}}", items)
+    .replace("{{total}}", total)
+    .replace("{{gstLineSection}}", r(gstLineSection))
+    .replace("{{paymentMethod}}", paymentMethodValue)
+    .replace("{{createdAt}}", createdAtValue)
+    .replace("{{serviceTimeLine}}", serviceTime);
+
+  await emailService.sendOrderCreditCardInvoice({
     to: customer?.email as string,
     userId: order.customerId as string,
     invoiceHtml: invoice,
@@ -219,7 +242,7 @@ export async function buildAndSendTopupInvoice(
     .replace("{{bonusAmount}}", r(`$${bonusAmount.toFixed(2)}`))
     .replace("{{totalCoffixCredit}}", r(`$${totalAmountWithBonus.toFixed(2)}`));
 
-  await emailService.sendInvoice({
+  await emailService.sendTopUpInvoice({
     to: customer.email,
     userId: customerId,
     invoiceHtml: invoice,

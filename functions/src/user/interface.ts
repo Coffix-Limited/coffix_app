@@ -27,4 +27,5 @@ export interface AppUser {
   allowWinACoffee?: boolean;
   allowWithdrawBalance?: boolean;
   allowCoffeeForHome?: boolean;
+  allowNotifications?: boolean;
 }

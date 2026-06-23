@@ -31,10 +31,14 @@ class AppGlobal extends Equatable {
   final bool? defShareCredit;
   final bool? defWithdrawBalance;
   final bool? defCoffixCreditAvailable;
+  // Receive purchase messages
   final bool? defGetPurchaseInfoByMail;
+  // Receive news and promotions
   final bool? defGetPromotions;
   final bool? defAllowWinACoffee;
   final bool? defAllowCoffeeForHome;
+  // Receive notifications
+  final bool? defAllowNotifications;
 
   const AppGlobal({
     this.GST,
@@ -65,6 +69,7 @@ class AppGlobal extends Equatable {
     this.defGetPromotions,
     this.defAllowWinACoffee,
     this.defAllowCoffeeForHome,
+    this.defAllowNotifications,
   });
 
   factory AppGlobal.fromJson(Map<String, dynamic> json) =>
@@ -99,6 +104,7 @@ class AppGlobal extends Equatable {
     bool? defGetPromotions,
     bool? defAllowWinACoffee,
     bool? defAllowCoffeeForHome,
+    bool? defAllowNotifications,
   }) => AppGlobal(
     GST: GST ?? this.GST,
     appVersion: appVersion ?? this.appVersion,
@@ -127,6 +133,7 @@ class AppGlobal extends Equatable {
     defGetPromotions: defGetPromotions ?? this.defGetPromotions,
     defAllowWinACoffee: defAllowWinACoffee ?? this.defAllowWinACoffee,
     defAllowCoffeeForHome: defAllowCoffeeForHome ?? this.defAllowCoffeeForHome,
+    defAllowNotifications: defAllowNotifications ?? this.defAllowNotifications,
   );
 
   @override
@@ -158,5 +165,6 @@ class AppGlobal extends Equatable {
     defGetPromotions,
     defAllowWinACoffee,
     defAllowCoffeeForHome,
+    defAllowNotifications,
   ];
 }

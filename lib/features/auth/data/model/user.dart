@@ -20,7 +20,9 @@ class AppUser {
   @DateTimeConverter()
   final DateTime? createdAt;
   final bool? emailVerified;
+  // Receive purchase messages
   final bool? getPurchaseInfoByMail;
+  // Receive news and promotions
   final bool? getPromotions;
   final bool? allowWinACoffee;
   final bool? allowWithdrawBalance;
@@ -37,6 +39,8 @@ class AppUser {
   final bool? withdrawBalance;
   final bool? coffixCreditAvailable;
   final bool? allowCoffeeForHome;
+  // Receieve notifications
+  final bool? allowNotifications;
 
   AppUser({
     this.creditAvailable,
@@ -67,6 +71,7 @@ class AppUser {
     this.withdrawBalance,
     this.coffixCreditAvailable,
     this.allowCoffeeForHome,
+    this.allowNotifications,
   });
 
   factory AppUser.fromJson(Map<String, dynamic> json) =>

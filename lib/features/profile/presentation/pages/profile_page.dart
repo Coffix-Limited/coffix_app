@@ -158,7 +158,9 @@ class _ProfileViewState extends State<ProfileView> {
                           },
                         ),
                         const SizedBox(height: AppSizes.md),
-                        if (user?.creditExpiry != null)
+                        if (user?.creditExpiry != null &&
+                            user?.creditAvailable != null &&
+                            user?.creditAvailable != 0)
                           Text(
                             "Expiration Date: ${user?.creditExpiry?.formatDate()}",
                             textAlign: TextAlign.center,
@@ -234,7 +236,7 @@ class _ProfileViewState extends State<ProfileView> {
             if ((user?.shareCredit == null || user?.shareCredit == true) &&
                 coffixCreditAvailable) ...[
               ProfileTile(
-                label: 'Share your balance',
+                label: 'Send Credit to a Friend',
                 onTap: () {
                   context.pushNamed(ShareYourBalancePage.route);
                 },
