@@ -66,6 +66,8 @@ export class WindcaveService {
     const lastName = userDoc.lastName;
     // 30 minutes
     const expiresAt = new Date(Date.now() + 1000 * 60 * 30);
+    const notificationUrl = `${process.env.BASE_URL}/webhook`;
+    logger.info("Creating Windcave session", { notificationUrl, merchantReference });
     const response = await fetch(`${this.windcaveApiUrl}/api/v1/sessions`, {
       method: "POST",
       headers: {
@@ -86,7 +88,7 @@ export class WindcaveService {
         },
         methods: ["card", "applepay", "googlepay"],
         expires: expiresAt.toISOString(),
-        notificationUrl: `${process.env.BASE_URL}/webhook`,
+        notificationUrl: notificationUrl,
         customer: {
           firstName: firstName ?? "",
           lastName: lastName ?? "",

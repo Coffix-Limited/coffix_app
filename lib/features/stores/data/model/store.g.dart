@@ -22,6 +22,7 @@ Store _$StoreFromJson(Map<String, dynamic> json) => Store(
     (k, e) => MapEntry(k, DayHours.fromJson(e as Map<String, dynamic>)),
   ),
   storeCode: json['storeCode'] as String?,
+  city: json['city'] as String?,
 );
 
 Map<String, dynamic> _$StoreToJson(Store instance) => <String, dynamic>{
@@ -33,6 +34,7 @@ Map<String, dynamic> _$StoreToJson(Store instance) => <String, dynamic>{
   'invoiceText': instance.invoiceText,
   'location': instance.location,
   'name': instance.name,
+  'city': instance.city,
   'openingHours': instance.openingHours,
   'holidayHours': instance.holidayHours,
   'storeCode': instance.storeCode,

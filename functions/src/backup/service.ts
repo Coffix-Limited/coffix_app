@@ -24,7 +24,9 @@ export class BackupService {
   // dev -> "(default)", prod -> "coffix-prod-australia" (mirrors firebaseAdmin.ts)
   private databaseName(): string {
     const gcloudProject = process.env.GCLOUD_PROJECT ?? "";
-    return gcloudProject.includes("dev") ? "(default)" : "coffix-prod-australia";
+    return gcloudProject.includes("dev")
+      ? "(default)"
+      : "coffix-prod-australia";
   }
 
   // Current NZ date as yyyy-MM-dd (en-CA yields ISO date formatting).
@@ -64,7 +66,7 @@ export class BackupService {
     const db = encodeURIComponent(this.databaseName());
     const url =
       `https://firestore.googleapis.com/v1/projects/${this.project}` +
-      `/databases/${db}/documents:exportDocuments`;
+      `/databases/${db}:exportDocuments`;
 
     const auth = new GoogleAuth({
       credentials: {

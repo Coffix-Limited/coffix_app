@@ -6,8 +6,13 @@ class ReferralRepositoryImpl extends ApiClient implements ReferralRepository {
   ReferralRepositoryImpl() : super(dio: Dio());
 
   @override
-  Future<String> createReferral({required List<Map<String, dynamic>> recipients}) async {
-    final result = await post('/referrals/send', data: {'recipients': recipients});
+  Future<String> createReferral({
+    required List<Map<String, dynamic>> recipients,
+  }) async {
+    final result = await post(
+      '/referrals/send',
+      data: {'recipients': recipients},
+    );
     return result.message ?? result.data?.toString() ?? '';
   }
 }

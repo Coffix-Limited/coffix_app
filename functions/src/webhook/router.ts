@@ -19,7 +19,9 @@ router.get("/", async (req, res) => {
     const sessionId = req.query.sessionId as string | undefined;
     if (!sessionId) {
       logger.warn("Webhook GET called without sessionId");
-      return res.status(200).json({ success: false, message: "sessionId is required" });
+      return res
+        .status(200)
+        .json({ success: false, message: "sessionId is required" });
     }
 
     await new WebhookService().handleWebhook(sessionId);
@@ -28,7 +30,9 @@ router.get("/", async (req, res) => {
   } catch (err) {
     logger.error("Webhook error:", err);
     // Return 200 even on error to prevent Windcave from retrying.
-    return res.status(200).json({ success: false, message: "Internal server error" });
+    return res
+      .status(200)
+      .json({ success: false, message: "Internal server error" });
   }
 });
 

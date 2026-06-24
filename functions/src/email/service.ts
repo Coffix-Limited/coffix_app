@@ -112,7 +112,6 @@ export class EmailService {
     const user = userSnap?.exists ? (userSnap.data() as AppUser) : null;
 
     const userVariables = buildUserVariables(user, params.email);
-    logger.info(`User variables: ${JSON.stringify(userVariables)}`);
     if (user?.getPurchaseInfoByMail === false && !params.forceSend) {
       logger.warn(
         `User ${params.userId} has purchase info mail disabled, skipping email send`,
@@ -302,6 +301,7 @@ export class EmailService {
   }
 
   async sendReferralEmail(params: SendReferralEmailSchema): Promise<void> {
+    logger.info(`Sending referral email to ${params.to}`);
     await this.send({
       email: params.to,
       subject: "You received a referral code from a friend!",
@@ -310,6 +310,7 @@ export class EmailService {
       variables: {
         referee_name: params.referee_name,
       },
+      forceSend: true,
     });
   }
 

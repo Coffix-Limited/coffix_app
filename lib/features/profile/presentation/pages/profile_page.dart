@@ -132,40 +132,54 @@ class _ProfileViewState extends State<ProfileView> {
                               0.0,
                               (sum, c) => sum + (c.amount ?? 0.0),
                             );
-                            return Text.rich(
-                              textAlign: TextAlign.center,
-                              TextSpan(
-                                children: [
-                                  creditBalance.toCurrencySuperscript(
-                                    style: AppTypography.headlineXl,
+                            final DateTime? latestCouponExpiry = coupons
+                                .map((c) => c.expiryDate)
+                                .whereType<DateTime>()
+                                .fold<DateTime?>(
+                                  null,
+                                  (latest, d) =>
+                                      latest == null || d.isAfter(latest)
+                                      ? d
+                                      : latest,
+                                );
+                            return Column(
+                              children: [
+                                Text.rich(
+                                  textAlign: TextAlign.center,
+                                  TextSpan(
+                                    children: [
+                                      creditBalance.toCurrencySuperscript(
+                                        style: AppTypography.headlineXl,
+                                      ),
+                                      if (totalCoupon > 0) ...[
+                                        TextSpan(
+                                          text: " + ",
+                                          style: AppTypography.headlineXl,
+                                        ),
+                                        totalCoupon.toCurrencySuperscript(
+                                          style: AppTypography.headlineXl,
+                                        ),
+                                        TextSpan(
+                                          text: " Coupon",
+                                          style: AppTypography.bodyXS,
+                                        ),
+                                      ],
+                                    ],
                                   ),
-                                  if (totalCoupon > 0) ...[
-                                    TextSpan(
-                                      text: " + ",
-                                      style: AppTypography.headlineXl,
-                                    ),
-                                    totalCoupon.toCurrencySuperscript(
-                                      style: AppTypography.headlineXl,
-                                    ),
-                                    TextSpan(
-                                      text: " Coupon",
-                                      style: AppTypography.bodyXS,
-                                    ),
-                                  ],
-                                ],
-                              ),
+                                ),
+                                const SizedBox(height: AppSizes.md),
+
+                                if (totalCoupon > 0 &&
+                                    latestCouponExpiry != null)
+                                  Text(
+                                    "Expiration Date: ${latestCouponExpiry.formatDate()}",
+                                    textAlign: TextAlign.center,
+                                  ),
+                              ],
                             );
                           },
                         ),
-                        const SizedBox(height: AppSizes.md),
 
-                        // if (user?.creditExpiry != null &&
-                        //     user?.creditAvailable != null &&
-                        //     user?.creditAvailable != 0)
-                        //   Text(
-                        //     "Expiration Date: ${user?.creditExpiry?.formatDate()}",
-                        //     textAlign: TextAlign.center,
-                        //   ),
                         AppButton.primary(
                           onPressed: () {
                             context.read<CreditCubit>().showTopUpField(false);

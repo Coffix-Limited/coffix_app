@@ -41,6 +41,68 @@ export function scheduledAtNZ(minutes: number): Date {
 }
 
 /**
+ * Returns a UTC Date for 23:59 NZ time, `daysFromNow` days after the current NZ
+ * date. Correctly accounts for NZ daylight saving (NZDT +13 / NZST +12) so the
+ * result always lands at end-of-day NZ wall-clock time.
+ *
+ * e.g. created on 01 Jan with daysFromNow = 7 → 08 Jan 23:59 NZ.
+ */
+export function endOfDayNZ(daysFromNow: number): Date {
+  // Read the target NZ calendar date `daysFromNow` days from now.
+  const target = new Date(Date.now() + daysFromNow * 24 * 60 * 60 * 1000);
+  const parts = new Intl.DateTimeFormat("en-NZ", {
+    timeZone: NZ_TZ,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(target);
+
+  const get = (type: string) =>
+    parts.find((p) => p.type === type)?.value ?? "00";
+  const year = Number(get("year"));
+  const month = Number(get("month"));
+  const day = Number(get("day"));
+
+  // Tentative UTC instant treating 23:59 NZ wall-clock as if it were UTC.
+  const tentative = Date.UTC(year, month - 1, day, 23, 59, 0, 0);
+
+  // Measure NZ's actual offset at that instant and correct for it.
+  const offsetMs = nzOffsetMs(new Date(tentative));
+  return new Date(tentative - offsetMs);
+}
+
+/**
+ * Returns NZ's UTC offset in milliseconds at the given instant (+13h during
+ * NZDT, +12h during NZST).
+ */
+function nzOffsetMs(date: Date): number {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: NZ_TZ,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
+  }).formatToParts(date);
+
+  const get = (type: string) =>
+    Number(parts.find((p) => p.type === type)?.value ?? "0");
+  // Hour can render as "24" at midnight in some environments; normalise.
+  const hour = get("hour") % 24;
+  const asUtc = Date.UTC(
+    get("year"),
+    get("month") - 1,
+    get("day"),
+    hour,
+    get("minute"),
+    get("second"),
+  );
+  return asUtc - date.getTime();
+}
+
+/**
  * Returns the given date formatted as "MM-DD-YYYY HH:mm AM/PM" in NZ time.
  */
 export function formatNzTime(date: Date): string {

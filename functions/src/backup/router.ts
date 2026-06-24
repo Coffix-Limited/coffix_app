@@ -1,7 +1,7 @@
 import express, { Request, Response } from "express";
 import { requirePost } from "../middleware/method";
-import { logger } from "firebase-functions";
 import { BackupService } from "./service";
+import { logger } from "firebase-functions";
 
 const router = express.Router();
 const backupService = new BackupService();
@@ -19,6 +19,7 @@ function requireCronSecret(request: Request, response: Response): boolean {
 
 // Phase 1: start the managed export, return immediately.
 router.post(
+  
   "/daily",
   requirePost,
   async (request: Request, response: Response) => {

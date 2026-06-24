@@ -13,6 +13,7 @@ class Store {
   final String? invoiceText;
   final String? location;
   final String? name;
+  final String? city;
 
   /// Weekly recurring hours
   final Map<String, DayHours>? openingHours;
@@ -34,6 +35,7 @@ class Store {
     this.openingHours,
     this.holidayHours,
     this.storeCode,
+    this.city,
   });
 
   factory Store.fromJson(Map<String, dynamic> json) => _$StoreFromJson(json);

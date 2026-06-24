@@ -2,6 +2,7 @@ import { firestore } from "../config/firebaseAdmin";
 import { GLOBAL_COLLECTION_ID } from "../constant/constant";
 import { logger } from "firebase-functions/v1";
 import { generateCouponCode } from "../utils/generateCouponCode";
+import { endOfDayNZ } from "../utils/nz_time";
 
 export class ReferralService {
   async createReferral({
@@ -19,8 +20,10 @@ export class ReferralService {
       7) as number;
 
     const referralTime = new Date();
-    const validTime = new Date(
-      referralTime.getTime() + referralExpiryDays * 24 * 60 * 60 * 1000,
+    const validTime = endOfDayNZ(referralExpiryDays);
+
+    logger.info(
+      `Creating referral for referrer: ${referrerUid} and referee: ${referee.email}`,
     );
 
     const referralRef = firestore.collection("referrals").doc();
@@ -36,6 +39,10 @@ export class ReferralService {
       refereeCouponId: null,
       status: "pending",
     });
+
+    logger.info(
+      `Referral created for referrer: ${referrerUid} and referee: ${referee.email}`,
+    );
   }
 
   async activateReferral(refereeUid: string, email: string): Promise<void> {
@@ -146,14 +153,14 @@ export class ReferralService {
       ...baseCoupon,
       docId: referrerCouponRef.id,
       code: referrerCode,
-      userIds: [referral.referrer],
+      userId: referral.referrer,
     });
 
     batch.set(refereeCouponRef, {
       ...baseCoupon,
       docId: refereeCouponRef.id,
       code: refereeCode,
-      userIds: [customerId],
+      userId: customerId,
     });
 
     batch.update(referralDoc.ref, {
