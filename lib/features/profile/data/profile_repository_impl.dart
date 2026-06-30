@@ -24,7 +24,7 @@ class ProfileRepositoryImpl extends ApiClient implements ProfileRepository {
     bool? allowNotifications, // Receive notifications
     bool? getPromotions, // Receive news and promotions
     bool? getPurchaseInfoByMail, // Receive purchase messages
-    bool? allowWithdrawBalance // TODO: ASK WHAT IS THE PURPOSE FOR THIS
+    bool? allowWithdrawBalance,
   }) async {
     try {
       final customerRef = _firestore
@@ -63,7 +63,6 @@ class ProfileRepositoryImpl extends ApiClient implements ProfileRepository {
     required List<Map<String, dynamic>> datas,
   }) async {
     // implement the referral in here
-    
   }
 
   @override

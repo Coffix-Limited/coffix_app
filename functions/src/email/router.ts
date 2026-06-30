@@ -18,7 +18,14 @@ router.post("/gift", requirePost, async (req: Request, res: Response) => {
   }
 
   try {
-    await emailService.sendGift(validation.data);
+    // Test/utility endpoint — preserves the previous receiver-style wording.
+    const { to, userId, amount, recipientFirstName } = validation.data;
+    await emailService.sendGiftToRecipient({
+      to,
+      userId,
+      amount,
+      senderFullName: recipientFirstName,
+    });
     return res.status(200).json({ success: true, message: "Gift email sent" });
   } catch (e: any) {
     return res.status(500).json({

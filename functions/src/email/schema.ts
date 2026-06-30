@@ -19,6 +19,12 @@ export const sendReferralEmailSchema = z.object({
   referee_name: z.string().min(1),
 });
 
+export const sendCouponEmailSchema = z.object({
+  to: z.email(),
+  amount: z.number().positive(),
+  expiryDate: z.coerce.date(),
+});
+
 export interface SendEmailParams {
   email: string;
   subject?: string;
@@ -29,13 +35,22 @@ export interface SendEmailParams {
   forceSend?: boolean;
 }
 
-export interface GiftEmailParams {
+// Gift email sent to the sender (the user who shared their credit).
+export interface GiftFromEmailParams {
   to: string;
   userId: string;
   amount: number;
   recipientFullName?: string;
+  transactionNumber?: string;
+  storeInvoiceText?: string;
+}
+
+// Gift email sent to the recipient (the user who received the credit).
+export interface GiftToEmailParams {
+  to: string;
+  userId: string;
+  amount: number;
   senderFullName?: string;
-  isSender?: boolean;
   transactionNumber?: string;
   storeInvoiceText?: string;
 }
@@ -65,3 +80,4 @@ export interface SendBuiltInvoiceParams {
 export type SendGiftEmailSchema = z.infer<typeof sendGiftEmailSchema>;
 export type SendOTPSchema = z.infer<typeof sendOTPSchema>;
 export type SendReferralEmailSchema = z.infer<typeof sendReferralEmailSchema>;
+export type SendCouponEmailSchema = z.infer<typeof sendCouponEmailSchema>;

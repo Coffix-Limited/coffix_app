@@ -19,7 +19,6 @@ function requireCronSecret(request: Request, response: Response): boolean {
 
 // Phase 1: start the managed export, return immediately.
 router.post(
-  
   "/daily",
   requirePost,
   async (request: Request, response: Response) => {
@@ -50,9 +49,8 @@ router.post(
       const date = new Date().toLocaleDateString("en-CA", {
         timeZone: "Pacific/Auckland",
       });
-      const zipPath = await backupService.zipExport(
-        `firestore-exports/${date}`,
-      );
+      const prefix = await backupService.latestExportPrefix(date);
+      const zipPath = await backupService.zipExport(prefix);
       await backupService.createSignedUrlAndEmail(zipPath, date);
       logger.info("[backup/zip-and-send] done:", zipPath);
       return response.status(200).json({ success: true, data: { zipPath } });

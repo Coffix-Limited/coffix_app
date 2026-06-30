@@ -36,6 +36,17 @@ export class BackupService {
     });
   }
 
+  // Current NZ time as HHmmss (en-GB, 24h) with colons stripped, e.g. "142233".
+  // Used to give each export its own sub-folder so same-day runs don't collide.
+  private nzTimeStamp(): string {
+    return new Date()
+      .toLocaleTimeString("en-GB", {
+        timeZone: "Pacific/Auckland",
+        hour12: false,
+      })
+      .replace(/:/g, "");
+  }
+
   // Storage client built from the service-account creds so V4 URL signing happens
   // locally with the private key (no extra signBlob IAM needed).
   private storageClient(): Storage {
@@ -60,7 +71,10 @@ export class BackupService {
   }> {
     const bucket = this.bucketName();
     const date = this.nzDateStamp();
-    const prefix = `${EXPORT_FOLDER}/${date}`;
+    const time = this.nzTimeStamp();
+    // Nest each run under a timestamped sub-folder so re-runs on the same day
+    // don't hit Firestore's "Path already exists" error.
+    const prefix = `${EXPORT_FOLDER}/${date}/${time}`;
     const outputUriPrefix = `gs://${bucket}/${prefix}`;
 
     const db = encodeURIComponent(this.databaseName());
@@ -86,6 +100,32 @@ export class BackupService {
 
     logger.info(`[backup] export started: ${data.name} -> ${outputUriPrefix}`);
     return { operationName: data.name, prefix, date };
+  }
+
+  /**
+   * Resolve the latest export sub-folder for a given date. Since each run nests
+   * under a timestamped folder (firestore-exports/<date>/<HHmmss>), Phase 2 can
+   * no longer rebuild the path from the date alone — it must find the newest one.
+   */
+  async latestExportPrefix(date: string): Promise<string> {
+    const bucket = this.storageClient().bucket(this.bucketName());
+    const dayPrefix = `${EXPORT_FOLDER}/${date}/`;
+
+    const [files] = await bucket.getFiles({ prefix: dayPrefix });
+    if (files.length === 0) {
+      throw new Error(`No export found under ${dayPrefix}`);
+    }
+
+    // Collect the immediate <timestamp> sub-folders, pick the lexicographically
+    // greatest (HHmmss sorts chronologically within a day).
+    const timestamps = new Set<string>();
+    for (const f of files) {
+      const ts = f.name.substring(dayPrefix.length).split("/")[0];
+      if (ts) timestamps.add(ts);
+    }
+
+    const latest = [...timestamps].sort().at(-1);
+    return `${EXPORT_FOLDER}/${date}/${latest}`;
   }
 
   /**
@@ -132,6 +172,7 @@ export class BackupService {
    * Phase 2b: create a 7-day V4 signed URL for the zip and email it to IT via Resend.
    */
   async createSignedUrlAndEmail(zipPath: string, date: string): Promise<void> {
+    const downloadName = `coffix-firestore-backup-${date}.zip`;
     const [url] = await this.storageClient()
       .bucket(this.bucketName())
       .file(zipPath)
@@ -139,6 +180,9 @@ export class BackupService {
         version: "v4",
         action: "read",
         expires: Date.now() + SEVEN_DAYS_MS, // V4 max is 7 days
+        // Force the browser to save the file under a friendly name
+        // instead of the bucket path (e.g. "2026-06-26.zip").
+        responseDisposition: `attachment; filename="${downloadName}"`,
       });
 
     const subject = `Coffix Firestore backup — ${date}`;

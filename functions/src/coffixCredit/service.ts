@@ -214,14 +214,12 @@ export class CoffixCreditService {
     const emailService = new EmailService();
     await Promise.allSettled([
       emailService
-        .sendGift({
+        .sendGiftToRecipient({
           to: recipientEmail,
           userId: senderId,
           amount,
           transactionNumber,
-          recipientFullName,
           senderFullName,
-          isSender: false,
           storeInvoiceText,
         })
         .catch((emailError) =>
@@ -230,14 +228,12 @@ export class CoffixCreditService {
           }),
         ),
       emailService
-        .sendGift({
+        .sendGiftToSender({
           to: senderData!.email as string,
           userId: senderId,
           amount,
           transactionNumber,
           recipientFullName,
-          senderFullName,
-          isSender: true,
           storeInvoiceText,
         })
         .catch((emailError) =>

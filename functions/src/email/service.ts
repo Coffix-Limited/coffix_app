@@ -4,8 +4,10 @@ import { renderTemplate } from "../utils/renderEmailTemplate";
 import { wrapInEmailShell } from "../utils/emailShell";
 import { logger } from "firebase-functions";
 import {
-  GiftEmailParams,
+  GiftFromEmailParams,
+  GiftToEmailParams,
   SendBuiltInvoiceParams,
+  SendCouponEmailSchema,
   SendEmailParams,
   SendOTPSchema,
   SendReferralEmailSchema,
@@ -145,11 +147,9 @@ export class EmailService {
     await this.resendSend({ to: params.email, subject, html });
   }
 
-  // send gift notification email
-  async sendGift(params: GiftEmailParams): Promise<void> {
-    const giftLabel = params.isSender
-      ? `Gift to ${params.recipientFullName ?? ""}`
-      : `${params.senderFullName ?? ""} gave you a gift`;
+  // gift notification email for the sender (the user who shared credit)
+  async sendGiftToSender(params: GiftFromEmailParams): Promise<void> {
+    const giftLabel = `Gift to ${params.recipientFullName ?? ""}`;
 
     const invoiceHtml = renderTemplate(giftEmailTemplate, {
       transaction_number: params.transactionNumber ?? "",
@@ -160,13 +160,39 @@ export class EmailService {
     });
     await this.send({
       email: params.to,
-      documentId: "GIFT",
+      documentId: "GIFT_FROM",
       userId: params.userId,
       variables: {
         gift_amount: params.amount.toFixed(2),
         transaction_number: params.transactionNumber ?? "",
         gift_label: giftLabel,
         invoice: invoiceHtml,
+        name: params.recipientFullName ?? "",
+      },
+    });
+  }
+
+  // gift notification email for the recipient (the user who received credit)
+  async sendGiftToRecipient(params: GiftToEmailParams): Promise<void> {
+    const giftLabel = `${params.senderFullName ?? ""} gave you a gift`;
+
+    const invoiceHtml = renderTemplate(giftEmailTemplate, {
+      transaction_number: params.transactionNumber ?? "",
+      gift_label: giftLabel,
+      gift_amount: params.amount.toFixed(2),
+      date: nowNZ(),
+      invoice_text: params.storeInvoiceText ?? "",
+    });
+    await this.send({
+      email: params.to,
+      documentId: "GIFT_TO",
+      userId: params.userId,
+      variables: {
+        gift_amount: params.amount.toFixed(2),
+        transaction_number: params.transactionNumber ?? "",
+        gift_label: giftLabel,
+        invoice: invoiceHtml,
+        name: params.senderFullName ?? "",
       },
     });
   }
@@ -309,6 +335,20 @@ export class EmailService {
       userId: params.userId,
       variables: {
         referee_name: params.referee_name,
+      },
+      forceSend: true,
+    });
+  }
+
+  async sendCouponEmail(params: SendCouponEmailSchema): Promise<void> {
+    logger.info(`Sending coupon email to ${params.to}`);
+    await this.send({
+      email: params.to,
+      subject: "You've received a Coffix coupon!",
+      documentId: "COUPON",
+      variables: {
+        amount: params.amount.toFixed(2),
+        expiry_date: formatNzDate(params.expiryDate),
       },
       forceSend: true,
     });

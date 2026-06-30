@@ -169,7 +169,7 @@ export async function buildAndSendGiftInvoice(
 
   const sender = await firebaseService.findUserByCustomerId(customerId);
 
-  await emailService.sendGift({
+  await emailService.sendGiftToSender({
     to: sender?.email as string,
     userId: customerId,
     amount: transaction.amount as number,
