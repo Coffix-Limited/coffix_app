@@ -15,8 +15,8 @@ class PaymentMethodConverter implements JsonConverter<PaymentMethod?, dynamic> {
         return PaymentMethod.coffixCredit;
       case 'card':
         return PaymentMethod.card;
-      case 'wallet':
-        return PaymentMethod.wallet;
+      case 'cash':
+        return PaymentMethod.cash;
       default:
         return PaymentMethod.card;
     }
@@ -32,8 +32,8 @@ enum PaymentMethod {
   coffixCredit,
   @JsonValue("card")
   card,
-  @JsonValue("wallet")
-  wallet,
+  @JsonValue("cash")
+  cash,
 }
 
 enum PaymentStatus {

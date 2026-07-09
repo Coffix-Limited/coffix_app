@@ -18,3 +18,21 @@ export const refundTransactionSchema = z.object({
 });
 
 export type RefundTransactionSchema = z.infer<typeof refundTransactionSchema>;
+
+export const createTransactionSchema = z
+  .object({
+    userId: z.string().min(1),
+    transactionType: z.enum(["order", "gift", "refund"]),
+    paymentMethod: z.enum(["coffixCredit", "cash"]),
+    amount: z.number().positive(),
+    notes: z.string().optional(),
+  })
+  .refine(
+    (d) => !(d.paymentMethod === "cash" && d.transactionType === "gift"),
+    {
+      message: "cash is not supported for gift",
+      path: ["paymentMethod"],
+    },
+  );
+
+export type CreateTransactionSchema = z.infer<typeof createTransactionSchema>;

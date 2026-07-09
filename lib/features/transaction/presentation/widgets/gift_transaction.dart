@@ -78,20 +78,23 @@ class GiftTransactionState extends State<GiftTransaction> {
               Expanded(
                 child: Row(
                   children: [
-                    AppClickable(
-                      onPressed: () {
-                        context.read<OrderCubit>().sendOrderToEmail(
-                          transactionNumber:
-                              widget.transaction.transactionNumber ?? '',
-                        );
-                      },
-                      child: Image.asset(
-                        AppImages.email,
-                        width: 24,
-                        height: 24,
+                    if (widget.transaction.isManual != true)
+                      Padding(
+                        padding: const EdgeInsets.only(right: AppSizes.sm),
+                        child: AppClickable(
+                          onPressed: () {
+                            context.read<OrderCubit>().sendOrderToEmail(
+                              transactionNumber:
+                                  widget.transaction.transactionNumber ?? '',
+                            );
+                          },
+                          child: Image.asset(
+                            AppImages.email,
+                            width: 24,
+                            height: 24,
+                          ),
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: AppSizes.sm),
                     Text(
                       "#${widget.transaction.transactionNumber ?? 'N/A'}",
                       style: theme.textTheme.titleSmall?.copyWith(
@@ -117,10 +120,18 @@ class GiftTransactionState extends State<GiftTransaction> {
           Row(
             children: [
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [Text(label())],
-                ),
+                child: widget.transaction.isManual == true
+                    ? Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text("Manual transaction:"),
+                          Text(widget.transaction.notes ?? ''),
+                        ],
+                      )
+                    : Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [Text(label())],
+                      ),
               ),
 
               SizedBox(width: AppSizes.md),

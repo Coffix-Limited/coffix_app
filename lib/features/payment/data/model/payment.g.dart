@@ -29,7 +29,7 @@ Map<String, dynamic> _$PaymentRequestToJson(PaymentRequest instance) =>
 const _$PaymentMethodEnumMap = {
   PaymentMethod.coffixCredit: 'coffixCredit',
   PaymentMethod.card: 'card',
-  PaymentMethod.wallet: 'wallet',
+  PaymentMethod.cash: 'cash',
 };
 
 PaymentItem _$PaymentItemFromJson(Map<String, dynamic> json) => PaymentItem(

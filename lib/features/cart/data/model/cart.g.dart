@@ -30,5 +30,5 @@ Map<String, dynamic> _$CartToJson(Cart instance) => <String, dynamic>{
 const _$PaymentMethodEnumMap = {
   PaymentMethod.coffixCredit: 'coffixCredit',
   PaymentMethod.card: 'card',
-  PaymentMethod.wallet: 'wallet',
+  PaymentMethod.cash: 'cash',
 };

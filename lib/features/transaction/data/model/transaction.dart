@@ -53,6 +53,8 @@ class Transaction {
   double? gstAmount;
   String? gstNumber;
   String? originalTransactionNumber;
+  String? notes;
+  bool? isManual;
 
   Transaction({
     this.docId,

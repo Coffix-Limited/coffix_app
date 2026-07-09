@@ -57,7 +57,7 @@ class _ShareYourBalanceViewState extends State<ShareYourBalanceView> {
       orElse: () => null,
     );
     return Scaffold(
-      appBar: const AppBackHeader(title: 'My Coffix Credit Balance'),
+      appBar: const AppBackHeader(title: 'Send a Credit Gift'),
       body: BlocListener<ProfileCubit, ProfileState>(
         listener: (context, state) {
           state.maybeWhen(
@@ -93,7 +93,7 @@ class _ShareYourBalanceViewState extends State<ShareYourBalanceView> {
                             children: [
                               const SizedBox(height: AppSizes.xxl),
                               AppCard(
-                                color: AppColors.softGrey,
+                                color: AppColors.primaryLight,
                                 child: Column(
                                   crossAxisAlignment:
                                       CrossAxisAlignment.stretch,
@@ -120,8 +120,15 @@ class _ShareYourBalanceViewState extends State<ShareYourBalanceView> {
                                   ],
                                 ),
                               ),
-                              const SizedBox(height: AppSizes.xxl),
-                              const SizedBox(height: AppSizes.md),
+                              const SizedBox(height: AppSizes.sm),
+                              Text(
+                                "Send some of your Coffix Credit to a friend, family member or a colleague",
+                                style: AppTypography.bodyXS.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.textBlackColor,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
 
                               const SizedBox(height: AppSizes.md),
                               AppField<String>(

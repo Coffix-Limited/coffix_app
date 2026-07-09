@@ -127,7 +127,7 @@ class _PaymentOptionsPageViewState extends State<PaymentOptionsPageView> {
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
                             AppCard(
-                              color: AppColors.primary.withValues(alpha: 0.1),
+                              color: AppColors.primaryLight,
                               padding: const EdgeInsets.symmetric(
                                 horizontal: AppSizes.lg,
                                 vertical: AppSizes.md,

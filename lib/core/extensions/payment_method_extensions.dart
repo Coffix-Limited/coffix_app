@@ -7,8 +7,8 @@ extension PaymentMethodExtensions on PaymentMethod {
         return 'Credit Card';
       case PaymentMethod.coffixCredit:
         return 'Coffix Credit';
-      case PaymentMethod.wallet:
-        return 'Wallet';
+      case PaymentMethod.cash:
+        return 'Cash';
     }
   }
 }

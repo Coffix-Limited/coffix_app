@@ -6,34 +6,39 @@ part of 'transaction.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-Transaction _$TransactionFromJson(Map<String, dynamic> json) => Transaction(
-  docId: json['docId'] as String?,
-  orderId: json['orderId'] as String?,
-  customerId: json['customerId'] as String?,
-  amount: (json['amount'] as num?)?.toDouble(),
-  createdAt: const DateTimeConverter().fromJson(json['createdAt']),
-  status: $enumDecodeNullable(
-    _$TransactionStatusEnumMap,
-    json['status'],
-    unknownValue: TransactionStatus.created,
-  ),
-  paymentMethod: const PaymentMethodConverter().fromJson(json['paymentMethod']),
-  paymentId: json['paymentId'] as String?,
-  paymentTime: const DateTimeConverter().fromJson(json['paymentTime']),
-  orderNumber: json['orderNumber'] as String?,
-  type: json['type'] as String?,
-  recipientCustomerId: json['recipientCustomerId'] as String?,
-  recipientEmail: json['recipientEmail'] as String?,
-  recipientFullName: json['recipientFullName'] as String?,
-  senderFullName: json['senderFullName'] as String?,
-  senderEmail: json['senderEmail'] as String?,
-  transactionNumber: json['transactionNumber'] as String?,
-  totalAmount: (json['totalAmount'] as num?)?.toDouble(),
-  gst: (json['gst'] as num?)?.toDouble(),
-  gstAmount: (json['gstAmount'] as num?)?.toDouble(),
-  gstNumber: json['gstNumber'] as String?,
-  originalTransactionNumber: json['originalTransactionNumber'] as String?,
-);
+Transaction _$TransactionFromJson(Map<String, dynamic> json) =>
+    Transaction(
+        docId: json['docId'] as String?,
+        orderId: json['orderId'] as String?,
+        customerId: json['customerId'] as String?,
+        amount: (json['amount'] as num?)?.toDouble(),
+        createdAt: const DateTimeConverter().fromJson(json['createdAt']),
+        status: $enumDecodeNullable(
+          _$TransactionStatusEnumMap,
+          json['status'],
+          unknownValue: TransactionStatus.created,
+        ),
+        paymentMethod: const PaymentMethodConverter().fromJson(
+          json['paymentMethod'],
+        ),
+        paymentId: json['paymentId'] as String?,
+        paymentTime: const DateTimeConverter().fromJson(json['paymentTime']),
+        orderNumber: json['orderNumber'] as String?,
+        type: json['type'] as String?,
+        recipientCustomerId: json['recipientCustomerId'] as String?,
+        recipientEmail: json['recipientEmail'] as String?,
+        recipientFullName: json['recipientFullName'] as String?,
+        senderFullName: json['senderFullName'] as String?,
+        senderEmail: json['senderEmail'] as String?,
+        transactionNumber: json['transactionNumber'] as String?,
+        totalAmount: (json['totalAmount'] as num?)?.toDouble(),
+        gst: (json['gst'] as num?)?.toDouble(),
+        gstAmount: (json['gstAmount'] as num?)?.toDouble(),
+        gstNumber: json['gstNumber'] as String?,
+        originalTransactionNumber: json['originalTransactionNumber'] as String?,
+      )
+      ..notes = json['notes'] as String?
+      ..isManual = json['isManual'] as bool?;
 
 Map<String, dynamic> _$TransactionToJson(Transaction instance) =>
     <String, dynamic>{
@@ -61,6 +66,8 @@ Map<String, dynamic> _$TransactionToJson(Transaction instance) =>
       'gstAmount': instance.gstAmount,
       'gstNumber': instance.gstNumber,
       'originalTransactionNumber': instance.originalTransactionNumber,
+      'notes': instance.notes,
+      'isManual': instance.isManual,
     };
 
 const _$TransactionStatusEnumMap = {

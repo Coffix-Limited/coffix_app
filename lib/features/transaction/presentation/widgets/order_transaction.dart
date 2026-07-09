@@ -62,24 +62,27 @@ class OrderTransactionState extends State<OrderTransaction> {
               Expanded(
                 child: Row(
                   children: [
-                    AppClickable(
-                      onPressed: () {
-                        LogService().emailTransaction(
-                          transactionNumber:
-                              widget.transaction.transactionNumber ?? '',
-                        );
-                        context.read<OrderCubit>().sendOrderToEmail(
-                          transactionNumber:
-                              widget.transaction.transactionNumber ?? '',
-                        );
-                      },
-                      child: Image.asset(
-                        AppImages.email,
-                        width: 24,
-                        height: 24,
+                    if (widget.transaction.isManual != true)
+                      Padding(
+                        padding: const EdgeInsets.only(right: AppSizes.sm),
+                        child: AppClickable(
+                          onPressed: () {
+                            LogService().emailTransaction(
+                              transactionNumber:
+                                  widget.transaction.transactionNumber ?? '',
+                            );
+                            context.read<OrderCubit>().sendOrderToEmail(
+                              transactionNumber:
+                                  widget.transaction.transactionNumber ?? '',
+                            );
+                          },
+                          child: Image.asset(
+                            AppImages.email,
+                            width: 24,
+                            height: 24,
+                          ),
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: AppSizes.sm),
                     Text(
                       "#${widget.transaction.transactionNumber ?? 'N/A'}",
                       style: theme.textTheme.titleSmall?.copyWith(
@@ -104,14 +107,71 @@ class OrderTransactionState extends State<OrderTransaction> {
           const SizedBox(height: AppSizes.sm),
           Row(
             children: [
-              order?.items != null && order!.items!.isNotEmpty
+              _OrderInformation(order: order, transaction: widget.transaction),
+              SizedBox(width: AppSizes.md),
+              Column(
+                children: [
+                  Text.rich(
+                    widget.transaction.amount?.toCurrencySuperscript(
+                          style: AppTypography.titleS.copyWith(
+                            color:
+                                widget.transaction.paymentMethod ==
+                                    PaymentMethod.coffixCredit
+                                ? AppColors.error
+                                : AppColors.textBlackColor,
+                          ),
+                        ) ??
+                        0.00.toCurrencySuperscript(
+                          style: AppTypography.titleS.copyWith(),
+                        ),
+                  ),
+                  Text(widget.transaction.paymentMethod?.label ?? ''),
+                  StatusChip(label: statusLabel, color: statusColor),
+                ],
+              ),
+            ],
+          ),
+          Text(
+            order?.storeName ?? '',
+            style: AppTypography.body2XS.copyWith(
+              color: AppColors.textBlackColor,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _OrderInformation extends StatelessWidget {
+  const _OrderInformation({required this.order, required this.transaction});
+
+  final Order? order;
+  final Transaction transaction;
+
+  @override
+  Widget build(BuildContext context) {
+    return transaction.isManual == true
+        ? Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text("Manual transaction:"),
+                Text(transaction.notes ?? ''),
+              ],
+            ),
+          )
+        : Row(
+            children: [
+              order != null && order!.items!.isNotEmpty
                   ? Expanded(
                       child: ListView.builder(
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
-                        itemCount: order.items!.length,
+                        itemCount: order!.items!.length,
                         itemBuilder: (context, index) {
-                          final Item item = order.items![index];
+                          final Item item = order!.items![index];
                           final imageUrl = item.productImageUrl ?? '';
                           final List<ItemModifier> modifiers =
                               item.modifiers ?? [];
@@ -243,39 +303,7 @@ class OrderTransactionState extends State<OrderTransaction> {
                       ),
                     )
                   : const Expanded(child: Text('No items')),
-
-              SizedBox(width: AppSizes.md),
-              Column(
-                children: [
-                  Text.rich(
-                    widget.transaction.amount?.toCurrencySuperscript(
-                          style: AppTypography.titleS.copyWith(
-                            color:
-                                widget.transaction.paymentMethod ==
-                                    PaymentMethod.coffixCredit
-                                ? AppColors.error
-                                : AppColors.textBlackColor,
-                          ),
-                        ) ??
-                        0.00.toCurrencySuperscript(
-                          style: AppTypography.titleS.copyWith(),
-                        ),
-                  ),
-                  Text(widget.transaction.paymentMethod?.label ?? ''),
-                  StatusChip(label: statusLabel, color: statusColor),
-                ],
-              ),
             ],
-          ),
-          Text(
-            order?.storeName ?? '',
-            style: AppTypography.body2XS.copyWith(
-              color: AppColors.textBlackColor,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
-    );
+          );
   }
 }

@@ -118,7 +118,7 @@ class _ProfileViewState extends State<ProfileView> {
                     textAlign: TextAlign.center,
                   ),
                   AppCard(
-                    color: AppColors.primary.withValues(alpha: 0.1),
+                    color: AppColors.primaryLight,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [

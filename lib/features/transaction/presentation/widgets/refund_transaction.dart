@@ -7,6 +7,7 @@ import 'package:coffix_app/core/extensions/payment_method_extensions.dart';
 import 'package:coffix_app/core/extensions/price_extensions.dart';
 import 'package:coffix_app/core/theme/typography.dart';
 import 'package:coffix_app/features/order/logic/order_cubit.dart';
+import 'package:coffix_app/features/payment/data/model/payment.dart';
 import 'package:coffix_app/features/transaction/data/model/transaction.dart';
 import 'package:coffix_app/features/transaction/logic/transaction_cubit.dart';
 import 'package:coffix_app/presentation/atoms/app_clickable.dart';
@@ -52,24 +53,27 @@ class RefundTransactionState extends State<RefundTransaction> {
               Expanded(
                 child: Row(
                   children: [
-                    AppClickable(
-                      onPressed: () {
-                        LogService().emailTransaction(
-                          transactionNumber:
-                              widget.transaction.transactionNumber ?? '',
-                        );
-                        context.read<OrderCubit>().sendOrderToEmail(
-                          transactionNumber:
-                              widget.transaction.transactionNumber ?? '',
-                        );
-                      },
-                      child: Image.asset(
-                        AppImages.email,
-                        width: 24,
-                        height: 24,
+                    if (widget.transaction.isManual != true)
+                      Padding(
+                        padding: const EdgeInsets.only(right: AppSizes.sm),
+                        child: AppClickable(
+                          onPressed: () {
+                            LogService().emailTransaction(
+                              transactionNumber:
+                                  widget.transaction.transactionNumber ?? '',
+                            );
+                            context.read<OrderCubit>().sendOrderToEmail(
+                              transactionNumber:
+                                  widget.transaction.transactionNumber ?? '',
+                            );
+                          },
+                          child: Image.asset(
+                            AppImages.email,
+                            width: 24,
+                            height: 24,
+                          ),
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: AppSizes.sm),
                     Text(
                       "#${widget.transaction.transactionNumber ?? 'N/A'}",
                       style: theme.textTheme.titleSmall?.copyWith(
@@ -95,9 +99,17 @@ class RefundTransactionState extends State<RefundTransaction> {
           Row(
             children: [
               Expanded(
-                child: Text(
-                  "Order #${widget.transaction.originalTransactionNumber ?? 'N/A'} has been credited",
-                ),
+                child: widget.transaction.isManual == true
+                    ? Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text("Manual transaction:"),
+                          Text(widget.transaction.notes ?? ''),
+                        ],
+                      )
+                    : Text(
+                        "Order #${widget.transaction.originalTransactionNumber ?? 'N/A'} has been credited",
+                      ),
               ),
               SizedBox(width: AppSizes.md),
               Column(
@@ -105,7 +117,11 @@ class RefundTransactionState extends State<RefundTransaction> {
                   Text.rich(
                     widget.transaction.amount?.toCurrencySuperscript(
                           style: AppTypography.titleS.copyWith(
-                            color: AppColors.success,
+                            color:
+                                widget.transaction.paymentMethod ==
+                                    PaymentMethod.cash
+                                ? AppColors.textBlackColor
+                                : AppColors.success,
                           ),
                         ) ??
                         0.00.toCurrencySuperscript(

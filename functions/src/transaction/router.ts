@@ -4,6 +4,7 @@ import { EmailService } from "../email/service";
 import FirebaseService from "../firebase/service";
 
 import {
+  createTransactionSchema,
   invoiceTransactionSchema,
   refundTransactionSchema,
   reprintTransactionSchema,
@@ -290,6 +291,65 @@ router.post(
       return response.status(500).json({
         success: false,
         message: e.message ?? "Failed to process refund",
+      });
+    }
+  },
+);
+
+router.post(
+  "/create",
+  requirePost,
+  async (request: Request, response: Response) => {
+    const validation = createTransactionSchema.safeParse(request.body);
+    if (!validation.success) {
+      const errors = validation.error.issues
+        .map((i) => `${i.path.join(".")}: ${i.message}`)
+        .join(", ");
+      return response.status(400).json({ success: false, errors });
+    }
+
+    try {
+      const { userId, transactionType, paymentMethod, amount, notes } =
+        validation.data;
+      const firebaseService = new FirebaseService();
+
+      const customer = await firebaseService.findUserByCustomerId(userId);
+      if (!customer) {
+        return response
+          .status(404)
+          .json({ success: false, message: "Customer not found" });
+      }
+
+      const transactionNumber = await generateTransactionNumber();
+
+      const transactionId = await firebaseService.createManualTransaction({
+        customerId: userId,
+        transactionType,
+        paymentMethod,
+        amount,
+        transactionNumber,
+        notes,
+      });
+
+      await logService.log({
+        customerId: userId,
+        category: "transaction",
+        severityLevel: 5,
+        action: "Manual transaction created",
+        notes: `${transactionType}/${paymentMethod} ${amount}`,
+      });
+
+      return response.status(200).json({
+        success: true,
+        message: "Transaction created",
+        transactionId,
+        transactionNumber,
+      });
+    } catch (e: any) {
+      logger.error("Failed to create transaction:", e);
+      return response.status(500).json({
+        success: false,
+        message: e.message ?? "Failed to create transaction",
       });
     }
   },

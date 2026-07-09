@@ -732,6 +732,113 @@ class FirebaseService {
     return refundRef.id;
   }
 
+  async createManualTransaction({
+    customerId,
+    transactionType,
+    paymentMethod,
+    amount,
+    transactionNumber,
+    notes,
+  }: {
+    customerId: string;
+    transactionType: "order" | "gift" | "refund";
+    paymentMethod: "coffixCredit" | "cash";
+    amount: number;
+    transactionNumber: string;
+    notes?: string;
+  }): Promise<string> {
+    const customerRef = firestore.collection("customers").doc(customerId);
+    const txRef = firestore.collection("transactions").doc();
+    const now = new Date();
+
+    const isCash = paymentMethod === "cash";
+    const isGift =
+      paymentMethod === "coffixCredit" && transactionType === "gift";
+
+    // GST is recorded for all cash transactions.
+    let gst = 0;
+    let gstAmount = 0;
+    if (isCash) {
+      const global = await this.getGlobal();
+      gst = (global.GST ?? 0) as number;
+      gstAmount = amount - amount / (1 + gst / 100);
+    }
+
+    // For a manual gift, the userId is the recipient. Resolve their name,
+    // email and preferred-store context so the written doc matches the shape
+    // of a received gift (see createGiftTransaction). No sender / no
+    // deduction — this is a system gift.
+    let recipientFullName = "";
+    let recipientEmail = "";
+    if (isGift) {
+      const userDoc = await this.findUserByCustomerId(customerId);
+      recipientFullName =
+        [userDoc?.firstName, userDoc?.lastName].filter(Boolean).join(" ") || "";
+      recipientEmail = (userDoc?.email ?? "") as string;
+    }
+
+    // creditAvailable delta:
+    //   order/coffixCredit  => -amount (deduct)
+    //   gift/coffixCredit   => +amount (add to recipient userId)
+    //   refund/coffixCredit => +amount (add)
+    //   refund/cash         =>  0      (no credit movement)
+    let delta = 0;
+    if (paymentMethod === "coffixCredit") {
+      delta = transactionType === "order" ? -amount : amount;
+    }
+
+    await firestore.runTransaction(async (tx) => {
+      if (delta !== 0) {
+        const snap = await tx.get(customerRef);
+        const current = (snap.data()?.creditAvailable ?? 0) as number;
+        tx.set(
+          customerRef,
+          { creditAvailable: current + delta },
+          { merge: true },
+        );
+      }
+
+      if (isGift) {
+        // Recipient-side gift doc, matching a received gift's shape.
+        tx.set(txRef, {
+          docId: txRef.id,
+          type: "gift",
+          paymentMethod: "coffixCredit",
+          role: "recipient",
+          status: "claimed",
+          customerId,
+          recipientCustomerId: customerId,
+          recipientEmail: recipientEmail.toLowerCase(),
+          recipientFullName,
+          senderFullName: "Administrator",
+          senderEmail: "admin@coffix.co.nz",
+          amount,
+          transactionNumber,
+          createdAt: now,
+          notes: notes ?? "",
+          isManual: true,
+        });
+        return;
+      }
+
+      tx.set(txRef, {
+        docId: txRef.id,
+        customerId,
+        amount,
+        type: transactionType,
+        paymentMethod,
+        status: "approved",
+        createdAt: now,
+        transactionNumber,
+        notes: notes ?? "",
+        isManual: true,
+        ...(isCash ? { gst, gstAmount } : {}),
+      });
+    });
+
+    return txRef.id;
+  }
+
   async expireCredits(): Promise<{ expiredCount: number }> {
     const customersSnap = await firestore
       .collection("customers")
