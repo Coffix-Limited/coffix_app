@@ -2,6 +2,7 @@ import { Storage } from "@google-cloud/storage";
 import archiver from "archiver";
 import { GoogleAuth } from "google-auth-library";
 import { logger } from "firebase-functions";
+import { firestore } from "../config/firebaseAdmin";
 import {
   BACKUP_RECIPIENT_EMAIL,
   RESEND_BCC_EMAIL,
@@ -10,6 +11,7 @@ import {
 
 const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
 const EXPORT_FOLDER = "firestore-exports";
+const CSV_EXPORT_FOLDER = "firestore-csv-exports";
 
 export class BackupService {
   private readonly project = process.env.FB_PROJECT_ID ?? "";
@@ -173,6 +175,24 @@ export class BackupService {
    */
   async createSignedUrlAndEmail(zipPath: string, date: string): Promise<void> {
     const downloadName = `coffix-firestore-backup-${date}.zip`;
+    const url = await this.signedZipUrl(zipPath, downloadName);
+
+    const subject = `Coffix Firestore backup — ${date}`;
+    const html = `
+      <p>The Firestore backup for <strong>${date}</strong> is ready.</p>
+      <p><a href="${url}">Download backup (.zip)</a></p>
+      <p>This link expires in <strong>7 days</strong>. A fresh link is emailed every day.</p>
+    `;
+
+    await this.sendBackupEmail(subject, html);
+    logger.info(`[backup] signed link emailed to ${BACKUP_RECIPIENT_EMAIL}`);
+  }
+
+  // Create a 7-day V4 signed URL for a zip object, forcing a friendly download name.
+  private async signedZipUrl(
+    zipPath: string,
+    downloadName: string,
+  ): Promise<string> {
     const [url] = await this.storageClient()
       .bucket(this.bucketName())
       .file(zipPath)
@@ -184,14 +204,11 @@ export class BackupService {
         // instead of the bucket path (e.g. "2026-06-26.zip").
         responseDisposition: `attachment; filename="${downloadName}"`,
       });
+    return url;
+  }
 
-    const subject = `Coffix Firestore backup — ${date}`;
-    const html = `
-      <p>The Firestore backup for <strong>${date}</strong> is ready.</p>
-      <p><a href="${url}">Download backup (.zip)</a></p>
-      <p>This link expires in <strong>7 days</strong>. A fresh link is emailed every day.</p>
-    `;
-
+  // Send a backup notification email to IT via Resend.
+  private async sendBackupEmail(subject: string, html: string): Promise<void> {
     const RESEND_API_KEY = process.env.RESEND_API_KEY;
     if (!RESEND_API_KEY) throw new Error("RESEND_API_KEY not configured");
 
@@ -218,7 +235,206 @@ export class BackupService {
       });
       throw new Error(`Resend ${res.status}: ${JSON.stringify(err)}`);
     }
+  }
 
-    logger.info(`[backup] signed link emailed to ${BACKUP_RECIPIENT_EMAIL}`);
+  // ---------------------------------------------------------------------------
+  // CSV backup flow — human-readable, one CSV per top-level collection.
+  // Unlike the managed export above (binary LevelDB, re-importable only), this
+  // produces files a person can open directly in Excel/Sheets.
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Read every top-level collection, render each to a flattened CSV, stream them
+   * all into a single zip in Storage, then email a 7-day signed download link.
+   * Returns the zip object path and its size in bytes.
+   */
+  async csvBackup(): Promise<{
+    zipPath: string;
+    date: string;
+    sizeBytes: number;
+    sizeText: string;
+  }> {
+    const bucket = this.storageClient().bucket(this.bucketName());
+    const date = this.nzDateStamp();
+    const time = this.nzTimeStamp();
+    const zipPath = `${CSV_EXPORT_FOLDER}/${date}/${time}.zip`;
+
+    const zipStream = bucket.file(zipPath).createWriteStream({
+      metadata: { contentType: "application/zip" },
+      resumable: false,
+    });
+    const archive = archiver("zip", { zlib: { level: 9 } });
+    const done = new Promise<void>((resolve, reject) => {
+      zipStream.on("finish", resolve);
+      zipStream.on("error", reject);
+      archive.on("error", reject);
+    });
+    archive.pipe(zipStream);
+
+    const collections = await firestore.listCollections();
+    let collectionCount = 0;
+    // Build one collection's CSV at a time and append it, so we never hold every
+    // collection's rows in memory simultaneously.
+    const skippedCollections = ["blacklistedEmails"];
+    for (const col of collections) {
+      if (skippedCollections.includes(col.id)) continue;
+      const snap = await col.get();
+      const csv = this.collectionToCsv(snap);
+      archive.append(csv, { name: `${col.id}.csv` });
+      collectionCount += 1;
+      logger.info(`[backup/csv] ${col.id}: ${snap.size} docs`);
+    }
+
+    await archive.finalize();
+    await done;
+
+    // Read back the object's size once it's fully written.
+    const [meta] = await bucket.file(zipPath).getMetadata();
+    const sizeBytes = Number(meta.size ?? 0);
+    const sizeText = this.formatBytes(sizeBytes);
+
+    logger.info(
+      `[backup/csv] zipped ${collectionCount} collections -> ${zipPath} (${sizeText})`,
+    );
+
+    await this.emailCsvBackup(zipPath, date, sizeText);
+    return { zipPath, date, sizeBytes, sizeText };
+  }
+
+  // Human-readable byte size, e.g. 48213 -> "47.1 KB".
+  private formatBytes(bytes: number): string {
+    if (bytes < 1024) return `${bytes} B`;
+    const units = ["KB", "MB", "GB", "TB"];
+    let value = bytes / 1024;
+    let i = 0;
+    while (value >= 1024 && i < units.length - 1) {
+      value /= 1024;
+      i += 1;
+    }
+    return `${value.toFixed(1)} ${units[i]}`;
+  }
+
+  // Render a collection snapshot to a CSV string with a leading `id` column and
+  // the union of all flattened field keys (sorted) as the remaining columns.
+  private collectionToCsv(snap: FirebaseFirestore.QuerySnapshot): string {
+    const rows: Record<string, string>[] = [];
+    const fieldKeys = new Set<string>();
+
+    for (const doc of snap.docs) {
+      const flat: Record<string, string> = {};
+      this.flatten(doc.data(), "", flat);
+      for (const k of Object.keys(flat)) fieldKeys.add(k);
+      rows.push({ id: doc.id, ...flat });
+    }
+
+    const headers = ["id", ...[...fieldKeys].sort()];
+    return this.toCsv(rows, headers);
+  }
+
+  // Flatten a Firestore value into `out` using dotted keys for nested maps.
+  // Arrays and unrecognized objects are JSON-stringified; Timestamps become ISO
+  // strings; GeoPoint/DocumentReference become their string form.
+  private flatten(
+    value: unknown,
+    prefix: string,
+    out: Record<string, string>,
+  ): void {
+    if (value === null || value === undefined) {
+      if (prefix) out[prefix] = "";
+      return;
+    }
+
+    // Firestore Timestamp
+    if (
+      typeof value === "object" &&
+      value !== null &&
+      typeof (value as { toDate?: unknown }).toDate === "function"
+    ) {
+      out[prefix] = (value as { toDate: () => Date }).toDate().toISOString();
+      return;
+    }
+
+    // GeoPoint
+    if (
+      typeof value === "object" &&
+      value !== null &&
+      "latitude" in value &&
+      "longitude" in value
+    ) {
+      const gp = value as { latitude: number; longitude: number };
+      out[prefix] = `${gp.latitude},${gp.longitude}`;
+      return;
+    }
+
+    // DocumentReference
+    if (
+      typeof value === "object" &&
+      value !== null &&
+      typeof (value as { path?: unknown }).path === "string" &&
+      typeof (value as { id?: unknown }).id === "string"
+    ) {
+      out[prefix] = (value as { path: string }).path;
+      return;
+    }
+
+    if (Array.isArray(value)) {
+      out[prefix] = JSON.stringify(value);
+      return;
+    }
+
+    if (typeof value === "object") {
+      // Plain map — recurse into dotted keys.
+      const entries = Object.entries(value as Record<string, unknown>);
+      if (entries.length === 0) {
+        out[prefix] = "{}";
+        return;
+      }
+      for (const [k, v] of entries) {
+        this.flatten(v, prefix ? `${prefix}.${k}` : k, out);
+      }
+      return;
+    }
+
+    // Scalar (string / number / boolean)
+    out[prefix] = String(value);
+  }
+
+  // Turn rows into CSV text with the given header order, escaping each cell.
+  private toCsv(rows: Record<string, string>[], headers: string[]): string {
+    const escape = (v: string): string => {
+      if (v === "") return "";
+      if (/[",\r\n]/.test(v)) return `"${v.replace(/"/g, '""')}"`;
+      return v;
+    };
+
+    const lines = [headers.map(escape).join(",")];
+    for (const row of rows) {
+      lines.push(headers.map((h) => escape(row[h] ?? "")).join(","));
+    }
+    // Trailing newline so the file ends cleanly.
+    return lines.join("\r\n") + "\r\n";
+  }
+
+  // Email a 7-day signed link to the CSV backup zip.
+  private async emailCsvBackup(
+    zipPath: string,
+    date: string,
+    sizeText: string,
+  ): Promise<void> {
+    const downloadName = `coffix-firestore-csv-backup-${date}.zip`;
+    const url = await this.signedZipUrl(zipPath, downloadName);
+
+    const subject = `Coffix Firestore CSV backup — ${date}`;
+    const html = `
+      <p>The Firestore CSV backup for <strong>${date}</strong> is ready (${sizeText}).</p>
+      <p><a href="${url}">Download CSV backup (.zip)</a></p>
+      <p>The zip contains one CSV per collection, openable in Excel or Google Sheets.</p>
+      <p>This link expires in <strong>7 days</strong>.</p>
+    `;
+
+    await this.sendBackupEmail(subject, html);
+    logger.info(
+      `[backup/csv] signed link emailed to ${BACKUP_RECIPIENT_EMAIL}`,
+    );
   }
 }

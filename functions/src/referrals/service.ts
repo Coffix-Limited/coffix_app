@@ -1,8 +1,9 @@
 import { firestore } from "../config/firebaseAdmin";
 import { GLOBAL_COLLECTION_ID } from "../constant/constant";
 import { logger } from "firebase-functions/v1";
-import { generateCouponCode } from "../utils/generateCouponCode";
 import { endOfDayNZ } from "../utils/nz_time";
+import { generateTransactionNumber } from "../utils/generate_order_number";
+import { TransactionStatus } from "../transaction/interface";
 
 export class ReferralService {
   async createReferral({
@@ -120,10 +121,7 @@ export class ReferralService {
     const couponExpiryDays = (globalSnap.data()?.couponExpiryDays ??
       30) as number;
 
-    // 4. Generate unique coupon codes
-    const referrerCode = await this.generateUniqueCode();
-    const refereeCode = await this.generateUniqueCode();
-
+    // 4. Prepare coupon docs
     const now = new Date();
     const couponExpiry = new Date(
       now.getTime() + couponExpiryDays * 24 * 60 * 60 * 1000,
@@ -136,9 +134,6 @@ export class ReferralService {
       createdAt: now,
       type: "fixed",
       amount: couponAmount,
-      usageLimit: 1,
-      usageCount: 0,
-      source: "referral",
       referralId: referralDoc.id,
       isUsed: false,
       expiryDate: couponExpiry,
@@ -146,21 +141,74 @@ export class ReferralService {
       notes: `Referral reward - $${couponAmount} off your next order`,
     };
 
-    // 5. Batch write both coupons + update referral atomically
+    // 5. Transaction ledger entries + logs, mirroring CouponService.createCoupon
+    const referrerTxRef = firestore.collection("transactions").doc();
+    const refereeTxRef = firestore.collection("transactions").doc();
+    const referrerLogRef = firestore.collection("logs").doc();
+    const refereeLogRef = firestore.collection("logs").doc();
+
+    const referrerTxNumber = await generateTransactionNumber();
+    const refereeTxNumber = await generateTransactionNumber();
+
+    // 6. Batch write both coupons + txns + logs + referral update atomically
     const batch = firestore.batch();
 
     batch.set(referrerCouponRef, {
       ...baseCoupon,
       docId: referrerCouponRef.id,
-      code: referrerCode,
       userId: referral.referrer,
     });
 
     batch.set(refereeCouponRef, {
       ...baseCoupon,
       docId: refereeCouponRef.id,
-      code: refereeCode,
       userId: customerId,
+    });
+
+    batch.set(referrerTxRef, {
+      docId: referrerTxRef.id,
+      customerId: referral.referrer,
+      amount: couponAmount,
+      type: "coupon",
+      paymentMethod: "coffixCredit",
+      transactionNumber: referrerTxNumber,
+      status: TransactionStatus.Approved,
+      createdAt: now,
+      notes: `Referral coupon issued - $${couponAmount}`,
+      storeId: null,
+    });
+
+    batch.set(refereeTxRef, {
+      docId: refereeTxRef.id,
+      customerId,
+      amount: couponAmount,
+      type: "coupon",
+      paymentMethod: "coffixCredit",
+      transactionNumber: refereeTxNumber,
+      status: TransactionStatus.Approved,
+      createdAt: now,
+      notes: `Referral coupon issued - $${couponAmount}`,
+      storeId: null,
+    });
+
+    batch.set(referrerLogRef, {
+      docId: referrerLogRef.id,
+      action: "coupon",
+      category: "API",
+      severityLevel: 5,
+      notes: `Referral coupon ${referrerCouponRef.id} issued to ${referral.referrer} - $${couponAmount}`,
+      customerId: referral.referrer,
+      time: now,
+    });
+
+    batch.set(refereeLogRef, {
+      docId: refereeLogRef.id,
+      action: "coupon",
+      category: "API",
+      severityLevel: 5,
+      notes: `Referral coupon ${refereeCouponRef.id} issued to ${customerId} - $${couponAmount}`,
+      customerId,
+      time: now,
     });
 
     batch.update(referralDoc.ref, {
@@ -174,18 +222,5 @@ export class ReferralService {
     logger.info(
       `Referral rewarded. Referrer: ${referral.referrer}, Referee: ${customerId}`,
     );
-  }
-
-  private async generateUniqueCode(): Promise<string> {
-    for (let attempt = 0; attempt < 5; attempt++) {
-      const code = generateCouponCode();
-      const existing = await firestore
-        .collection("coupons")
-        .where("code", "==", code)
-        .limit(1)
-        .get();
-      if (existing.empty) return code;
-    }
-    throw new Error("Failed to generate a unique coupon code after 5 attempts");
   }
 }

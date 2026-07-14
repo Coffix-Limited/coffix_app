@@ -11,11 +11,17 @@ import {
   InsufficientCreditError,
   MinCreditError,
 } from "./service";
-import { shareCoffixCreditSchema, topupBodySchema } from "./schema";
+import {
+  addCreditSchema,
+  shareCoffixCreditSchema,
+  topupBodySchema,
+} from "./schema";
 import { generateTransactionNumber } from "../utils/generate_order_number";
 import { creditLimiter } from "../middleware/rateLimiter";
+import { LogService } from "../log/service";
 
 const router = express.Router();
+const logService = new LogService();
 
 router.post(
   "/topup",
@@ -164,6 +170,78 @@ router.post(
         });
       }
       logger.error("Error sharing credit:", error);
+      return response
+        .status(500)
+        .json({ success: false, message: "Internal server error" });
+    }
+  },
+);
+
+router.post(
+  "/add",
+  requirePost,
+  async (request: AuthenticatedRequest, response: Response) => {
+    const validation = addCreditSchema.safeParse(request.body);
+    if (!validation.success) {
+      const errors = validation.error.issues
+        .map((i: any) => `${i.path.join(".")}: ${i.message}`)
+        .join(", ");
+      return response.status(400).json({ success: false, errors });
+    }
+
+    const firebaseService = new FirebaseService();
+
+    try {
+      const { userIds, amount } = validation.data;
+
+      const results: {
+        userId: string;
+        transactionNumber: string;
+        transactionId: string;
+      }[] = [];
+      const failures: { userId: string; error: string }[] = [];
+
+      for (const userId of userIds) {
+        try {
+          const transactionNumber = await generateTransactionNumber();
+          const transactionId = await firebaseService.createManualTransaction({
+            customerId: userId,
+            transactionType: "refund",
+            paymentMethod: "coffixCredit",
+            amount,
+            transactionNumber,
+            notes: "Credit added",
+          });
+          results.push({ userId, transactionNumber, transactionId });
+
+          // Fire-and-forget: adding credit is a financial action, so record a
+          // log without blocking the response. Failures are logged, not thrown.
+          logService
+            .log({
+              action: "credit",
+              category: "API",
+              severityLevel: 9,
+              notes: `Credit added with amount ${amount} NZD (transaction ${transactionNumber})`,
+              customerId: userId,
+            })
+            .catch((e) => {
+              logger.error("[credit/add] log error:", e);
+            });
+        } catch (error) {
+          logger.error("Error adding credit for user", { userId, error });
+          failures.push({
+            userId,
+            error: error instanceof Error ? error.message : "Unknown error",
+          });
+        }
+      }
+
+      return response.status(200).json({
+        success: true,
+        data: { results, failures },
+      });
+    } catch (error) {
+      logger.error("Error adding credit:", error);
       return response
         .status(500)
         .json({ success: false, message: "Internal server error" });

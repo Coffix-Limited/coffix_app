@@ -4,7 +4,8 @@
 # Prerequisites:
 #   - gcloud CLI installed and authenticated (gcloud auth login)
 #   - Sufficient IAM permissions on both projects
-#   - A GCS bucket accessible by both projects for the export/import handoff
+#   - The staging GCS bucket (EXPORT_BUCKET) must already exist and grant
+#     roles/storage.admin to both projects' Firestore service accounts
 #
 # Usage:
 #   ./scripts/migrate_dev_to_prod.sh
@@ -28,13 +29,6 @@ EXPORT_PATH="gs://${EXPORT_BUCKET}/migrate/${TIMESTAMP}"
 
 COLLECTIONS=(
   emails
-  global
-  modifierGroups
-  modifiers
-  orders
-  productCategories
-  products
-  stores
 )
 
 # ── Helpers ──────────────────────────────────────────────────────────────────
@@ -76,37 +70,13 @@ fi
 # Build the --collection-ids flag (comma-separated list for gcloud)
 COLLECTION_IDS=$(IFS=,; echo "${COLLECTIONS[*]}")
 
-# ── Ensure staging bucket exists ──────────────────────────────────────────────
+# ── Verify staging bucket exists ──────────────────────────────────────────────
 if ! gcloud storage buckets describe "gs://${EXPORT_BUCKET}" --project="${PROD_PROJECT}" &>/dev/null; then
-  blue "Staging bucket not found. Creating gs://${EXPORT_BUCKET}..."
-  gcloud storage buckets create "gs://${EXPORT_BUCKET}" \
-    --project="${PROD_PROJECT}" \
-    --location=australia-southeast1
-  green "Bucket created."
-else
-  echo "Staging bucket gs://${EXPORT_BUCKET} already exists."
+  red "Error: staging bucket gs://${EXPORT_BUCKET} not found in ${PROD_PROJECT}."
+  red "Create it and grant roles/storage.admin to both projects' Firestore service accounts, then re-run."
+  exit 1
 fi
-
-# ── Grant Firestore service accounts Storage access ───────────────────────────
-blue "Granting Storage access to Firestore service accounts..."
-
-DEV_PROJECT_NUMBER=$(gcloud projects describe "${DEV_PROJECT}" --format="value(projectNumber)")
-PROD_PROJECT_NUMBER=$(gcloud projects describe "${PROD_PROJECT}" --format="value(projectNumber)")
-
-DEV_SA="service-${DEV_PROJECT_NUMBER}@gcp-sa-firestore.iam.gserviceaccount.com"
-PROD_SA="service-${PROD_PROJECT_NUMBER}@gcp-sa-firestore.iam.gserviceaccount.com"
-
-gcloud storage buckets add-iam-policy-binding "gs://${EXPORT_BUCKET}" \
-  --member="serviceAccount:${DEV_SA}" \
-  --role="roles/storage.admin" \
-  --project="${PROD_PROJECT}" &>/dev/null
-
-gcloud storage buckets add-iam-policy-binding "gs://${EXPORT_BUCKET}" \
-  --member="serviceAccount:${PROD_SA}" \
-  --role="roles/storage.admin" \
-  --project="${PROD_PROJECT}" &>/dev/null
-
-green "Permissions granted."
+green "Using existing staging bucket gs://${EXPORT_BUCKET}."
 
 # ── Step 1: Export from dev ───────────────────────────────────────────────────
 blue "\n[1/2] Exporting from dev (${DEV_PROJECT})..."

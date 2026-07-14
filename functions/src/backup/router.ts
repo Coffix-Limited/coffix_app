@@ -63,4 +63,27 @@ router.post(
   },
 );
 
+// CSV backup: read all Firestore collections, render each to a flattened CSV,
+// zip them into Storage, and email a signed link. Human-readable alternative to
+// the managed (binary) export above — done in one call, nothing to wait on.
+router.post(
+  "/csv-export",
+  requirePost,
+  async (request: Request, response: Response) => {
+    if (!requireCronSecret(request, response)) return;
+    try {
+      const { zipPath, sizeBytes, sizeText } = await backupService.csvBackup();
+      logger.info("[backup/csv-export] done:", zipPath, sizeText);
+      return response
+        .status(200)
+        .json({ success: true, data: { zipPath, sizeBytes, sizeText } });
+    } catch (e) {
+      logger.error("[backup/csv-export] error:", e);
+      return response
+        .status(500)
+        .json({ success: false, message: "Internal server error" });
+    }
+  },
+);
+
 export default router;
