@@ -14,6 +14,7 @@ import transactionRouter from "./transaction/router";
 import logRouter from "./log/router";
 import backupRouter from "./backup/router";
 import couponRouter from "./coupon/router";
+import staffsRouter from "./staffs/router";
 import { globalLimiter } from "./middleware/rateLimiter";
 import { app } from "firebase-functions";
 
@@ -62,3 +63,4 @@ api.use("/transaction", transactionRouter);
 api.use("/log", logRouter);
 api.use("/backup", backupRouter);
 api.use("/coupon", couponRouter);
+api.use("/staffs", staffsRouter);
