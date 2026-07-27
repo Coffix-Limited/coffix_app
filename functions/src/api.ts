@@ -15,6 +15,7 @@ import logRouter from "./log/router";
 import backupRouter from "./backup/router";
 import couponRouter from "./coupon/router";
 import staffsRouter from "./staffs/router";
+import importRouter from "./import/router";
 import { globalLimiter } from "./middleware/rateLimiter";
 import { app } from "firebase-functions";
 
@@ -64,3 +65,4 @@ api.use("/log", logRouter);
 api.use("/backup", backupRouter);
 api.use("/coupon", couponRouter);
 api.use("/staffs", staffsRouter);
+api.use("/import", importRouter);
