@@ -63,33 +63,19 @@ class _PersonalInfoViewState extends State<PersonalInfoView> {
         suburb: formValues?['suburb'],
         city: formValues?['city'],
         preferredStoreId: formValues?['preferredStoreId'],
-        allowNotifications:
-            formValues?['allowNotifications'], // notifications
+        allowNotifications: formValues?['allowNotifications'], // notifications
         getPromotions: formValues?['getPromotions'], // news and promotions
-        getPurchaseInfoByMail:
-            formValues?['getPurchaseInfoByMail'], // purchase messages
-        allowWithdrawBalance:
-            formValues?['allowWithdrawBalance'], // none for now
+        getPurchaseInfoByMail: formValues?['getPurchaseInfoByMail'], // purchase messages
+        allowWithdrawBalance: formValues?['allowWithdrawBalance'], // none for now
       );
     }
   }
 
-  Widget _buildForm(
-    BuildContext context,
-    ThemeData theme,
-    AppUser? user,
-    List<Store> stores,
-  ) {
+  Widget _buildForm(BuildContext context, ThemeData theme, AppUser? user, List<Store> stores) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        AppField<String>(
-          name: 'email',
-          label: 'Email',
-          hintText: 'Email',
-          readOnly: true,
-          isHorizontalAlign: true,
-        ),
+        AppField<String>(name: 'email', label: 'Email', hintText: 'Email', readOnly: true, isHorizontalAlign: true),
         const SizedBox(height: AppSizes.lg),
         AppField<String>(
           name: 'firstName',
@@ -143,21 +129,11 @@ class _PersonalInfoViewState extends State<PersonalInfoView> {
         Row(
           children: [
             SizedBox(width: 140.0),
-            Expanded(
-              child: Text(
-                "You might get something for your birthday ",
-                style: AppTypography.body3XS,
-              ),
-            ),
+            Expanded(child: Text("You might get something for your birthday ", style: AppTypography.body3XS)),
           ],
         ),
         const SizedBox(height: AppSizes.lg),
-        AppField<String>(
-          name: 'suburb',
-          label: 'Suburb',
-          hintText: 'Enter suburb',
-          isHorizontalAlign: true,
-        ),
+        AppField<String>(name: 'suburb', label: 'Suburb', hintText: 'Enter suburb', isHorizontalAlign: true),
         const SizedBox(height: AppSizes.lg),
         AppField<String>(
           name: 'city',
@@ -180,17 +156,11 @@ class _PersonalInfoViewState extends State<PersonalInfoView> {
         const SizedBox(height: AppSizes.xxl),
         Text(
           'Settings',
-          style: AppTypography.titleS.copyWith(
-            color: AppColors.textBlackColor,
-            fontWeight: FontWeight.bold,
-          ),
+          style: AppTypography.titleS.copyWith(color: AppColors.textBlackColor, fontWeight: FontWeight.bold),
         ),
         FormBuilderSwitch(
           name: 'allowNotifications',
-          title: Text(
-            'Receive notifications',
-            style: theme.textTheme.bodyMedium,
-          ),
+          title: Text('Receive notifications', style: theme.textTheme.bodyMedium),
           activeColor: AppColors.white,
           activeTrackColor: AppColors.success,
           inactiveTrackColor: AppColors.white,
@@ -198,10 +168,7 @@ class _PersonalInfoViewState extends State<PersonalInfoView> {
         ),
         FormBuilderSwitch(
           name: 'getPromotions',
-          title: Text(
-            'Receive news and promotions',
-            style: theme.textTheme.bodyMedium,
-          ),
+          title: Text('Receive news and promotions', style: theme.textTheme.bodyMedium),
           activeColor: AppColors.white,
           activeTrackColor: AppColors.success,
           inactiveTrackColor: AppColors.white,
@@ -209,10 +176,7 @@ class _PersonalInfoViewState extends State<PersonalInfoView> {
         ),
         FormBuilderSwitch(
           name: 'getPurchaseInfoByMail',
-          title: Text(
-            'Receive purchase messages',
-            style: theme.textTheme.bodyMedium,
-          ),
+          title: Text('Receive purchase messages', style: theme.textTheme.bodyMedium),
           activeColor: AppColors.white,
           activeTrackColor: AppColors.success,
           inactiveTrackColor: AppColors.white,
@@ -241,17 +205,9 @@ class _PersonalInfoViewState extends State<PersonalInfoView> {
       canPop: user?.finishedOnboarding == true,
       child: Scaffold(
         appBar: AppBar(
-          title: Text(
-            'My Account',
-            style: AppTypography.titleXL.copyWith(
-              color: AppColors.textBlackColor,
-            ),
-          ),
+          title: Text('My Account', style: AppTypography.titleXL.copyWith(color: AppColors.textBlackColor)),
           leading: user?.finishedOnboarding == true
-              ? IconButton(
-                  icon: const Icon(Icons.arrow_back_ios_new_rounded),
-                  onPressed: () => context.pop(),
-                )
+              ? IconButton(icon: const Icon(Icons.arrow_back_ios_new_rounded), onPressed: () => context.pop())
               : const SizedBox.shrink(),
         ),
         body: SingleChildScrollView(
@@ -277,16 +233,12 @@ class _PersonalInfoViewState extends State<PersonalInfoView> {
               listener: (context, state) {
                 state.mapOrNull(
                   success: (state) {
-                    AppNotification.show(
-                      context,
-                      "Profile updated successfully!",
-                    );
+                    AppNotification.show(context, "Profile updated successfully!");
                     Future.delayed(const Duration(milliseconds: 300), () {
                       if (context.mounted) context.goNamed(HomePage.route);
                     });
                   },
-                  error: (state) =>
-                      AppError(title: "Error", subtitle: state.message),
+                  error: (state) => AppError(title: "Error", subtitle: state.message),
                 );
               },
               builder: (context, state) {

@@ -196,7 +196,7 @@ export class ReferralService {
       action: "coupon",
       category: "API",
       severityLevel: 5,
-      notes: `Referral coupon ${referrerCouponRef.id} issued to ${referral.referrer} - $${couponAmount}`,
+      notes: `Referral coupon issued to ${referral.referrer} worth $${couponAmount}`,
       customerId: referral.referrer,
       time: now,
     });
@@ -206,7 +206,7 @@ export class ReferralService {
       action: "coupon",
       category: "API",
       severityLevel: 5,
-      notes: `Referral coupon ${refereeCouponRef.id} issued to ${customerId} - $${couponAmount}`,
+      notes: `Referral coupon issued to ${customerId} worth $${couponAmount}`,
       customerId,
       time: now,
     });

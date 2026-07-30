@@ -15,10 +15,7 @@ class StoresPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider.value(
-      value: getIt<StoreCubit>(),
-      child: const StoresView(),
-    );
+    return BlocProvider.value(value: getIt<StoreCubit>(), child: const StoresView());
   }
 }
 
@@ -45,6 +42,7 @@ class _StoresViewState extends State<StoresView> {
             initial: () => const SizedBox.shrink(),
             loading: () => AppLoading(),
             loaded: (stores) {
+              print(stores.last.name);
               return StoreList(
                 stores: stores.where((store) {
                   final next = store.nextOpeningFormatted();
@@ -52,8 +50,7 @@ class _StoresViewState extends State<StoresView> {
                 }).toList(),
               );
             },
-            error: (message) =>
-                AppError(title: "Failed getting store", subtitle: message),
+            error: (message) => AppError(title: "Failed getting store", subtitle: message),
           );
         },
       ),

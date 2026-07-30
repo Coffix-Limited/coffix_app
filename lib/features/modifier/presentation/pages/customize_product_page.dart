@@ -19,11 +19,7 @@ import 'package:go_router/go_router.dart';
 
 class CustomizeProductPage extends StatelessWidget {
   static String route = 'customize_product_route';
-  const CustomizeProductPage({
-    super.key,
-    required this.product,
-    required this.storeId,
-  });
+  const CustomizeProductPage({super.key, required this.product, required this.storeId});
   final Product product;
   final String storeId;
 
@@ -40,11 +36,7 @@ class CustomizeProductPage extends StatelessWidget {
 }
 
 class CustomizeProductView extends StatefulWidget {
-  const CustomizeProductView({
-    super.key,
-    required this.product,
-    required this.storeId,
-  });
+  const CustomizeProductView({super.key, required this.product, required this.storeId});
   final Product product;
   final String storeId;
 
@@ -59,10 +51,7 @@ class _CustomizeProductViewState extends State<CustomizeProductView> {
     final modifierState = context.read<ModifierCubit>().state;
     modifierState.maybeWhen(
       loaded: (_) => null,
-      orElse: () => context.read<ModifierCubit>().getModifiers(
-        product: widget.product,
-        storeId: widget.storeId,
-      ),
+      orElse: () => context.read<ModifierCubit>().getModifiers(product: widget.product, storeId: widget.storeId),
     );
   }
 
@@ -84,96 +73,65 @@ class _CustomizeProductViewState extends State<CustomizeProductView> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        ...modifiersGroups
-                            .where((b) => b.modifiers.isNotEmpty)
-                            .map((bundle) {
-                              final groupTitle =
-                                  bundle.group.name ??
-                                  bundle.group.docId ??
-                                  'Options';
+                        ...modifiersGroups.where((b) => b.modifiers.isNotEmpty).map((bundle) {
+                          final groupTitle = bundle.group.name ?? bundle.group.docId ?? 'Options';
 
-                              return Padding(
-                                padding: const EdgeInsets.only(
-                                  bottom: AppSizes.lg,
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: AppSizes.lg),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                Text(
+                                  groupTitle,
+                                  style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
                                 ),
-                                child: Column(
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.stretch,
-                                  children: [
-                                    Text(
-                                      groupTitle,
-                                      style: theme.textTheme.bodyMedium
-                                          ?.copyWith(
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                    ),
-                                    const SizedBox(height: AppSizes.md),
-                                    _HorizontalScrollableList(
-                                      itemCount: bundle.modifiers.length,
-                                      separatorBuilder: (_, _) =>
-                                          SizedBox(width: AppSizes.sm),
-                                      itemBuilder: (context, index) {
-                                        final mod = bundle.modifiers[index];
-                                        final isSelected = productModifierState
-                                            .modifiers
-                                            .any((m) => m.docId == mod.docId);
+                                const SizedBox(height: AppSizes.md),
+                                _HorizontalScrollableList(
+                                  itemCount: bundle.modifiers.length,
+                                  separatorBuilder: (_, _) => SizedBox(width: AppSizes.sm),
+                                  itemBuilder: (context, index) {
+                                    final mod = bundle.modifiers[index];
+                                    final isSelected = productModifierState.modifiers.any((m) => m.docId == mod.docId);
 
-                                        return AppClickable(
-                                          borderRadius: BorderRadius.circular(
-                                            AppSizes.md,
-                                          ),
-                                          onPressed: () {
-                                            context
-                                                .read<ProductModifierCubit>()
-                                                .selectModifiers(
-                                                  modifier: mod,
-                                                  bundleGroupId:
-                                                      bundle.group.docId ?? '',
-                                                );
-                                          },
-                                          child: AppCard(
-                                            color: isSelected
-                                                ? AppColors.primary.withValues(
-                                                    alpha: AppSizes
-                                                        .opacityDisabled,
-                                                  )
-                                                : null,
-                                            borderColor: isSelected
-                                                ? AppColors.primary.withValues()
-                                                : null,
-                                            padding: const EdgeInsets.symmetric(
-                                              horizontal: AppSizes.md,
-                                              vertical: AppSizes.sm,
-                                            ),
-                                            child: Text.rich(
-                                              TextSpan(
-                                                children: [
-                                                  TextSpan(
-                                                    text:
-                                                        mod.isDefault == true &&
-                                                            !isSelected
-                                                        ? '*${mod.label} '
-                                                        : '${mod.label} ',
-                                                  ),
-                                                  mod.priceDelta
-                                                          ?.toCurrencySuperscript(
-                                                            style: AppTypography
-                                                                .bodyXS,
-                                                          ) ??
-                                                      TextSpan(text: ''),
-                                                ],
-                                              ),
-                                              style: AppTypography.bodyXS
-                                                  .copyWith(),
-                                            ),
-                                          ),
+                                    return AppClickable(
+                                      borderRadius: BorderRadius.circular(AppSizes.md),
+                                      onPressed: () {
+                                        context.read<ProductModifierCubit>().selectModifiers(
+                                          modifier: mod,
+                                          bundleGroupId: bundle.group.docId ?? '',
                                         );
                                       },
-                                    ),
-                                  ],
+                                      child: AppCard(
+                                        color: isSelected
+                                            ? AppColors.primary.withValues(alpha: AppSizes.opacityDisabled)
+                                            : null,
+                                        borderColor: isSelected ? AppColors.primary.withValues() : null,
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: AppSizes.md,
+                                          vertical: AppSizes.sm,
+                                        ),
+                                        child: Text.rich(
+                                          TextSpan(
+                                            children: [
+                                              TextSpan(
+                                                text: mod.isDefault == true && !isSelected
+                                                    ? '*${mod.label} '
+                                                    : '${mod.label} ',
+                                              ),
+                                              mod.priceDelta?.toCurrencySuperscript(style: AppTypography.bodyXS) ??
+                                                  TextSpan(text: ''),
+                                            ],
+                                          ),
+                                          style: AppTypography.bodyXS.copyWith(),
+                                        ),
+                                      ),
+                                    );
+                                  },
                                 ),
-                              );
-                            }),
+                              ],
+                            ),
+                          );
+                        }),
                         const SizedBox(height: AppSizes.lg),
                         AppButton.primary(
                           label:
@@ -181,8 +139,7 @@ class _CustomizeProductViewState extends State<CustomizeProductView> {
                           onPressed: () {
                             LogService().customiseProduct(
                               selectedModifiers: {
-                                for (final m in productModifierState.modifiers)
-                                  (m.docId ?? ''): (m.label ?? ''),
+                                for (final m in productModifierState.modifiers) (m.docId ?? ''): (m.label ?? ''),
                               },
                             );
                             context.pop();
@@ -195,8 +152,7 @@ class _CustomizeProductViewState extends State<CustomizeProductView> {
                 },
               );
             },
-            error: (message) =>
-                AppError(title: "Failed getting modifiers", subtitle: message),
+            error: (message) => AppError(title: "Failed getting modifiers", subtitle: message),
           );
         },
       ),
@@ -205,19 +161,14 @@ class _CustomizeProductViewState extends State<CustomizeProductView> {
 }
 
 class _HorizontalScrollableList extends StatefulWidget {
-  const _HorizontalScrollableList({
-    required this.itemCount,
-    required this.itemBuilder,
-    required this.separatorBuilder,
-  });
+  const _HorizontalScrollableList({required this.itemCount, required this.itemBuilder, required this.separatorBuilder});
 
   final int itemCount;
   final Widget Function(BuildContext, int) itemBuilder;
   final Widget Function(BuildContext, int) separatorBuilder;
 
   @override
-  State<_HorizontalScrollableList> createState() =>
-      _HorizontalScrollableListState();
+  State<_HorizontalScrollableList> createState() => _HorizontalScrollableListState();
 }
 
 class _HorizontalScrollableListState extends State<_HorizontalScrollableList> {
@@ -274,18 +225,13 @@ class _HorizontalScrollableListState extends State<_HorizontalScrollableList> {
                   gradient: LinearGradient(
                     colors: [
                       Theme.of(context).scaffoldBackgroundColor,
-                      Theme.of(
-                        context,
-                      ).scaffoldBackgroundColor.withValues(alpha: 0),
+                      Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0),
                     ],
                   ),
                 ),
                 child: const Align(
                   alignment: Alignment.centerLeft,
-                  child: Icon(
-                    Icons.chevron_left,
-                    size: AppSizes.iconSizeMedium,
-                  ),
+                  child: Icon(Icons.chevron_left, size: AppSizes.iconSizeMedium),
                 ),
               ),
             ),
@@ -301,19 +247,14 @@ class _HorizontalScrollableListState extends State<_HorizontalScrollableList> {
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
-                      Theme.of(
-                        context,
-                      ).scaffoldBackgroundColor.withValues(alpha: 0),
+                      Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0),
                       Theme.of(context).scaffoldBackgroundColor,
                     ],
                   ),
                 ),
                 child: const Align(
                   alignment: Alignment.centerRight,
-                  child: Icon(
-                    Icons.chevron_right,
-                    size: AppSizes.iconSizeMedium,
-                  ),
+                  child: Icon(Icons.chevron_right, size: AppSizes.iconSizeMedium),
                 ),
               ),
             ),

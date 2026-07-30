@@ -20,7 +20,7 @@ class ProductCubit extends Cubit<ProductState> {
       super(ProductState.initial());
 
   List<ProductCategory> get _categories =>
-      _allProducts.map((p) => p.category).toSet().toList();
+      _allProducts.map((p) => p.category).whereType<ProductCategory>().toSet().toList();
 
   List<ProductWithCategory> get allProducts => List.from(_allProducts);
 
@@ -80,7 +80,9 @@ class ProductCubit extends Cubit<ProductState> {
     final List<ProductWithCategory> filtered = _allProducts
         .where(
           (p) =>
-              p.category.name?.toLowerCase().contains(category.toLowerCase()) ??
+              p.category?.name?.toLowerCase().contains(
+                category.toLowerCase(),
+              ) ??
               false,
         )
         .toList();

@@ -1,3 +1,4 @@
+import 'package:coffix_app/core/utils/date_time_converter.dart';
 import 'package:coffix_app/core/utils/time_utils.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
@@ -14,6 +15,11 @@ class Store {
   final String? location;
   final String? name;
   final String? city;
+  final bool? isDeleted;
+  @DateTimeConverter()
+  final DateTime? createdAt;
+  @DateTimeConverter()
+  final DateTime? updatedAt;
 
   /// Weekly recurring hours
   final Map<String, DayHours>? openingHours;
@@ -36,6 +42,9 @@ class Store {
     this.holidayHours,
     this.storeCode,
     this.city,
+    this.isDeleted,
+    this.createdAt,
+    this.updatedAt,
   });
 
   factory Store.fromJson(Map<String, dynamic> json) => _$StoreFromJson(json);
@@ -85,15 +94,7 @@ class Store {
 
   /// Returns next opening day + time (holiday-aware)
   ({String day, String time})? nextOpeningFormatted() {
-    const dayAbbr = {
-      1: 'Mon',
-      2: 'Tue',
-      3: 'Wed',
-      4: 'Thu',
-      5: 'Fri',
-      6: 'Sat',
-      7: 'Sun',
-    };
+    const dayAbbr = {1: 'Mon', 2: 'Tue', 3: 'Wed', 4: 'Thu', 5: 'Fri', 6: 'Sat', 7: 'Sun'};
 
     final now = TimeUtils.now();
 
@@ -102,10 +103,7 @@ class Store {
       final hours = _effectiveHoursFor(candidate);
 
       if (hours != null && hours.isOpen == true && hours.open != null) {
-        return (
-          day: dayAbbr[candidate.weekday]!,
-          time: _formatHhmm(hours.open!),
-        );
+        return (day: dayAbbr[candidate.weekday]!, time: _formatHhmm(hours.open!));
       }
     }
 
@@ -164,15 +162,7 @@ class Store {
   }
 
   static String _weekdayKey(int weekday) {
-    const map = {
-      1: 'monday',
-      2: 'tuesday',
-      3: 'wednesday',
-      4: 'thursday',
-      5: 'friday',
-      6: 'saturday',
-      7: 'sunday',
-    };
+    const map = {1: 'monday', 2: 'tuesday', 3: 'wednesday', 4: 'thursday', 5: 'friday', 6: 'saturday', 7: 'sunday'};
     return map[weekday]!;
   }
 }
@@ -189,8 +179,7 @@ class DayHours {
 
   DayHours({this.isOpen, this.open, this.close, this.title, this.description});
 
-  factory DayHours.fromJson(Map<String, dynamic> json) =>
-      _$DayHoursFromJson(json);
+  factory DayHours.fromJson(Map<String, dynamic> json) => _$DayHoursFromJson(json);
 
   Map<String, dynamic> toJson() => _$DayHoursToJson(this);
 

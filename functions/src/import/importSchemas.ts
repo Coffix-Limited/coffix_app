@@ -186,6 +186,7 @@ export const importSchemas: Record<string, CollectionSchema> = {
   productCategories: {
     fields: {
       id: { required: false, system: true },
+      docId: { required: false, type: "string" },
       imageUrl: { required: false, type: "string" },
       name: { required: true, type: "string" },
       order: { required: false, type: "number" },

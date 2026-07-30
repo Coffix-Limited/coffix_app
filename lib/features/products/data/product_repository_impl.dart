@@ -1,3 +1,5 @@
+import 'dart:developer' as dev;
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:coffix_app/data/repositories/product_repository.dart';
 import 'package:coffix_app/data/repositories/store_repository.dart';
@@ -12,34 +14,27 @@ class ProductRepositoryImpl implements ProductRepository {
   // ignore: unused_field
   final StoreRepository _storeRepository;
 
-  ProductRepositoryImpl({required StoreRepository storeRepository})
-    : _storeRepository = storeRepository;
+  ProductRepositoryImpl({required StoreRepository storeRepository}) : _storeRepository = storeRepository;
 
   @override
   Stream<List<Product>> getProducts() {
-    return _firestore
-        .collection('products')
-        .orderBy('order', descending: false)
-        .snapshots()
-        .map((event) {
-          return event.docs
-              .map((doc) => Product.fromJson(doc.data()))
-              .where((product) => product.disabledPermanently != true)
-              .toList();
-        });
+    return _firestore.collection('products').orderBy('order', descending: false).snapshots().map((event) {
+      return event.docs
+          .map((doc) => Product.fromJson({'docId': doc.id, ...doc.data()}))
+          .where((product) => product.disabledPermanently != true)
+          .where((product) => product.isDeleted != true)
+          .toList();
+    });
   }
 
   @override
   Stream<List<ProductCategory>> getProductCategories() {
-    return _firestore
-        .collection('productCategories')
-        .orderBy('order', descending: false)
-        .snapshots()
-        .map((event) {
-          return event.docs
-              .map((doc) => ProductCategory.fromJson(doc.data()))
-              .toList();
-        });
+    return _firestore.collection('productCategories').orderBy('order', descending: false).snapshots().map((event) {
+      return event.docs
+          .map((doc) => ProductCategory.fromJson({'docId': doc.id, ...doc.data()}))
+          .where((category) => category.isDeleted != true)
+          .toList();
+    });
   }
 
   @override
@@ -52,7 +47,13 @@ class ProductRepositoryImpl implements ProductRepository {
 
       return products.map((product) {
         final category = categoryMap[product.categoryId];
-        return ProductWithCategory(product: product, category: category!);
+        if (category == null) {
+          dev.log(
+            'Product ${product.docId} references unknown categoryId "${product.categoryId}"',
+            name: 'ProductRepository',
+          );
+        }
+        return ProductWithCategory(product: product, category: category);
       }).toList();
     });
   }

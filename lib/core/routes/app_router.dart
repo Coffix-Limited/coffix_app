@@ -34,6 +34,7 @@ import 'package:coffix_app/features/profile/presentation/pages/special_url_page.
 import 'package:coffix_app/features/stores/presentation/pages/stores_page.dart';
 import 'package:coffix_app/features/transaction/presentation/pages/transaction_page.dart';
 import 'package:coffix_app/features/wrapper/presentation/pages/wrapper_page.dart';
+import 'package:coffix_app/presentation/organisms/app_generic_error.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -62,6 +63,7 @@ class AppRouter {
       FirebaseAuth.instance.authStateChanges(),
     ),
     observers: [AppNavigationObserver()],
+    errorBuilder: (context, state) => AppGenericError(error: state.error),
     redirect: (context, state) {
       final currentUser = FirebaseAuth.instance.currentUser;
       // ignore: avoid_print

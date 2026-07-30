@@ -77,14 +77,10 @@ class _ProfileViewState extends State<ProfileView> {
   @override
   Widget build(BuildContext context) {
     final double creditBalance = context.watch<AuthCubit>().state.maybeWhen(
-      authenticated: (user) =>
-          double.parse(user.user.creditAvailable?.toString() ?? '0.00'),
+      authenticated: (user) => double.parse(user.user.creditAvailable?.toString() ?? '0.00'),
       orElse: () => 0,
     );
-    final user = context.watch<AuthCubit>().state.maybeWhen(
-      authenticated: (user) => user.user,
-      orElse: () => null,
-    );
+    final user = context.watch<AuthCubit>().state.maybeWhen(authenticated: (user) => user.user, orElse: () => null);
     final isAuthenticated = (context.read<AuthCubit>().state).maybeWhen(
       authenticated: (user) => true,
       orElse: () => false,
@@ -112,9 +108,7 @@ class _ProfileViewState extends State<ProfileView> {
                 children: [
                   Text(
                     "My Coffix Credit Balance",
-                    style: AppTypography.bodyM.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: AppTypography.bodyM.copyWith(fontWeight: FontWeight.bold),
                     textAlign: TextAlign.center,
                   ),
                   AppCard(
@@ -128,49 +122,29 @@ class _ProfileViewState extends State<ProfileView> {
                               loaded: (coupons) => coupons,
                               orElse: () => <Coupon>[],
                             );
-                            final totalCoupon = coupons.fold(
-                              0.0,
-                              (sum, c) => sum + (c.amount ?? 0.0),
-                            );
+                            final totalCoupon = coupons.fold(0.0, (sum, c) => sum + (c.amount ?? 0.0));
                             final DateTime? latestCouponExpiry = coupons
                                 .map((c) => c.expiryDate)
                                 .whereType<DateTime>()
-                                .fold<DateTime?>(
-                                  null,
-                                  (latest, d) =>
-                                      latest == null || d.isAfter(latest)
-                                      ? d
-                                      : latest,
-                                );
+                                .fold<DateTime?>(null, (latest, d) => latest == null || d.isAfter(latest) ? d : latest);
                             return Column(
                               children: [
                                 Text.rich(
                                   textAlign: TextAlign.center,
                                   TextSpan(
                                     children: [
-                                      creditBalance.toCurrencySuperscript(
-                                        style: AppTypography.headlineXl,
-                                      ),
+                                      creditBalance.toCurrencySuperscript(style: AppTypography.headlineXl),
                                       if (totalCoupon > 0) ...[
-                                        TextSpan(
-                                          text: " + ",
-                                          style: AppTypography.headlineXl,
-                                        ),
-                                        totalCoupon.toCurrencySuperscript(
-                                          style: AppTypography.headlineXl,
-                                        ),
-                                        TextSpan(
-                                          text: " Coupon",
-                                          style: AppTypography.bodyXS,
-                                        ),
+                                        TextSpan(text: " + ", style: AppTypography.headlineXl),
+                                        totalCoupon.toCurrencySuperscript(style: AppTypography.headlineXl),
+                                        TextSpan(text: " Coupon", style: AppTypography.bodyXS),
                                       ],
                                     ],
                                   ),
                                 ),
                                 const SizedBox(height: AppSizes.md),
 
-                                if (totalCoupon > 0 &&
-                                    latestCouponExpiry != null)
+                                if (totalCoupon > 0 && latestCouponExpiry != null)
                                   Text(
                                     "Expiration Date: ${latestCouponExpiry.formatDate()}",
                                     textAlign: TextAlign.center,
@@ -219,16 +193,11 @@ class _ProfileViewState extends State<ProfileView> {
                                 setState(() {
                                   sendingTransactionEmail = true;
                                 });
-                                await getIt<DownloadTransaction>().call(
-                                  const NoParams(),
-                                );
+                                await getIt<DownloadTransaction>().call(const NoParams());
                                 setState(() {
                                   sendingTransactionEmail = false;
                                 });
-                                AppNotification.show(
-                                  context,
-                                  'Transaction email sent successfully',
-                                );
+                                AppNotification.show(context, 'Transaction email sent successfully');
                               } catch (e) {
                                 setState(() {
                                   sendingTransactionEmail = false;
@@ -247,8 +216,7 @@ class _ProfileViewState extends State<ProfileView> {
             ),
             Divider(height: 0, color: AppColors.textBlackColor),
 
-            if ((user?.shareCredit == null || user?.shareCredit == true) &&
-                coffixCreditAvailable) ...[
+            if ((user?.shareCredit == null || user?.shareCredit == true) && coffixCreditAvailable) ...[
               ProfileTile(
                 label: 'Send Credit to a Friend',
                 onTap: () {
@@ -262,10 +230,7 @@ class _ProfileViewState extends State<ProfileView> {
             ProfileTile(
               label: 'Specials',
               onTap: () {
-                context.pushNamed(
-                  SpecialUrlPage.route,
-                  extra: {'url': global?.specialUrl ?? ''},
-                );
+                context.pushNamed(SpecialUrlPage.route, extra: {'url': global?.specialUrl ?? ''});
               },
               icon: AppImages.special,
             ),
@@ -295,10 +260,7 @@ class _ProfileViewState extends State<ProfileView> {
               ProfileTile(
                 label: 'Coffee for Home',
                 onTap: () {
-                  context.pushNamed(
-                    CoffeeForHomePage.route,
-                    extra: {'url': global?.storeUrl ?? ''},
-                  );
+                  context.pushNamed(CoffeeForHomePage.route, extra: {'url': global?.storeUrl ?? ''});
                 },
                 icon: AppImages.bag,
               ),

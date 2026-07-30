@@ -12,46 +12,23 @@ import 'package:coffix_app/features/modifier/logic/modifier_cubit.dart';
 import 'package:coffix_app/features/products/logic/product_cubit.dart';
 import 'package:coffix_app/features/stores/logic/store_cubit.dart';
 import 'package:coffix_app/presentation/atoms/app_splash_screen.dart';
+import 'package:coffix_app/presentation/molecules/app_guest_bottom_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 enum LayoutPageTab {
-  home(
-    title: "Home",
-    icon: AppImages.homeGray,
-    selectedIcon: AppImages.homeBlack,
-  ),
-  coffixCredit(
-    title: "Coffix Credit",
-    icon: AppImages.creditGray,
-    selectedIcon: AppImages.creditBlack,
-  ),
-  menu(
-    title: "Menu",
-    icon: AppImages.menuGray,
-    selectedIcon: AppImages.menuBlack,
-  ),
-  stores(
-    title: "Stores",
-    icon: AppImages.storeGray,
-    selectedIcon: AppImages.storeBlack,
-  ),
-  order(
-    title: "My Order",
-    icon: AppImages.orderGray,
-    selectedIcon: AppImages.orderBlack,
-  );
+  home(title: "Home", icon: AppImages.homeGray, selectedIcon: AppImages.homeBlack),
+  coffixCredit(title: "Coffix Credit", icon: AppImages.creditGray, selectedIcon: AppImages.creditBlack),
+  menu(title: "Menu", icon: AppImages.menuGray, selectedIcon: AppImages.menuBlack),
+  stores(title: "Stores", icon: AppImages.storeGray, selectedIcon: AppImages.storeBlack),
+  order(title: "My Order", icon: AppImages.orderGray, selectedIcon: AppImages.orderBlack);
 
   final String title;
   final String icon;
   final String selectedIcon;
 
-  const LayoutPageTab({
-    required this.title,
-    required this.icon,
-    required this.selectedIcon,
-  });
+  const LayoutPageTab({required this.title, required this.icon, required this.selectedIcon});
 }
 
 class LayoutPage extends StatelessWidget {
@@ -110,9 +87,11 @@ class _LayoutViewState extends State<LayoutView> {
   Widget build(BuildContext context) {
     final location = GoRouterState.of(context).uri.path;
     final isAuthenticated = context.watch<AuthCubit>().state.maybeWhen(
-      authenticated: (user) =>
-          user.user.emailVerified == true &&
-          user.user.finishedOnboarding == true,
+      authenticated: (user) => user.user.emailVerified == true,
+      orElse: () => false,
+    );
+    final isFinishedOnboarding = context.watch<AuthCubit>().state.maybeWhen(
+      authenticated: (user) => user.user.finishedOnboarding == true,
       orElse: () => false,
     );
     final isCreditAvailable = context.watch<AuthCubit>().state.maybeWhen(
@@ -153,12 +132,8 @@ class _LayoutViewState extends State<LayoutView> {
           data: ThemeData(
             splashColor: Colors.transparent,
             highlightColor: Colors.transparent,
-            bottomAppBarTheme: const BottomAppBarThemeData(
-              shadowColor: Colors.transparent,
-            ),
-            bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-              enableFeedback: false,
-            ),
+            bottomAppBarTheme: const BottomAppBarThemeData(shadowColor: Colors.transparent),
+            bottomNavigationBarTheme: const BottomNavigationBarThemeData(enableFeedback: false),
           ),
           child: showSplashScreen
               ? AppSplashScreen()
@@ -168,98 +143,61 @@ class _LayoutViewState extends State<LayoutView> {
                       : BlocBuilder<AuthCubit, AuthState>(
                           builder: (context, state) {
                             final visibleTabs = LayoutPageTab.values
-                                .where(
-                                  (tab) =>
-                                      tab != LayoutPageTab.coffixCredit ||
-                                      isCreditAvailable,
-                                )
+                                .where((tab) => tab != LayoutPageTab.coffixCredit || isCreditAvailable)
                                 .toList();
                             final currentVisualIndex = visibleTabs.indexWhere(
-                              (tab) =>
-                                  LayoutPageTab.values.indexOf(tab) ==
-                                  widget.shell.currentIndex,
+                              (tab) => LayoutPageTab.values.indexOf(tab) == widget.shell.currentIndex,
                             );
-                            final orderCount =
-                                context
-                                    .watch<CartCubit>()
-                                    .state
-                                    .cart
-                                    ?.items
-                                    ?.length ??
-                                0;
+                            final orderCount = context.watch<CartCubit>().state.cart?.items?.length ?? 0;
                             return BottomNavigationBar(
-                              currentIndex: currentVisualIndex < 0
-                                  ? 0
-                                  : currentVisualIndex,
+                              currentIndex: currentVisualIndex < 0 ? 0 : currentVisualIndex,
                               onTap: (visualIndex) {
                                 final tab = visibleTabs[visualIndex];
-                                final branchIndex = LayoutPageTab.values
-                                    .indexOf(tab);
+                                final branchIndex = LayoutPageTab.values.indexOf(tab);
                                 if (tab == LayoutPageTab.order) {
                                   if (!isAuthenticated) {
                                     showDialog(
                                       context: context,
-                                      builder: (_) =>
-                                          AppAboutUrlDialog(url: aboutUrl),
+                                      builder: (_) => AppAboutUrlDialog(url: aboutUrl),
+                                    );
+                                  } else if (!isFinishedOnboarding) {
+                                    AppGuestBottomSheet.show(
+                                      context,
+                                      message: "Please finish first setting up your profile.",
+                                      isFinishedOnboarding: isFinishedOnboarding,
+                                      isAuthenticated: isAuthenticated,
                                     );
                                   } else {
-                                    widget.shell.goBranch(
-                                      branchIndex,
-                                      initialLocation: true,
-                                    );
+                                    widget.shell.goBranch(branchIndex, initialLocation: true);
                                   }
                                 } else {
                                   if (tab == LayoutPageTab.coffixCredit) {
-                                    context.read<CreditCubit>().showTopUpField(
-                                      false,
-                                    );
+                                    context.read<CreditCubit>().showTopUpField(false);
                                   }
-                                  widget.shell.goBranch(
-                                    branchIndex,
-                                    initialLocation: true,
-                                  );
+                                  widget.shell.goBranch(branchIndex, initialLocation: true);
                                 }
                               },
                               type: BottomNavigationBarType.fixed,
                               backgroundColor: Colors.transparent,
                               elevation: 0,
-                              selectedLabelStyle: AppTypography.body2XS
-                                  .copyWith(color: AppColors.textBlackColor),
-                              unselectedLabelStyle: AppTypography.body2XS
-                                  .copyWith(color: AppColors.textBlackColor),
+                              selectedLabelStyle: AppTypography.body2XS.copyWith(color: AppColors.textBlackColor),
+                              unselectedLabelStyle: AppTypography.body2XS.copyWith(color: AppColors.textBlackColor),
                               items: visibleTabs.map((tab) {
-                                final branchIndex = LayoutPageTab.values
-                                    .indexOf(tab);
+                                final branchIndex = LayoutPageTab.values.indexOf(tab);
                                 return BottomNavigationBarItem(
                                   icon: tab == LayoutPageTab.order
                                       ? widget.shell.currentIndex == branchIndex
                                             ? Badge.count(
                                                 count: orderCount,
-                                                child: Image.asset(
-                                                  tab.selectedIcon,
-                                                  width: 24,
-                                                  height: 24,
-                                                ),
+                                                child: Image.asset(tab.selectedIcon, width: 24, height: 24),
                                               )
                                             : Badge.count(
                                                 count: orderCount,
-                                                child: Image.asset(
-                                                  tab.icon,
-                                                  width: 24,
-                                                  height: 24,
-                                                ),
+                                                child: Image.asset(tab.icon, width: 24, height: 24),
                                               )
                                       : widget.shell.currentIndex == branchIndex
-                                      ? Image.asset(
-                                          tab.selectedIcon,
-                                          width: 24,
-                                          height: 24,
-                                        )
-                                      : Image.asset(
-                                          tab.icon,
-                                          width: 24,
-                                          height: 24,
-                                        ),
+                                      ? Image.asset(tab.selectedIcon, width: 24, height: 24)
+                                      : Image.asset(tab.icon, width: 24, height: 24),
                                   label: tab.title,
                                 );
                               }).toList(),

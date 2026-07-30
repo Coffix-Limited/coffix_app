@@ -103,6 +103,7 @@ otpRouter.post(
       });
 
       await logService.otp(uid, email, otpCode);
+      console.log("OTP sent to", email);
 
       return response.status(200).json({
         success: true,

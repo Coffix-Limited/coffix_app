@@ -3,7 +3,7 @@ export interface Product {
   categoryId: string;
   cost: number; // capital cost for stats only
   docId: string;
-  imageUrl: string;
+  imageUrl?: string;
   modifierGroupIds: string[];
   name: string;
   order: number; // order in the product
@@ -25,7 +25,7 @@ export interface SnapshotModifier {
 export interface EnrichedOrderItem {
   productId: string;
   productName: string;
-  productImageUrl: string;
+  productImageUrl?: string;
   price: number; // unit price = basePrice + sum(modifier priceDelta)
   basePrice: number; // price of the product
   quantity: number;

@@ -66,7 +66,11 @@ class FirebaseService {
   ): Promise<{ orderId: string; orderData: Record<string, any> }> {
     const validation = createOrderBodySchema.safeParse(body);
     if (!validation.success) {
-      throw new Error("Invalid body");
+      const errors = validation.error.issues
+        .map((i) => `${i.path.join(".")}: ${i.message}`)
+        .join(", ");
+      logger.error("createNewOrder: invalid body", { errors });
+      throw new Error(`Invalid order body: ${errors}`);
     }
     const storeDoc = await this.findStoreByStoreId(validation.data.storeId);
     if (!storeDoc)

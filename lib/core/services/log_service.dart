@@ -9,14 +9,11 @@ import 'package:firebase_auth/firebase_auth.dart';
 class LogService extends ApiClient {
   LogService() : super(dio: Dio());
 
-   
-
   Future<void> write(Log log) async {
     try {
       final uid = FirebaseAuth.instance.currentUser?.uid;
 
-      final data = log.copyWith(customerId: uid).toJson()
-        ..removeWhere((key, value) => value == null);
+      final data = log.copyWith(customerId: uid).toJson()..removeWhere((key, value) => value == null);
       await post("/log/create", data: data);
     } catch (e) {
       // Never let a log failure crash the app.
@@ -104,8 +101,7 @@ class LogService extends ApiClient {
         page: "otp_page",
         category: "App",
         severityLevel: 1,
-        action:
-            "After entering email and email is not verified, user redirected to OTP page",
+        action: "After entering email and email is not verified, user redirected to OTP page",
         notes: "User requested OTP for email verification to verify email.",
       ),
     );
@@ -144,8 +140,7 @@ class LogService extends ApiClient {
         category: "App",
         severityLevel: 1,
         action: "transactionEmail",
-        notes:
-            "User clicked the Email Transactions Icon CTA button to email Coffix credit transactions.",
+        notes: "User clicked the Email Transactions Icon CTA button to email Coffix credit transactions.",
       ),
     );
   }
@@ -157,25 +152,20 @@ class LogService extends ApiClient {
         category: "App",
         severityLevel: 1,
         action: "transactionEmail",
-        notes:
-            "User clicked the Email Transactions Icon CTA button to email transaction: $transactionNumber.",
+        notes: "User clicked the Email Transactions Icon CTA button to email transaction: $transactionNumber.",
       ),
     );
   }
 
   /// [GIFT] --------------------------------------------
-  Future<void> giftCoffixCredit({
-    required String recipientEmail,
-    required double amount,
-  }) async {
+  Future<void> giftCoffixCredit({required String recipientEmail, required double amount}) async {
     write(
       Log(
         page: "gift_page",
         category: "App",
         severityLevel: 5,
         action: "User clicked `Gift Coffix Credit` CTA button on gift page.",
-        notes:
-            "User gifted Coffix credit to $recipientEmail with amount: $amount.",
+        notes: "User gifted Coffix credit to $recipientEmail with amount: $amount.",
       ),
     );
   }
@@ -244,33 +234,26 @@ class LogService extends ApiClient {
     );
   }
 
-  Future<void> addProductToCart({
-    required Product product,
-    required int quantity,
-  }) async {
+  Future<void> addProductToCart({required Product product, required int quantity}) async {
     write(
       Log(
         page: "product_page",
         category: "App",
         severityLevel: 1,
         action: "User click `Add To Order` CTA button on product page.",
-        notes:
-            "User added product: ${product.name} to cart with quantity: $quantity.",
+        notes: "User added product: ${product.name} to cart with quantity: $quantity.",
       ),
     );
   }
 
-  Future<void> customiseProduct({
-    required Map<String, String> selectedModifiers,
-  }) async {
+  Future<void> customiseProduct({required Map<String, String> selectedModifiers}) async {
     write(
       Log(
         page: "customise_page",
         category: "App",
         severityLevel: 1,
         action: "User click `Update` CTA button on  customise product page.",
-        notes:
-            "User customised product with selected modifiers: $selectedModifiers.",
+        notes: "User customised product with selected modifiers: $selectedModifiers.",
       ),
     );
   }
@@ -320,8 +303,7 @@ class LogService extends ApiClient {
         category: "App",
         severityLevel: 5,
         action: "payment",
-        notes:
-            "User click the Pay CTA button to create a payment session for ordering a product.",
+        notes: "User click the Pay CTA button to create a payment session for ordering a product.",
       ),
     );
   }
@@ -347,6 +329,7 @@ class LogService extends ApiClient {
         category: "App",
         severityLevel: 1,
         action: "navigation",
+        customerId: FirebaseAuth.instance.currentUser?.uid,
         notes: "User navigated to $page page.",
       ),
     );

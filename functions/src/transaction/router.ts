@@ -336,6 +336,7 @@ router.post(
         category: "transaction",
         severityLevel: 5,
         action: "Manual transaction created",
+        page: "Transaction",
         notes: `${transactionType}/${paymentMethod} ${amount}`,
       });
 

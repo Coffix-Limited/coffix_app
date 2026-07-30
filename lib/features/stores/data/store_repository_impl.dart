@@ -16,28 +16,19 @@ class StoreRepositoryImpl implements StoreRepository {
   final AuthRepository _authRepository;
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  StoreRepositoryImpl({required AuthRepository authRepository})
-    : _authRepository = authRepository;
+  StoreRepositoryImpl({required AuthRepository authRepository}) : _authRepository = authRepository;
 
   @override
   Stream<List<Store>> getStores() {
-    return _firestore
-        .collection('stores')
-        .where("disable", isEqualTo: false)
-        .snapshots()
-        .map((event) {
-          return event.docs.map((doc) => Store.fromJson(doc.data())).toList();
-        });
+    return _firestore.collection('stores').where("disable", isEqualTo: false).snapshots().map((event) {
+      return event.docs.map((doc) => Store.fromJson(doc.data())).where((store) => store.isDeleted != true).toList();
+    });
   }
 
   @override
   Stream<Store> getPreferredStore({required String storeId}) {
-    return _firestore.collection('stores').doc(storeId).snapshots().map((
-      event,
-    ) {
-      return event.exists
-          ? Store.fromJson(event.data() ?? {})
-          : throw Exception('Store not found');
+    return _firestore.collection('stores').doc(storeId).snapshots().map((event) {
+      return event.exists ? Store.fromJson(event.data() ?? {}) : throw Exception('Store not found');
     });
   }
 
@@ -63,10 +54,7 @@ class StoreRepositoryImpl implements StoreRepository {
   /// Get the product override for a given product and store.
   /// If the product override does not exist, treat as empty override
   @override
-  Future<ProductOverride> getProductOverride({
-    required String productId,
-    required String storeId,
-  }) async {
+  Future<ProductOverride> getProductOverride({required String productId, required String storeId}) async {
     final overrideSnap = await _firestore
         .collection('stores')
         .doc(storeId)
@@ -88,17 +76,12 @@ class StoreRepositoryImpl implements StoreRepository {
       throw Exception('User not found');
     }
     final storeRef = _firestore.collection('customers').doc(user.uid);
-    await storeRef.set({
-      'preferredStoreId': storeId,
-      'updatedAt': TimeUtils.now(),
-    }, SetOptions(merge: true));
+    await storeRef.set({'preferredStoreId': storeId, 'updatedAt': TimeUtils.now()}, SetOptions(merge: true));
   }
 
   @override
   Future<void> openMap(double lat, double lng) async {
-    final Uri url = Uri.parse(
-      'https://www.google.com/maps/search/?api=1&query=$lat,$lng',
-    );
+    final Uri url = Uri.parse('https://www.google.com/maps/search/?api=1&query=$lat,$lng');
 
     if (await canLaunchUrl(url)) {
       await launchUrl(url, mode: LaunchMode.externalApplication);

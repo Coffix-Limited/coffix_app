@@ -68,7 +68,7 @@ export class CouponService {
       action: "coupon",
       category: "API",
       severityLevel: 5,
-      notes: `Coupon ${ref.id} issued to ${customerEmail} - $${amount}`,
+      notes: `Coupon issued to ${customerEmail} worth $${amount}`,
       customerId,
       time: now,
     });

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:coffix_app/core/constants/colors.dart';
 import 'package:coffix_app/core/constants/sizes.dart';
 import 'package:coffix_app/core/services/log_service.dart';
@@ -29,6 +31,30 @@ class _EmailVerificationFormState extends State<EmailVerificationForm> {
   final _pinController = TextEditingController();
   String _pin = '';
 
+  static const _cooldownSeconds = 60;
+  Timer? _cooldownTimer;
+  int _secondsRemaining = 0;
+
+  void _startCooldown() {
+    _cooldownTimer?.cancel();
+    setState(() => _secondsRemaining = _cooldownSeconds);
+    _cooldownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!mounted) {
+        timer.cancel();
+        return;
+      }
+      setState(() => _secondsRemaining--);
+      if (_secondsRemaining <= 0) timer.cancel();
+    });
+  }
+
+  @override
+  void dispose() {
+    _cooldownTimer?.cancel();
+    _pinController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     final defaultPinTheme = PinTheme(
@@ -42,9 +68,7 @@ class _EmailVerificationFormState extends State<EmailVerificationForm> {
       ),
     );
     final focusedPinTheme = defaultPinTheme.copyWith(
-      decoration: defaultPinTheme.decoration?.copyWith(
-        border: Border.all(color: AppColors.primary, width: 2),
-      ),
+      decoration: defaultPinTheme.decoration?.copyWith(border: Border.all(color: AppColors.primary, width: 2)),
     );
 
     return BlocConsumer<OtpCubit, OtpState>(
@@ -52,29 +76,20 @@ class _EmailVerificationFormState extends State<EmailVerificationForm> {
       listener: (context, state) {
         state.whenOrNull(
           error: (message) => AppNotification.error(context, message),
+          otpSent: (message) => AppNotification.show(context, 'OTP sent to your email. Please check your email.'),
         );
       },
       builder: (context, state) {
         return Padding(
-          padding: const EdgeInsets.only(
-            bottom: AppSizes.xxxxl,
-            top: AppSizes.xxl,
-          ),
+          padding: const EdgeInsets.only(bottom: AppSizes.xxxxl, top: AppSizes.xxl),
           child: Center(
             child: Container(
               padding: AppSizes.defaultPadding,
-              decoration: BoxDecoration(
-                color: AppColors.beige,
-                borderRadius: BorderRadius.circular(AppSizes.md),
-              ),
+              decoration: BoxDecoration(color: AppColors.beige, borderRadius: BorderRadius.circular(AppSizes.md)),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Text(
-                    "Verify your email",
-                    style: AppTypography.titleS,
-                    textAlign: TextAlign.center,
-                  ),
+                  Text("Verify your email", style: AppTypography.titleS, textAlign: TextAlign.center),
                   const SizedBox(height: 12.0),
                   Text(
                     "Check your email and enter your verification code",
@@ -92,19 +107,11 @@ class _EmailVerificationFormState extends State<EmailVerificationForm> {
                   ),
                   const SizedBox(height: 24.0),
                   AppButton.primary(
-                    disabled:
-                        _pin.length != 6 ||
-                        state.maybeWhen(
-                          verifying: () => true,
-                          orElse: () => false,
-                        ),
+                    disabled: _pin.length != 6 || state.maybeWhen(verifying: () => true, orElse: () => false),
                     onPressed: () {
                       context.read<OtpCubit>().verifyOtp(otp: _pin);
                     },
-                    label: state.maybeWhen(
-                      verifying: () => 'Verifying...',
-                      orElse: () => "Next",
-                    ),
+                    label: state.maybeWhen(verifying: () => 'Verifying...', orElse: () => "Next"),
                   ),
                   const SizedBox(height: 24.0),
                   Align(
@@ -115,32 +122,29 @@ class _EmailVerificationFormState extends State<EmailVerificationForm> {
                         children: [
                           TextSpan(
                             text: "Didn't receive the email? ",
-                            style: AppTypography.bodyXS.copyWith(
-                              color: AppColors.black,
-                            ),
+                            style: AppTypography.bodyXS.copyWith(color: AppColors.black),
                           ),
-                          TextSpan(
-                            text: 'Try again',
-                            style: AppTypography.bodyXS.copyWith(
-                              decoration: TextDecoration.underline,
+                          if (state.maybeWhen(sending: () => true, orElse: () => false))
+                            TextSpan(text: 'Sending...', style: AppTypography.bodyXS)
+                          else if (_secondsRemaining > 0)
+                            TextSpan(text: 'Try again in ${_secondsRemaining}s', style: AppTypography.bodyXS)
+                          else
+                            TextSpan(
+                              text: 'Try again',
+                              style: AppTypography.bodyXS.copyWith(decoration: TextDecoration.underline),
+                              recognizer: TapGestureRecognizer()
+                                ..onTap = () async {
+                                  _pinController.clear();
+                                  setState(() {
+                                    _pin = '';
+                                  });
+                                  LogService().getOTP();
+                                  await context.read<OtpCubit>().sendEmailVerification();
+                                  if (!context.mounted) return;
+                                  _startCooldown();
+                                  AppNotification.show(context, 'OTP sent to your email. Please check your email.');
+                                },
                             ),
-                            recognizer: TapGestureRecognizer()
-                              ..onTap = () async {
-                                _pinController.clear();
-                                setState(() {
-                                  _pin = '';
-                                });
-                                LogService().getOTP();
-                                await context
-                                    .read<OtpCubit>()
-                                    .sendEmailVerification();
-                                AppNotification.show(
-                                  // ignore: use_build_context_synchronously
-                                  context,
-                                  'OTP sent to your email. Please check your email.',
-                                );
-                              },
-                          ),
                         ],
                       ),
                     ),

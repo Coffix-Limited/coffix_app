@@ -46,8 +46,22 @@ class AppDropdown<T, V> extends StatelessWidget {
       builder: (state) {
         final borderRadius = BorderRadius.circular(AppSizes.sm);
 
+        // The stored value can point at an option that no longer exists (e.g. a
+        // store that was soft-deleted). Showing it would trip DropdownButton's
+        // "exactly one item" assertion, so fall back to the hint and clear the
+        // field so validation treats it as unset instead of silently re-saving
+        // the stale value. Skipped while [options] is empty, since that is also
+        // the async loading state and would wipe a valid selection.
+        final isOrphaned = options.isNotEmpty && state.value != null && !options.map(itemValue).contains(state.value);
+
+        if (isOrphaned) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (state.mounted) state.didChange(null);
+          });
+        }
+
         return DropdownButtonFormField<V>(
-          initialValue: state.value,
+          initialValue: isOrphaned ? null : state.value,
           isExpanded: true,
           icon: const Icon(Icons.keyboard_arrow_down, color: AppColors.black),
           dropdownColor: Colors.white,
@@ -70,9 +84,7 @@ class AppDropdown<T, V> extends StatelessWidget {
           decoration: InputDecoration(
             isDense: true,
             hintText: hintText,
-            hintStyle: theme.textTheme.bodyMedium?.copyWith(
-              color: AppColors.lightGrey,
-            ),
+            hintStyle: theme.textTheme.bodyMedium?.copyWith(color: AppColors.lightGrey),
             border: OutlineInputBorder(
               borderRadius: borderRadius,
               borderSide: BorderSide(color: AppColors.lightGrey),
@@ -87,10 +99,7 @@ class AppDropdown<T, V> extends StatelessWidget {
             return DropdownMenuItem<V>(
               value: itemValue(option), // <-- use extracted value
               child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSizes.xs,
-                  vertical: AppSizes.xs,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: AppSizes.xs, vertical: AppSizes.xs),
                 child: Text(
                   itemLabel(option),
                   maxLines: 1,
@@ -123,9 +132,7 @@ class AppDropdown<T, V> extends StatelessWidget {
                           if (isRequired) const TextSpan(text: ' *'),
                         ],
                       ),
-                      style: AppTypography.bodyXS.copyWith(
-                        color: AppColors.black,
-                      ),
+                      style: AppTypography.bodyXS.copyWith(color: AppColors.black),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),

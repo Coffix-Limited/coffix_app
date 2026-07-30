@@ -23,6 +23,9 @@ Store _$StoreFromJson(Map<String, dynamic> json) => Store(
   ),
   storeCode: json['storeCode'] as String?,
   city: json['city'] as String?,
+  isDeleted: json['isDeleted'] as bool?,
+  createdAt: const DateTimeConverter().fromJson(json['createdAt']),
+  updatedAt: const DateTimeConverter().fromJson(json['updatedAt']),
 );
 
 Map<String, dynamic> _$StoreToJson(Store instance) => <String, dynamic>{
@@ -35,6 +38,9 @@ Map<String, dynamic> _$StoreToJson(Store instance) => <String, dynamic>{
   'location': instance.location,
   'name': instance.name,
   'city': instance.city,
+  'isDeleted': instance.isDeleted,
+  'createdAt': const DateTimeConverter().toJson(instance.createdAt),
+  'updatedAt': const DateTimeConverter().toJson(instance.updatedAt),
   'openingHours': instance.openingHours,
   'holidayHours': instance.holidayHours,
   'storeCode': instance.storeCode,

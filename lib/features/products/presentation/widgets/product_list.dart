@@ -37,9 +37,11 @@ class ProductList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isAuthenticated = context.watch<AuthCubit>().state.maybeWhen(
-      authenticated: (user) =>
-          user.user.emailVerified == true &&
-          user.user.finishedOnboarding == true,
+      authenticated: (user) => user.user.emailVerified == true,
+      orElse: () => false,
+    );
+    final isFinishedOnboarding = context.watch<AuthCubit>().state.maybeWhen(
+      authenticated: (user) => user.user.finishedOnboarding == true,
       orElse: () => false,
     );
     return SingleChildScrollView(
@@ -89,6 +91,16 @@ class ProductList extends StatelessWidget {
                           AppGuestBottomSheet.show(
                             context,
                             message: "Please sign in to continue",
+                            isAuthenticated: isAuthenticated,
+                            isFinishedOnboarding: isFinishedOnboarding,
+                          );
+                        } else if (!isFinishedOnboarding) {
+                          AppGuestBottomSheet.show(
+                            context,
+                            message:
+                                "Please finish first setting up your profile.",
+                            isAuthenticated: isAuthenticated,
+                            isFinishedOnboarding: isFinishedOnboarding,
                           );
                         } else {
                           context.read<ProductModifierCubit>().resetModifiers();

@@ -36,10 +36,7 @@ class MenuView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final user = context.watch<AuthCubit>().state.maybeWhen(
-      authenticated: (user) => user,
-      orElse: () => null,
-    );
+    final user = context.watch<AuthCubit>().state.maybeWhen(authenticated: (user) => user, orElse: () => null);
     final firstStoreId = context.watch<StoreCubit>().state.maybeWhen(
       loaded: (stores) => stores.isNotEmpty ? stores.first.docId : '',
       orElse: () => '',
@@ -53,27 +50,23 @@ class MenuView extends StatelessWidget {
         },
       ),
       // floatingActionButton: AppCart(),
-      body: BlocBuilder<ProductCubit, ProductState>(
-        builder: (context, state) {
-          return state.when(
-            initial: () => const SizedBox.shrink(),
-            loading: () => AppLoading(),
-            loaded: (products, allCategories, categoryFilter) => ProductList(
-              products: products.productsByStore(
+      body: SingleChildScrollView(
+        child: BlocBuilder<ProductCubit, ProductState>(
+          builder: (context, state) {
+            return state.when(
+              initial: () => const SizedBox.shrink(),
+              loading: () => AppLoading(),
+              loaded: (products, allCategories, categoryFilter) => ProductList(
+                products: products.productsByStore(storeId: storeId, preferredStoreId: storeId),
+                allCategories: allCategories.sorted((a, b) => (a.order?.compareTo(b.order ?? 0.0) ?? 0).toInt()),
+                isRoot: true,
+                categoryFilter: categoryFilter,
                 storeId: storeId,
-                preferredStoreId: storeId,
               ),
-              allCategories: allCategories.sorted(
-                (a, b) => (a.order?.compareTo(b.order ?? "0") ?? 0).toInt(),
-              ),
-              isRoot: true,
-              categoryFilter: categoryFilter,
-              storeId: storeId,
-            ),
-            error: (message) =>
-                AppError(title: "Failed getting products", subtitle: message),
-          );
-        },
+              error: (message) => AppError(title: "Failed getting products", subtitle: message),
+            );
+          },
+        ),
       ),
     );
   }

@@ -16,6 +16,9 @@ ModifierGroup _$ModifierGroupFromJson(Map<String, dynamic> json) =>
           const [],
       name: json['name'] as String?,
       selectionType: json['selectionType'] as String?,
+      order: (json['order'] as num?)?.toDouble(),
+      isDeleted: json['isDeleted'] as bool?,
+      deletedAt: const DateTimeConverter().fromJson(json['deletedAt']),
     );
 
 Map<String, dynamic> _$ModifierGroupToJson(ModifierGroup instance) =>
@@ -24,4 +27,7 @@ Map<String, dynamic> _$ModifierGroupToJson(ModifierGroup instance) =>
       'modifierIds': instance.modifierIds,
       'name': instance.name,
       'selectionType': instance.selectionType,
+      'order': instance.order,
+      'isDeleted': instance.isDeleted,
+      'deletedAt': const DateTimeConverter().toJson(instance.deletedAt),
     };

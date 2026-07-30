@@ -1,3 +1,4 @@
+import 'package:coffix_app/core/utils/date_time_converter.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'product.g.dart';
@@ -16,6 +17,9 @@ class Product {
   final String? categoryName;
   final bool? disabledPermanently;
   final List<String>? disabledStores;
+  final bool? isDeleted;
+  @DateTimeConverter()
+  final DateTime? deletedAt;
 
   Product({
     this.availableToStores,
@@ -30,10 +34,11 @@ class Product {
     this.categoryName,
     this.disabledPermanently,
     this.disabledStores,
+    this.isDeleted,
+    this.deletedAt,
   });
 
-  factory Product.fromJson(Map<String, dynamic> json) =>
-      _$ProductFromJson(json);
+  factory Product.fromJson(Map<String, dynamic> json) => _$ProductFromJson(json);
   Map<String, dynamic> toJson() => _$ProductToJson(this);
 
   Product copyWith({

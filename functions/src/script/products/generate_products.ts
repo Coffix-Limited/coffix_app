@@ -113,7 +113,7 @@ async function main() {
 
   for (const cat of PRODUCT_CATEGORIES) {
     const ref = firestore.collection("productCategories").doc(cat.id);
-    batch.set(ref, { name: cat.name, order: cat.order });
+    batch.set(ref, { docId: cat.id, name: cat.name, order: cat.order });
   }
 
   for (const mg of MODIFIER_GROUPS) {

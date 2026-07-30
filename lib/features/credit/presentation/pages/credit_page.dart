@@ -84,9 +84,11 @@ class _CreditViewState extends State<CreditView> {
     final bool minTopUpNotReached =
         parsedAmount < double.parse(minTopUp ?? '0');
     final isAuthenticated = context.watch<AuthCubit>().state.maybeWhen(
-      authenticated: (user) =>
-          user.user.emailVerified == true &&
-          user.user.finishedOnboarding == true,
+      authenticated: (user) => user.user.emailVerified == true,
+      orElse: () => false,
+    );
+    final isFinishedOnboarding = context.watch<AuthCubit>().state.maybeWhen(
+      authenticated: (user) => user.user.finishedOnboarding == true,
       orElse: () => false,
     );
 
@@ -280,6 +282,16 @@ class _CreditViewState extends State<CreditView> {
                           AppGuestBottomSheet.show(
                             context,
                             message: "Please sign in to continue",
+                            isAuthenticated: isAuthenticated,
+                            isFinishedOnboarding: isFinishedOnboarding,
+                          );
+                        } else if (!isFinishedOnboarding) {
+                          AppGuestBottomSheet.show(
+                            context,
+                            message:
+                                "Please finish first setting up your profile.",
+                            isAuthenticated: isAuthenticated,
+                            isFinishedOnboarding: isFinishedOnboarding,
                           );
                         } else if (showTopUpField &&
                             formKey.currentState!.validate()) {

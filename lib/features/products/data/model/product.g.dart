@@ -25,6 +25,8 @@ Product _$ProductFromJson(Map<String, dynamic> json) => Product(
   disabledStores: (json['disabledStores'] as List<dynamic>?)
       ?.map((e) => e as String)
       .toList(),
+  isDeleted: json['isDeleted'] as bool?,
+  deletedAt: const DateTimeConverter().fromJson(json['deletedAt']),
 );
 
 Map<String, dynamic> _$ProductToJson(Product instance) => <String, dynamic>{
@@ -40,4 +42,6 @@ Map<String, dynamic> _$ProductToJson(Product instance) => <String, dynamic>{
   'categoryName': instance.categoryName,
   'disabledPermanently': instance.disabledPermanently,
   'disabledStores': instance.disabledStores,
+  'isDeleted': instance.isDeleted,
+  'deletedAt': const DateTimeConverter().toJson(instance.deletedAt),
 };

@@ -12,6 +12,9 @@ Modifier _$ModifierFromJson(Map<String, dynamic> json) => Modifier(
   isDefault: json['isDefault'] as bool?,
   label: json['label'] as String?,
   priceDelta: (json['priceDelta'] as num?)?.toDouble(),
+  order: (json['order'] as num?)?.toDouble(),
+  isDeleted: json['isDeleted'] as bool?,
+  deletedAt: const DateTimeConverter().fromJson(json['deletedAt']),
 );
 
 Map<String, dynamic> _$ModifierToJson(Modifier instance) => <String, dynamic>{
@@ -20,4 +23,7 @@ Map<String, dynamic> _$ModifierToJson(Modifier instance) => <String, dynamic>{
   'isDefault': instance.isDefault,
   'label': instance.label,
   'priceDelta': instance.priceDelta,
+  'order': instance.order,
+  'isDeleted': instance.isDeleted,
+  'deletedAt': const DateTimeConverter().toJson(instance.deletedAt),
 };

@@ -32,18 +32,9 @@ class ProfileTile extends StatelessWidget {
             Expanded(
               child: Row(
                 children: [
-                  Image.asset(
-                    icon,
-                    width: AppSizes.iconSizeMedium,
-                    height: AppSizes.iconSizeMedium,
-                  ),
+                  Image.asset(icon, width: AppSizes.iconSizeMedium, height: AppSizes.iconSizeMedium),
                   SizedBox(width: AppSizes.sm),
-                  Text(
-                    label,
-                    style: AppTypography.bodyM.copyWith(
-                      color: textColor ?? AppColors.black,
-                    ),
-                  ),
+                  Text(label, style: AppTypography.bodyM.copyWith(color: textColor ?? AppColors.black)),
                 ],
               ),
             ),

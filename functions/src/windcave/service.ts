@@ -185,8 +185,9 @@ export class WindcaveService {
             item.selectedModifiers ?? {},
           )) {
             const m = found.get(modifierId);
-            const mGroupdId = String(m.modifierGroupIds ?? "");
-            if (mGroupdId && groupId && mGroupdId !== groupId) {
+            const mGroupId =
+              typeof m?.groupId === "string" ? m.groupId.trim() : "";
+            if (mGroupId && groupId && mGroupId !== groupId) {
               throw new Error(
                 `Modifier ${modifierId} does not match group ${groupId}`,
               );
@@ -220,7 +221,7 @@ export class WindcaveService {
         const enrichedItem: EnrichedOrderItem = {
           productId: item.productId,
           productName: product.name,
-          productImageUrl: product.imageUrl,
+          ...(product.imageUrl ? { productImageUrl: product.imageUrl } : {}),
           price: unitPrice,
           basePrice: basePrice,
           quantity: item.quantity,

@@ -1,3 +1,4 @@
+import 'package:coffix_app/core/utils/date_time_converter.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'modifier.g.dart';
@@ -9,6 +10,10 @@ class Modifier {
   final bool? isDefault;
   final String? label;
   final double? priceDelta;
+  final double? order;
+  final bool? isDeleted;
+  @DateTimeConverter()
+  final DateTime? deletedAt;
 
   Modifier({
     this.docId,
@@ -16,6 +21,9 @@ class Modifier {
     this.isDefault,
     this.label,
     this.priceDelta,
+    this.order,
+    this.isDeleted,
+    this.deletedAt,
   });
 
   Modifier copyWith({String? groupId}) {
@@ -25,10 +33,12 @@ class Modifier {
       isDefault: isDefault,
       label: label,
       priceDelta: priceDelta,
+      order: order,
+      isDeleted: isDeleted,
+      deletedAt: deletedAt,
     );
   }
 
-  factory Modifier.fromJson(Map<String, dynamic> json) =>
-      _$ModifierFromJson(json);
+  factory Modifier.fromJson(Map<String, dynamic> json) => _$ModifierFromJson(json);
   Map<String, dynamic> toJson() => _$ModifierToJson(this);
 }

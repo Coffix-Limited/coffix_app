@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:developer';
 import 'dart:math' hide log;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -38,22 +37,13 @@ class AuthRepositoryImpl extends ApiClient implements AuthRepository {
   AuthRepositoryImpl() : super(dio: Dio());
 
   @override
-  Future<void> signInWithEmailAndPassword({
-    required String email,
-    required String password,
-  }) async {
+  Future<void> signInWithEmailAndPassword({required String email, required String password}) async {
     try {
-      final credential = await _auth.signInWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
+      final credential = await _auth.signInWithEmailAndPassword(email: email, password: password);
       final isDisabled = await isUserDisabled(credential: credential);
       if (isDisabled) {
         await _auth.signOut();
-        throw FirebaseAuthException(
-          code: 'user-disabled',
-          message: 'User is disabled',
-        );
+        throw FirebaseAuthException(code: 'user-disabled', message: 'User is disabled');
       }
     } on FirebaseAuthException {
       rethrow;
@@ -72,19 +62,10 @@ class AuthRepositoryImpl extends ApiClient implements AuthRepository {
   }
 
   @override
-  Future<void> signUpWithEmailAndPassword({
-    required String email,
-    required String password,
-  }) async {
+  Future<void> signUpWithEmailAndPassword({required String email, required String password}) async {
     try {
-      final credential = await _auth.createUserWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
-      await createUserDoc(
-        docId: credential.user!.uid,
-        email: credential.user!.email!,
-      );
+      final credential = await _auth.createUserWithEmailAndPassword(email: email, password: password);
+      await createUserDoc(docId: credential.user!.uid, email: credential.user!.email!);
     } on FirebaseAuthException catch (e, st) {
       if (e.code == 'email-already-in-use') {
         throw Exception('Email already in use');
@@ -104,10 +85,7 @@ class AuthRepositoryImpl extends ApiClient implements AuthRepository {
       final hashedNonce = _sha256ofString(rawNonce);
 
       final appleCredential = await SignInWithApple.getAppleIDCredential(
-        scopes: [
-          AppleIDAuthorizationScopes.email,
-          AppleIDAuthorizationScopes.fullName,
-        ],
+        scopes: [AppleIDAuthorizationScopes.email, AppleIDAuthorizationScopes.fullName],
         nonce: hashedNonce,
       );
 
@@ -116,24 +94,17 @@ class AuthRepositoryImpl extends ApiClient implements AuthRepository {
         throw Exception('Apple Sign In failed: No ID token');
       }
 
-      final oauthCredential = OAuthProvider('apple.com').credential(
-        idToken: idToken,
-        rawNonce: rawNonce,
-        accessToken: appleCredential.authorizationCode,
-      );
+      final oauthCredential = OAuthProvider(
+        'apple.com',
+      ).credential(idToken: idToken, rawNonce: rawNonce, accessToken: appleCredential.authorizationCode);
 
-      final credentialResult = await _auth.signInWithCredential(
-        oauthCredential,
-      );
+      final credentialResult = await _auth.signInWithCredential(oauthCredential);
 
       if (credentialResult.user != null) {
         final disabled = await isUserDisabled(credential: credentialResult);
         if (disabled) {
           await _auth.signOut();
-          throw FirebaseAuthException(
-            code: 'user-disabled',
-            message: 'User is disabled',
-          );
+          throw FirebaseAuthException(code: 'user-disabled', message: 'User is disabled');
         }
         final email =
             credentialResult.user!.email ??
@@ -147,10 +118,7 @@ class AuthRepositoryImpl extends ApiClient implements AuthRepository {
         // pending Apple credential so it can be linked once the user
         // re-authenticates with their password.
         _pendingCredential = e.credential;
-        throw AccountExistsWithDifferentCredential(
-          email: e.email ?? '',
-          provider: 'apple.com',
-        );
+        throw AccountExistsWithDifferentCredential(email: e.email ?? '', provider: 'apple.com');
       }
       rethrow;
     } on SignInWithAppleAuthorizationException catch (e) {
@@ -162,13 +130,9 @@ class AuthRepositoryImpl extends ApiClient implements AuthRepository {
   }
 
   String _generateNonce([int length = 32]) {
-    const charset =
-        '0123456789ABCDEFGHIJKLMNOPQRSTUVXYZabcdefghijklmnopqrstuvwxyz-._';
+    const charset = '0123456789ABCDEFGHIJKLMNOPQRSTUVXYZabcdefghijklmnopqrstuvwxyz-._';
     final random = Random.secure();
-    return List.generate(
-      length,
-      (_) => charset[random.nextInt(charset.length)],
-    ).join();
+    return List.generate(length, (_) => charset[random.nextInt(charset.length)]).join();
   }
 
   /// Returns SHA256 hash as a HEX string (this is what Firebase expects you to
@@ -180,26 +144,17 @@ class AuthRepositoryImpl extends ApiClient implements AuthRepository {
   }
 
   @override
-  Future<void> linkPendingCredentialWithPassword({
-    required String email,
-    required String password,
-  }) async {
+  Future<void> linkPendingCredentialWithPassword({required String email, required String password}) async {
     final pending = _pendingCredential;
     if (pending == null) {
       throw Exception('No pending credential to link.');
     }
     try {
-      final userCred = await _auth.signInWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
+      final userCred = await _auth.signInWithEmailAndPassword(email: email, password: password);
       final isDisabled = await isUserDisabled(credential: userCred);
       if (isDisabled) {
         await _auth.signOut();
-        throw FirebaseAuthException(
-          code: 'user-disabled',
-          message: 'User is disabled',
-        );
+        throw FirebaseAuthException(code: 'user-disabled', message: 'User is disabled');
       }
       // Attach the SSO provider to the existing UID. The customer doc already
       // exists, so we intentionally do NOT call createUserDoc here.
@@ -219,9 +174,7 @@ class AuthRepositoryImpl extends ApiClient implements AuthRepository {
   Future<UserCredential?> signInWithGoogle() async {
     try {
       await _googleSignIn.initialize();
-      final GoogleSignInAccount account = await _googleSignIn.authenticate(
-        scopeHint: ["email"],
-      );
+      final GoogleSignInAccount account = await _googleSignIn.authenticate(scopeHint: ["email"]);
 
       final authClient = _googleSignIn.authorizationClient;
       final authorization = await authClient.authorizationForScopes(['email']);
@@ -246,15 +199,9 @@ class AuthRepositoryImpl extends ApiClient implements AuthRepository {
         final disabled = await isUserDisabled(credential: credentialResult);
         if (disabled) {
           await _auth.signOut();
-          throw FirebaseAuthException(
-            code: 'user-disabled',
-            message: 'User is disabled',
-          );
+          throw FirebaseAuthException(code: 'user-disabled', message: 'User is disabled');
         }
-        await createUserDoc(
-          docId: credentialResult.user!.uid,
-          email: credentialResult.user!.email!,
-        );
+        await createUserDoc(docId: credentialResult.user!.uid, email: credentialResult.user!.email!);
         return credentialResult;
       } on FirebaseAuthException catch (e) {
         if (e.code == 'account-exists-with-different-credential') {
@@ -262,10 +209,7 @@ class AuthRepositoryImpl extends ApiClient implements AuthRepository {
           // pending Google credential so it can be linked once the user
           // re-authenticates with their password.
           _pendingCredential = e.credential;
-          throw AccountExistsWithDifferentCredential(
-            email: e.email ?? '',
-            provider: 'google.com',
-          );
+          throw AccountExistsWithDifferentCredential(email: e.email ?? '', provider: 'google.com');
         }
         rethrow;
       }
@@ -299,14 +243,8 @@ class AuthRepositoryImpl extends ApiClient implements AuthRepository {
   }
 
   @override
-  Future<void> createUserDoc({
-    required String docId,
-    required String email,
-  }) async {
-    final globalSnap = await _firestore
-        .collection('global')
-        .doc(AppConstants.globalCollectionDocId)
-        .get();
+  Future<void> createUserDoc({required String docId, required String email}) async {
+    final globalSnap = await _firestore.collection('global').doc(AppConstants.globalCollectionDocId).get();
     final global = AppGlobal.fromJson(globalSnap.data() ?? {});
 
     final ref = _firestore.collection('customers').doc(docId);
@@ -354,48 +292,26 @@ class AuthRepositoryImpl extends ApiClient implements AuthRepository {
 
   @override
   Stream<AppUser?> getUser() {
-    return _firestore
-        .collection('customers')
-        .doc(_auth.currentUser?.uid)
-        .snapshots()
-        .map((event) {
-          return AppUser.fromJson({
-            ...event.data() ?? {},
-            "docId": _auth.currentUser?.uid,
-          });
-        });
+    return _firestore.collection('customers').doc(_auth.currentUser?.uid).snapshots().map((event) {
+      return AppUser.fromJson({...event.data() ?? {}, "docId": _auth.currentUser?.uid});
+    });
   }
 
   @override
   Future<void> sendEmailVerification({required String email}) async {
-    final token = await _auth.currentUser?.getIdToken();
-    log(token ?? '');
-    if (token == null) {
-      throw Exception('No token found');
-    }
-    final response = await http.post(
-      Uri.parse('${ApiEndpoints.v1}/otp/send'),
-      headers: {'Authorization': 'Bearer $token'},
-      body: {'email': email},
-    );
-    if (response.statusCode != 200) {
-      throw Exception('Failed to send email verification');
+    try {
+      await post('/otp/send', data: {'email': email});
+    } catch (e) {
+      throw Exception(e);
     }
   }
 
   @override
   Future<void> verifyOtp({required String otp}) async {
-    final token = await _auth.currentUser?.getIdToken();
-    if (token == null) {
-      throw Exception('No token found');
-    }
-    final response = await http.post(
-      Uri.parse('${ApiEndpoints.v1}/otp/verify'),
-      headers: {'Authorization': 'Bearer $token'},
-      body: {'otp': otp},
-    );
-    if (response.statusCode != 200) {
-      throw Exception('Failed to verify OTP');
+    try {
+      await post('/otp/verify', data: {'otp': otp});
+    } catch (e) {
+      throw Exception(e);
     }
   }
 
@@ -415,10 +331,7 @@ class AuthRepositoryImpl extends ApiClient implements AuthRepository {
 
   @override
   Future<bool> isUserDisabled({required UserCredential credential}) async {
-    final user = await _firestore
-        .collection("customers")
-        .doc(credential.user?.uid)
-        .get();
+    final user = await _firestore.collection("customers").doc(credential.user?.uid).get();
     return user.exists && user.data()?["disabled"] == true;
   }
 
@@ -459,10 +372,7 @@ class AuthRepositoryImpl extends ApiClient implements AuthRepository {
 
   @override
   Future<String> sendPasswordResetEmail({required String email}) async {
-    final response = await post(
-      '/auth/forgot-password',
-      data: {'email': email},
-    );
+    final response = await post('/auth/forgot-password', data: {'email': email});
     if (response.statusCode != 200) {
       throw Exception('Failed to send password reset email');
     }

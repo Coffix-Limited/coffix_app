@@ -7,9 +7,9 @@ part 'product_with_category.g.dart';
 @JsonSerializable(explicitToJson: true)
 class ProductWithCategory {
   final Product product;
-  final ProductCategory category;
+  final ProductCategory? category;
 
-  ProductWithCategory({required this.product, required this.category});
+  ProductWithCategory({required this.product, this.category});
 
   factory ProductWithCategory.fromJson(Map<String, dynamic> json) =>
       _$ProductWithCategoryFromJson(json);
