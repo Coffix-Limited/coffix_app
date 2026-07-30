@@ -21,12 +21,10 @@ class AuthCubit extends Cubit<AuthState> {
   StreamSubscription<AppUserWithStore?>? _userWithStoreSubscription;
   StreamSubscription<User?>? _userSubscription;
 
-  AuthCubit({
-    required AuthRepository authRepository,
-    required StoreRepository storeRepository,
-  }) : _authRepository = authRepository,
-       _storeRepository = storeRepository,
-       super(AuthState.initial());
+  AuthCubit({required AuthRepository authRepository, required StoreRepository storeRepository})
+    : _authRepository = authRepository,
+      _storeRepository = storeRepository,
+      super(AuthState.initial());
 
   void listenToUser() {
     _userSubscription?.cancel();
@@ -54,22 +52,13 @@ class AuthCubit extends Cubit<AuthState> {
 
   AuthExceptions _handleAuthException(FirebaseAuthException e) {
     debugPrint('auth exception code: ${e.stackTrace}');
-    return AuthExceptions(
-      message: getAuthExceptionMessage(e.code),
-      code: e.code,
-    );
+    return AuthExceptions(message: getAuthExceptionMessage(e.code), code: e.code);
   }
 
-  Future<void> signInWithEmailAndPassword({
-    required String email,
-    required String password,
-  }) async {
+  Future<void> signInWithEmailAndPassword({required String email, required String password}) async {
     emit(AuthState.loading());
     try {
-      await _authRepository.signInWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
+      await _authRepository.signInWithEmailAndPassword(email: email, password: password);
     } on FirebaseAuthException catch (e) {
       throw _handleAuthException(e);
     } catch (e) {
@@ -87,16 +76,10 @@ class AuthCubit extends Cubit<AuthState> {
     }
   }
 
-  Future<void> createAccountWithEmailAndPassword({
-    required String email,
-    required String password,
-  }) async {
+  Future<void> createAccountWithEmailAndPassword({required String email, required String password}) async {
     emit(AuthState.loading());
     try {
-      await _authRepository.signUpWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
+      await _authRepository.signUpWithEmailAndPassword(email: email, password: password);
     } on FirebaseAuthException catch (e) {
       throw _handleAuthException(e);
     } catch (e) {
@@ -134,14 +117,10 @@ class AuthCubit extends Cubit<AuthState> {
         return;
       }
       final message = switch (e.code) {
-        AuthorizationErrorCode.failed =>
-          'Apple Sign In failed. Please try again.',
-        AuthorizationErrorCode.invalidResponse =>
-          'Apple Sign In returned an invalid response. Please try again.',
-        AuthorizationErrorCode.notHandled =>
-          'Apple Sign In could not be completed. Please try again.',
-        AuthorizationErrorCode.notInteractive =>
-          'Apple Sign In requires user interaction. Please try again.',
+        AuthorizationErrorCode.failed => 'Apple Sign In failed. Please try again.',
+        AuthorizationErrorCode.invalidResponse => 'Apple Sign In returned an invalid response. Please try again.',
+        AuthorizationErrorCode.notHandled => 'Apple Sign In could not be completed. Please try again.',
+        AuthorizationErrorCode.notInteractive => 'Apple Sign In requires user interaction. Please try again.',
         _ => 'Apple Sign In failed. Please try again.',
       };
       emit(AuthState.error(message: message));
@@ -155,16 +134,10 @@ class AuthCubit extends Cubit<AuthState> {
 
   /// Re-authenticates the existing email/password account and links the
   /// pending SSO credential to it, then loads the (unchanged) user.
-  Future<void> linkAccountWithPassword({
-    required String email,
-    required String password,
-  }) async {
+  Future<void> linkAccountWithPassword({required String email, required String password}) async {
     emit(AuthState.loading());
     try {
-      await _authRepository.linkPendingCredentialWithPassword(
-        email: email,
-        password: password,
-      );
+      await _authRepository.linkPendingCredentialWithPassword(email: email, password: password);
       getUser();
     } on FirebaseAuthException catch (e) {
       emit(AuthState.error(message: _handleAuthException(e).message));
@@ -183,6 +156,7 @@ class AuthCubit extends Cubit<AuthState> {
     _userWithStoreSubscription?.cancel();
     _userWithStoreSubscription = stream.listen(
       (AppUserWithStore? user) {
+        if (user?.user.email?.isNotEmpty != true) return;
         emit(AuthState.authenticated(userWithStore: user!));
       },
       onError: (error) {
@@ -213,15 +187,10 @@ class AuthCubit extends Cubit<AuthState> {
     }
   }
 
-  Future<void> createOrLoginAccount({
-    required String email,
-    required String password,
-  }) async {
+  Future<void> createOrLoginAccount({required String email, required String password}) async {
     emit(AuthState.loading());
     try {
-      final providers = await _authRepository.getProvidersForEmail(
-        email: email,
-      );
+      final providers = await _authRepository.getProvidersForEmail(email: email);
       final hasAccount = providers.isNotEmpty;
       final hasPassword = providers.contains('password');
 
@@ -234,15 +203,9 @@ class AuthCubit extends Cubit<AuthState> {
       }
 
       if (hasAccount) {
-        await _authRepository.signInWithEmailAndPassword(
-          email: email,
-          password: password,
-        );
+        await _authRepository.signInWithEmailAndPassword(email: email, password: password);
       } else {
-        await _authRepository.signUpWithEmailAndPassword(
-          email: email,
-          password: password,
-        );
+        await _authRepository.signUpWithEmailAndPassword(email: email, password: password);
       }
       getUser();
     } on FirebaseAuthException catch (e) {
@@ -260,9 +223,7 @@ class AuthCubit extends Cubit<AuthState> {
   Future<void> forgotPasswordWithEmail({required String email}) async {
     emit(AuthState.loading());
     try {
-      final message = await _authRepository.sendPasswordResetEmail(
-        email: email,
-      );
+      final message = await _authRepository.sendPasswordResetEmail(email: email);
       emit(AuthState.passwordResetEmailSent(message: message));
     } catch (e) {
       emit(AuthState.error(message: e.toString()));

@@ -1,4 +1,5 @@
 import 'package:coffix_app/core/constants/colors.dart';
+import 'package:coffix_app/core/constants/images.dart';
 import 'package:coffix_app/core/constants/sizes.dart';
 import 'package:coffix_app/core/di/service_locator.dart';
 import 'package:coffix_app/core/services/log_service.dart';
@@ -11,6 +12,7 @@ import 'package:coffix_app/features/profile/logic/profile_cubit.dart';
 import 'package:coffix_app/features/stores/data/model/store.dart';
 import 'package:coffix_app/features/stores/logic/store_cubit.dart';
 import 'package:coffix_app/presentation/atoms/app_button.dart';
+import 'package:coffix_app/presentation/atoms/app_clickable.dart';
 import 'package:coffix_app/presentation/atoms/app_date_field.dart';
 import 'package:coffix_app/presentation/atoms/app_dropdown.dart';
 import 'package:coffix_app/presentation/atoms/app_field.dart';
@@ -207,7 +209,20 @@ class _PersonalInfoViewState extends State<PersonalInfoView> {
         appBar: AppBar(
           title: Text('My Account', style: AppTypography.titleXL.copyWith(color: AppColors.textBlackColor)),
           leading: user?.finishedOnboarding == true
-              ? IconButton(icon: const Icon(Icons.arrow_back_ios_new_rounded), onPressed: () => context.pop())
+              ? Padding(
+                  padding: const EdgeInsets.only(left: 12.0),
+                  child: AppClickable(
+                    showSplash: false,
+                    onPressed: () {
+                      context.pop();
+                    },
+                    child: Image.asset(
+                      AppImages.backButton,
+                      width: AppSizes.iconSizeMedium,
+                      height: AppSizes.iconSizeMedium,
+                    ),
+                  ),
+                )
               : const SizedBox.shrink(),
         ),
         body: SingleChildScrollView(

@@ -8,13 +8,8 @@ class AuthState with _$AuthState {
   // Loading state (e.g., checking tokens, fetching user profile).
   const factory AuthState.loading() = _Loading;
 
-  // User is authenticated but email is not verified
-  const factory AuthState.emailNotVerified() = _EmailNotVerified;
-
   // User is authenticated and has completed onboarding
-  const factory AuthState.authenticated({
-    required AppUserWithStore userWithStore,
-  }) = _Authenticated;
+  const factory AuthState.authenticated({required AppUserWithStore userWithStore}) = _Authenticated;
 
   // User has account
   const factory AuthState.hasAccount({required bool hasAccount}) = _HasAccount;
@@ -27,10 +22,7 @@ class AuthState with _$AuthState {
 
   // An SSO sign-in collided with an existing email/password account. The user
   // must re-authenticate with their password so the SSO provider can be linked.
-  const factory AuthState.linkRequired({
-    required String email,
-    required String provider,
-  }) = _LinkRequired;
+  const factory AuthState.linkRequired({required String email, required String provider}) = _LinkRequired;
 
   // Authentication failed with an error message.
   const factory AuthState.error({required String message}) = _Error;
@@ -39,6 +31,5 @@ class AuthState with _$AuthState {
   const factory AuthState.forgotPassword() = _ForgotPassword;
 
   // Password reset email sent
-  const factory AuthState.passwordResetEmailSent({required String message}) =
-      _PasswordResetEmailSent;
+  const factory AuthState.passwordResetEmailSent({required String message}) = _PasswordResetEmailSent;
 }

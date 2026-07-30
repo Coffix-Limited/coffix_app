@@ -86,16 +86,6 @@ otpRouter.post(
         });
       });
 
-      // Fetch full user document
-      const firebaseService = new FirebaseService();
-      const user = await firebaseService.findUserByCustomerId(uid);
-      if (!user) {
-        return response.status(500).json({
-          success: false,
-          message: "User not found",
-        });
-      }
-
       await emailService.sendOTP({
         to: email,
         userId: uid,

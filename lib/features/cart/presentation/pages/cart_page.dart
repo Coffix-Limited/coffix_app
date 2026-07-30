@@ -52,11 +52,8 @@ class _CartViewState extends State<CartView> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final store = context.watch<AuthCubit>().state.maybeWhen(
-      authenticated: (user) => user.store,
-      orElse: () => null,
-    );
-    final storeIsOpen = store?.isOpenAt() ?? false;
+    final store = context.watch<AuthCubit>().state.maybeWhen(authenticated: (user) => user.store, orElse: () => null);
+    final storeIsOpen = (store?.isOpenAt() ?? false) || (store?.isDeleted == true);
     final productCubit = context.watch<ProductCubit>();
     final products = productCubit.allProducts;
 
@@ -85,8 +82,7 @@ class _CartViewState extends State<CartView> {
                               children: [
                                 EmptyState(
                                   title: 'No items in order',
-                                  subtitle:
-                                      'Add items from the menu to get started',
+                                  subtitle: 'Add items from the menu to get started',
                                   icon: Icons.shopping_cart_outlined,
                                 ),
                               ],
@@ -108,8 +104,7 @@ class _CartViewState extends State<CartView> {
                               shrinkWrap: true,
                               physics: const NeverScrollableScrollPhysics(),
                               itemBuilder: (context, index) {
-                                final CartItem? cartItem =
-                                    state.cart?.items?[index];
+                                final CartItem? cartItem = state.cart?.items?[index];
                                 if (cartItem == null) {
                                   return const SizedBox.shrink();
                                 }
@@ -120,22 +115,13 @@ class _CartViewState extends State<CartView> {
                                   basePrice: cartItem.basePrice,
                                   onRemove: () {
                                     LogService().removeProductFromCart(
-                                      product: Product(
-                                        docId: cartItem.productId,
-                                        name: cartItem.productName,
-                                      ),
+                                      product: Product(docId: cartItem.productId, name: cartItem.productName),
                                     );
-                                    context.read<CartCubit>().removeProduct(
-                                      cartItemId: cartItem.id ?? '',
-                                    );
+                                    context.read<CartCubit>().removeProduct(cartItemId: cartItem.id ?? '');
                                   },
                                   onEdit: () {
                                     final Product? selectedProduct = products
-                                        .firstWhereOrNull(
-                                          (p) =>
-                                              p.product.docId ==
-                                              cartItem.productId,
-                                        )
+                                        .firstWhereOrNull((p) => p.product.docId == cartItem.productId)
                                         ?.product;
                                     if (selectedProduct == null) return;
                                     context.pushNamed(
@@ -162,9 +148,7 @@ class _CartViewState extends State<CartView> {
                   padding: AppSizes.defaultPadding,
                   decoration: BoxDecoration(
                     color: Theme.of(context).scaffoldBackgroundColor,
-                    border: Border(
-                      top: BorderSide(color: AppColors.borderColor),
-                    ),
+                    border: Border(top: BorderSide(color: AppColors.borderColor)),
                   ),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
@@ -175,11 +159,7 @@ class _CartViewState extends State<CartView> {
                         children: [
                           Text('Total', style: theme.textTheme.titleMedium),
                           Text.rich(
-                            (state.cart?.items?.fold(
-                                      0.0,
-                                      (sum, item) => sum + item.lineTotal,
-                                    ) ??
-                                    0)
+                            (state.cart?.items?.fold(0.0, (sum, item) => sum + item.lineTotal) ?? 0)
                                 .toCurrencySuperscript(),
                           ),
                         ],
@@ -189,9 +169,7 @@ class _CartViewState extends State<CartView> {
                         children: [
                           Expanded(
                             child: AppButton.primary(
-                              disabled:
-                                  (state.cart?.items?.isEmpty ?? true) ||
-                                  !storeIsOpen,
+                              disabled: (state.cart?.items?.isEmpty ?? true) || !storeIsOpen,
                               onPressed: () {
                                 context.pushNamed(ScheduleOrderPage.route);
                               },
@@ -202,39 +180,24 @@ class _CartViewState extends State<CartView> {
 
                           BlocConsumer<DraftCubit, DraftState>(
                             listener: (context, draftState) {
-                              if (draftState.maybeWhen(
-                                success: (drafts) => true,
-                                orElse: () => false,
-                              )) {
-                                AppNotification.show(
-                                  context,
-                                  'Draft saved successfully',
-                                );
+                              if (draftState.maybeWhen(success: (drafts) => true, orElse: () => false)) {
+                                AppNotification.show(context, 'Draft saved successfully');
                                 context.read<CartCubit>().resetCart();
                                 context.goNamed(DraftsPage.route);
                               }
                             },
                             builder: (context, draftState) {
-                              final isLoading = draftState.maybeWhen(
-                                loading: (drafts) => true,
-                                orElse: () => false,
-                              );
+                              final isLoading = draftState.maybeWhen(loading: (drafts) => true, orElse: () => false);
                               return Expanded(
                                 child: AppButton.outlined(
-                                  disabled:
-                                      (state.cart?.items?.isEmpty ?? true) ||
-                                      isLoading,
+                                  disabled: (state.cart?.items?.isEmpty ?? true) || isLoading,
                                   onPressed: () async {
                                     if (state.cart == null) return;
                                     LogService().saveDraft();
-                                    context.read<DraftCubit>().createDraft(
-                                      cart: state.cart!,
-                                    );
+                                    context.read<DraftCubit>().createDraft(cart: state.cart!);
                                     // context.goNamed(DraftsPage.route);
                                   },
-                                  label: isLoading
-                                      ? 'Saving...'
-                                      : 'Save as draft',
+                                  label: isLoading ? 'Saving...' : 'Save as draft',
                                 ),
                               );
                             },

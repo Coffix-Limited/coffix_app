@@ -1,11 +1,8 @@
 import 'package:coffix_app/core/extensions/order_extensions.dart';
 import 'package:coffix_app/core/services/log_service.dart';
-import 'package:coffix_app/core/utils/time_utils.dart';
-import 'package:coffix_app/features/cart/data/model/cart_item.dart';
-import 'package:coffix_app/features/cart/domain/helper.dart';
+import 'package:coffix_app/core/utils/reorder.dart';
 import 'package:coffix_app/features/cart/logic/cart_cubit.dart';
 import 'package:coffix_app/features/cart/presentation/pages/cart_page.dart';
-import 'package:coffix_app/features/modifier/data/model/modifier.dart';
 import 'package:coffix_app/presentation/atoms/app_cached_network_image.dart';
 import 'package:coffix_app/core/constants/colors.dart';
 import 'package:coffix_app/core/constants/sizes.dart';
@@ -17,26 +14,33 @@ import 'package:coffix_app/features/auth/logic/auth_cubit.dart';
 import 'package:coffix_app/features/products/logic/product_cubit.dart';
 import 'package:coffix_app/presentation/atoms/app_button.dart';
 import 'package:coffix_app/presentation/atoms/app_notification.dart';
-import 'package:collection/collection.dart';
+import 'package:coffix_app/presentation/molecules/notifications/items_unavailable_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
-class OrderCard extends StatelessWidget {
+class OrderCard extends StatefulWidget {
   const OrderCard({super.key, required this.order});
 
   final Order order;
 
-  void _reorder(BuildContext context, {required Order order}) {
-    final productCubit = context.read<ProductCubit>();
-    final products = productCubit.allProducts;
+  @override
+  State<OrderCard> createState() => _OrderCardState();
+}
+
+class _OrderCardState extends State<OrderCard> {
+  bool _reordering = false;
+
+  Future<void> _reorder() async {
+    if (_reordering) return;
+
+    final order = widget.order;
+    final products = context.read<ProductCubit>().allProducts;
 
     if (products.isEmpty || order.items == null || order.items!.isEmpty) {
       AppNotification.error(context, 'Unable to reorder at this time');
       return;
     }
-
-    // print(products.length);
 
     final authState = context.read<AuthCubit>().state;
     final storeId = authState.maybeWhen(
@@ -54,90 +58,43 @@ class OrderCard extends StatelessWidget {
 
     final cartCubit = context.read<CartCubit>();
 
-    // 2. reset the cart
+    setState(() => _reordering = true);
+
+    ReorderResult result;
+    try {
+      result = await Reorder().fromOrder(
+        order: order,
+        storeId: storeId,
+        catalog: products,
+      );
+    } finally {
+      if (mounted) setState(() => _reordering = false);
+    }
+
+    if (!mounted) return;
+
+    // Nothing survived — leave the existing cart untouched.
+    if (result.isEmpty) {
+      await ItemsUnavailableDialog.show(
+        context,
+        message:
+            'The items in this order are no longer available at your selected store.',
+      );
+      return;
+    }
+
     cartCubit.resetCart();
 
-    final helper = CartHelper();
-    int addedCount = 0;
-
-    for (final Item item in order.items!) {
-      if (item.productId == null) continue;
-
-      final match = products.firstWhereOrNull(
-        (p) => p.product.docId == item.productId,
-      );
-
-      if (match == null) {
-        continue;
-      }
-
-      final product = match.product;
-
-      final disabledStores = product.disabledStores;
-      final availableStores = product.availableToStores;
-      if (disabledStores != null && disabledStores.contains(storeId)) continue;
-      if (availableStores != null && !availableStores.contains(storeId)) {
-        continue;
-      }
-
-      final selectedByGroup = item.selectedModifiers ?? {};
-      final modifierMap = <String, Modifier>{
-        for (final im in item.modifiers ?? [])
-          if (im.modifierId != null)
-            im.modifierId!: Modifier(
-              docId: im.modifierId,
-              priceDelta: im.priceDelta,
-              label: im.name,
-            ),
-      };
-      // print(modifierMap);
-      final modifierPriceSnapshot = helper.buildModifierPriceSnapshot(
-        selectedByGroup: selectedByGroup,
-        modifierMap: modifierMap,
-      );
-      final modifierLabelSnapshot = helper.buildModifierLabelSnapshot(
-        selectedByGroup: selectedByGroup,
-        modifierMap: modifierMap,
-      );
-      final basePrice = product.price ?? 0;
-      final unitTotal = helper.computeUnitTotal(
-        basePrice: basePrice,
-        modifierPriceSnapshot: modifierPriceSnapshot,
-      );
-      final quantity = item.quantity ?? 1;
-      final id = helper.buildCartItemIdHashed(
-        storeId: storeId,
-        productId: product.docId ?? '',
-        selectedByGroup: selectedByGroup,
-      );
-
-      final cartItem = CartItem(
-        id: id,
-        storeId: storeId,
-        productId: product.docId ?? '',
-        productName: product.name ?? '',
-        productImageUrl: product.imageUrl ?? '',
-        quantity: quantity,
-        selectedByGroup: selectedByGroup,
-        basePrice: basePrice,
-        modifierPriceSnapshot: modifierPriceSnapshot,
-        modifierLabelSnapshot: modifierLabelSnapshot,
-        unitTotal: unitTotal,
-        lineTotal: unitTotal * quantity,
-        createdAt: TimeUtils.now(),
-      );
-
+    for (final item in result.items) {
       try {
-        cartCubit.addProduct(newItem: cartItem);
-        addedCount++;
-      } catch (e) {
+        cartCubit.addProduct(newItem: item);
+      } catch (_) {
         continue;
       }
     }
 
-    if (addedCount == 0) {
+    if (result.skippedItems > 0 || result.droppedModifiers > 0) {
       AppNotification.error(context, 'Some items are no longer available');
-      return;
     }
 
     LogService().reOrder();
@@ -146,6 +103,7 @@ class OrderCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final order = widget.order;
     final theme = Theme.of(context);
     final date = order.createdAt;
     final dateStr = date != null ? date.formatDate() : '—';
@@ -276,9 +234,8 @@ class OrderCard extends StatelessWidget {
                   AppButton(
                     height: 24,
                     width: 48,
-                    onPressed: () {
-                      _reorder(context, order: order);
-                    },
+                    onPressed: _reorder,
+                    disabled: _reordering,
                     label: "Reorder",
                     textStyle: AppTypography.body2XS.copyWith(
                       color: AppColors.white,

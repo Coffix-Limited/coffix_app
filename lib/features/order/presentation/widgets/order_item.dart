@@ -30,17 +30,13 @@ class OrderItemRow extends StatelessWidget {
     final subtotal = price * (cartItem.quantity ?? 0);
 
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         AppCard(
           padding: EdgeInsets.zero,
           child: ClipRRect(
             borderRadius: BorderRadius.circular(AppSizes.md),
-            child: SizedBox(
-              width: 56,
-              height: 56,
-              child: AppCachedNetworkImage(imageUrl: cartItem.productImageUrl),
-            ),
+            child: SizedBox(width: 56, height: 56, child: AppCachedNetworkImage(imageUrl: cartItem.productImageUrl)),
           ),
         ),
         const SizedBox(width: AppSizes.md),
@@ -54,20 +50,15 @@ class OrderItemRow extends StatelessWidget {
                   Expanded(
                     child: RichText(
                       text: TextSpan(
-                        style: AppTypography.bodyM600.copyWith(
-                          color: AppColors.textBlackColor,
-                        ),
-                        text:
-                            "${cartItem.productName} (x${cartItem.quantity}) ",
+                        style: AppTypography.bodyM600.copyWith(color: AppColors.textBlackColor),
+                        text: "${cartItem.productName} (x${cartItem.quantity}) ",
                         children: [],
                       ),
                     ),
                   ),
                   Text.rich(
                     basePrice.toCurrencySuperscript(
-                      style: AppTypography.body2XS.copyWith(
-                        color: AppColors.textBlackColor,
-                      ),
+                      style: AppTypography.body2XS.copyWith(color: AppColors.textBlackColor),
                     ),
                   ),
                 ],
@@ -77,17 +68,14 @@ class OrderItemRow extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: cartItem.selectedByGroup.entries.map((entry) {
                   final String modifierId = entry.value;
-                  final label =
-                      cartItem.modifierLabelSnapshot[modifierId] ?? modifierId;
+                  final label = cartItem.modifierLabelSnapshot[modifierId] ?? modifierId;
                   final price = cartItem.modifierPriceSnapshot[modifierId];
                   return Row(
                     children: [
                       Expanded(
                         child: Text(
                           label.toLarge(),
-                          style: AppTypography.body3XS.copyWith(
-                            color: AppColors.textBlackColor,
-                          ),
+                          style: AppTypography.body3XS.copyWith(color: AppColors.textBlackColor),
                         ),
                       ),
                       if (price != null && price != 0) ...[
@@ -96,9 +84,7 @@ class OrderItemRow extends StatelessWidget {
                           TextSpan(
                             children: [
                               price.toCurrencySuperscript(
-                                style: AppTypography.body2XS.copyWith(
-                                  color: AppColors.textBlackColor,
-                                ),
+                                style: AppTypography.body2XS.copyWith(color: AppColors.textBlackColor),
                               ),
                             ],
                           ),
@@ -116,9 +102,7 @@ class OrderItemRow extends StatelessWidget {
           children: [
             Column(
               children: [
-                Text.rich(
-                  subtotal.toCurrencySuperscript(style: AppTypography.bodyM600),
-                ),
+                Text.rich(subtotal.toCurrencySuperscript(style: AppTypography.bodyM600)),
                 Row(
                   children: [
                     AppIconButton.withIconData(

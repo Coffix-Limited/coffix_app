@@ -23,12 +23,7 @@ import 'package:go_router/go_router.dart';
 
 class AddProductPage extends StatelessWidget {
   static String route = 'add_product_route';
-  const AddProductPage({
-    super.key,
-    required this.product,
-    required this.storeId,
-    this.cartItem,
-  });
+  const AddProductPage({super.key, required this.product, required this.storeId, this.cartItem});
 
   final Product product;
   final String storeId;
@@ -42,22 +37,13 @@ class AddProductPage extends StatelessWidget {
         BlocProvider.value(value: getIt<ProductModifierCubit>()),
         BlocProvider.value(value: getIt<ModifierCubit>()),
       ],
-      child: AddProductView(
-        product: product,
-        storeId: storeId,
-        cartItem: cartItem,
-      ),
+      child: AddProductView(product: product, storeId: storeId, cartItem: cartItem),
     );
   }
 }
 
 class AddProductView extends StatefulWidget {
-  const AddProductView({
-    super.key,
-    required this.product,
-    required this.storeId,
-    this.cartItem,
-  });
+  const AddProductView({super.key, required this.product, required this.storeId, this.cartItem});
 
   final Product product;
   final String storeId;
@@ -73,16 +59,12 @@ class _AddProductViewState extends State<AddProductView> {
   void initState() {
     super.initState();
     quantity = widget.cartItem?.quantity ?? 1;
-    context.read<ModifierCubit>().getModifiers(
-      product: widget.product,
-      storeId: widget.storeId,
-    );
+    context.read<ModifierCubit>().getModifiers(product: widget.product, storeId: widget.storeId);
   }
 
   double calculateTotal() {
     final productModifierState = context.watch<ProductModifierCubit>().state;
-    final unitPrice =
-        (widget.product.price ?? 0) + productModifierState.totalPrice;
+    final unitPrice = (widget.product.price ?? 0) + productModifierState.totalPrice;
     return unitPrice * quantity;
   }
 
@@ -98,9 +80,7 @@ class _AddProductViewState extends State<AddProductView> {
       listener: (context, modState) {
         modState.maybeWhen(
           loaded: (modifiersGroups) {
-            final allModifiers = modifiersGroups
-                .expand((b) => b.modifiers)
-                .toList();
+            final allModifiers = modifiersGroups.expand((b) => b.modifiers).toList();
             if (widget.cartItem != null) {
               context.read<ProductModifierCubit>().initFromCartItem(
                 product: widget.product,
@@ -126,21 +106,14 @@ class _AddProductViewState extends State<AddProductView> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                widget.product.imageUrl != null &&
-                        widget.product.imageUrl!.isNotEmpty
-                    ? AppCachedNetworkImage(
-                        imageUrl: widget.product.imageUrl!,
-                        fit: BoxFit.cover,
-                      )
+                widget.product.imageUrl != null && widget.product.imageUrl!.isNotEmpty
+                    ? AppCachedNetworkImage(imageUrl: widget.product.imageUrl!, fit: BoxFit.cover)
                     : Container(
-                        color: AppColors.softGrey,
-                        child: const Center(
-                          child: Icon(
-                            Icons.coffee_rounded,
-                            size: 80,
-                            color: AppColors.lightGrey,
-                          ),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(AppSizes.md),
+                          color: AppColors.softGrey,
                         ),
+                        child: const Center(child: Icon(Icons.coffee_rounded, size: 240, color: AppColors.lightGrey)),
                       ),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -155,10 +128,7 @@ class _AddProductViewState extends State<AddProductView> {
                           onPressed: () {
                             context.pushNamed(
                               CustomizeProductPage.route,
-                              extra: {
-                                'product': widget.product,
-                                'storeId': widget.storeId,
-                              },
+                              extra: {'product': widget.product, 'storeId': widget.storeId},
                             );
                           },
                           borderRadius: BorderRadius.circular(AppSizes.md),
@@ -168,9 +138,7 @@ class _AddProductViewState extends State<AddProductView> {
                             children: [
                               Icon(
                                 Icons.settings,
-                                color: hasModifiers
-                                    ? AppColors.primary
-                                    : AppColors.lightGrey,
+                                color: hasModifiers ? AppColors.primary : AppColors.lightGrey,
                                 size: AppSizes.iconSizeLarge,
                               ),
                               const SizedBox(height: AppSizes.xs),
@@ -178,9 +146,7 @@ class _AddProductViewState extends State<AddProductView> {
                                 "Customise",
                                 style: theme.textTheme.bodyMedium?.copyWith(
                                   fontWeight: FontWeight.w500,
-                                  color: hasModifiers
-                                      ? null
-                                      : AppColors.lightGrey,
+                                  color: hasModifiers ? null : AppColors.lightGrey,
                                 ),
                               ),
                             ],
@@ -190,12 +156,7 @@ class _AddProductViewState extends State<AddProductView> {
                           mainAxisSize: MainAxisSize.min,
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-                            Text(
-                              "Quantity",
-                              style: theme.textTheme.bodyMedium?.copyWith(
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
+                            Text("Quantity", style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500)),
                             const SizedBox(height: AppSizes.sm),
                             Row(
                               mainAxisSize: MainAxisSize.min,
@@ -207,20 +168,14 @@ class _AddProductViewState extends State<AddProductView> {
                                       quantity -= 1;
                                     });
                                   },
-                                  borderRadius: BorderRadius.circular(
-                                    AppSizes.sm,
-                                  ),
+                                  borderRadius: BorderRadius.circular(AppSizes.sm),
                                   child: Container(
                                     padding: const EdgeInsets.all(AppSizes.sm),
                                     decoration: BoxDecoration(
                                       border: Border.all(
-                                        color: quantity <= 1
-                                            ? Colors.transparent
-                                            : AppColors.borderColor,
+                                        color: quantity <= 1 ? Colors.transparent : AppColors.borderColor,
                                       ),
-                                      borderRadius: BorderRadius.circular(
-                                        AppSizes.sm,
-                                      ),
+                                      borderRadius: BorderRadius.circular(AppSizes.sm),
                                     ),
                                     child: AppIcon.withIconData(
                                       Icons.remove,
@@ -230,18 +185,10 @@ class _AddProductViewState extends State<AddProductView> {
                                   ),
                                 ),
                                 Container(
-                                  constraints: const BoxConstraints(
-                                    minWidth: 40,
-                                  ),
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: AppSizes.md,
-                                    vertical: AppSizes.sm,
-                                  ),
+                                  constraints: const BoxConstraints(minWidth: 40),
+                                  padding: const EdgeInsets.symmetric(horizontal: AppSizes.md, vertical: AppSizes.sm),
                                   alignment: Alignment.center,
-                                  child: Text(
-                                    "$quantity",
-                                    style: theme.textTheme.titleMedium,
-                                  ),
+                                  child: Text("$quantity", style: theme.textTheme.titleMedium),
                                 ),
                                 AppClickable(
                                   onPressed: () {
@@ -249,18 +196,12 @@ class _AddProductViewState extends State<AddProductView> {
                                       quantity += 1;
                                     });
                                   },
-                                  borderRadius: BorderRadius.circular(
-                                    AppSizes.sm,
-                                  ),
+                                  borderRadius: BorderRadius.circular(AppSizes.sm),
                                   child: Container(
                                     padding: const EdgeInsets.all(AppSizes.sm),
                                     decoration: BoxDecoration(
-                                      border: Border.all(
-                                        color: AppColors.borderColor,
-                                      ),
-                                      borderRadius: BorderRadius.circular(
-                                        AppSizes.sm,
-                                      ),
+                                      border: Border.all(color: AppColors.borderColor),
+                                      borderRadius: BorderRadius.circular(AppSizes.sm),
                                     ),
                                     child: AppIcon.withIconData(
                                       Icons.add,
@@ -295,15 +236,11 @@ class _AddProductViewState extends State<AddProductView> {
                         widget.product.price != null
                             ? calculateTotal().toCurrencySuperscript()
                             : 0.00.toCurrencySuperscript(),
-                        style: AppTypography.bodyL.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style: AppTypography.bodyL.copyWith(fontWeight: FontWeight.bold),
                       ),
                       AppButton(
                         onPressed: () {
-                          final modifierState = context
-                              .read<ProductModifierCubit>()
-                              .state;
+                          final modifierState = context.read<ProductModifierCubit>().state;
                           final storeId = widget.storeId;
                           final newItem = CartItem.fromSelection(
                             product: widget.product,
@@ -311,19 +248,14 @@ class _AddProductViewState extends State<AddProductView> {
                             storeId: storeId,
                             modifiers: modifierState.modifiers,
                           );
-                          LogService().addProductToCart(
-                            product: widget.product,
-                            quantity: quantity,
-                          );
+                          LogService().addProductToCart(product: widget.product, quantity: quantity);
                           if (widget.cartItem != null) {
                             final updated = widget.cartItem!.copyWith(
                               quantity: newItem.quantity,
                               selectedByGroup: newItem.selectedByGroup,
                               basePrice: newItem.basePrice,
-                              modifierPriceSnapshot:
-                                  newItem.modifierPriceSnapshot,
-                              modifierLabelSnapshot:
-                                  newItem.modifierLabelSnapshot,
+                              modifierPriceSnapshot: newItem.modifierPriceSnapshot,
+                              modifierLabelSnapshot: newItem.modifierLabelSnapshot,
                               unitTotal: newItem.unitTotal,
                               lineTotal: newItem.lineTotal,
                             );
@@ -332,19 +264,12 @@ class _AddProductViewState extends State<AddProductView> {
                               updatedItem: updated,
                             );
                           } else {
-                            context.read<CartCubit>().addProduct(
-                              newItem: newItem,
-                            );
+                            context.read<CartCubit>().addProduct(newItem: newItem);
                           }
                           context.goNamed(CartPage.route);
                         },
-                        label: widget.cartItem != null
-                            ? "Update Order"
-                            : "Add to Order",
-                        prefixIcon: AppIcon.withIconData(
-                          Icons.add,
-                          color: AppColors.white,
-                        ),
+                        label: widget.cartItem != null ? "Update Order" : "Add to Order",
+                        prefixIcon: AppIcon.withIconData(Icons.add, color: AppColors.white),
                       ),
                     ],
                   ),

@@ -60,30 +60,16 @@ class _LoginFormState extends State<LoginForm> {
           Center(
             child: Container(
               padding: AppSizes.defaultPadding,
-              decoration: BoxDecoration(
-                color: AppColors.beige,
-                borderRadius: BorderRadius.circular(12.0),
-              ),
+              decoration: BoxDecoration(color: AppColors.beige, borderRadius: BorderRadius.circular(12.0)),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Text(
-                    "Create Your Coffix Account",
-                    textAlign: TextAlign.center,
-                    style: AppTypography.titleS,
-                  ),
+                  Text("Create Your Coffix Account", textAlign: TextAlign.center, style: AppTypography.titleS),
                   const SizedBox(height: 25.0),
-                  Text(
-                    "First, enter your email address and password",
-                    textAlign: TextAlign.center,
-                  ),
+                  Text("First, enter your email address and password", textAlign: TextAlign.center),
                   const SizedBox(height: 10.0),
-                  AppField(
-                    hintText: "Email",
-                    name: "email",
-                    textCapitalization: TextCapitalization.none,
-                  ),
+                  AppField(hintText: "Email", name: "email", textCapitalization: TextCapitalization.none),
                   const SizedBox(height: 14.0),
                   AppField(
                     hintText: "Password",
@@ -108,9 +94,7 @@ class _LoginFormState extends State<LoginForm> {
                         if (!RegExp(r'[0-9]').hasMatch(value)) {
                           return 'Password must contain a number';
                         }
-                        if (!RegExp(
-                          r'[!@#$%^&*(),.?":{}|<>_\-\+=\[\]\\\/~`]',
-                        ).hasMatch(value)) {
+                        if (!RegExp(r'[!@#$%^&*(),.?":{}|<>_\-\+=\[\]\\\/~`]').hasMatch(value)) {
                           return 'Password must contain a special character';
                         }
                         return null;
@@ -178,22 +162,14 @@ class _LoginFormState extends State<LoginForm> {
                         children: [
                           TextSpan(
                             text: "By registering you accept our ",
-                            style: AppTypography.bodyXS.copyWith(
-                              color: AppColors.black,
-                            ),
+                            style: AppTypography.bodyXS.copyWith(color: AppColors.black),
                           ),
                           TextSpan(
                             text: 'Terms of Use & Privacy',
-                            style: AppTypography.bodyXS.copyWith(
-                              decoration: TextDecoration.underline,
-                            ),
+                            style: AppTypography.bodyXS.copyWith(decoration: TextDecoration.underline),
                             recognizer: TapGestureRecognizer()
                               ..onTap = () async {
-                                await launchUrl(
-                                  Uri.parse(
-                                    'https://www.coffix.co.nz/term-of-use-privacy',
-                                  ),
-                                );
+                                await launchUrl(Uri.parse('https://www.coffix.co.nz/term-of-use-privacy'));
                               },
                           ),
                         ],

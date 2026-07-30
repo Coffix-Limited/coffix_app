@@ -76,7 +76,7 @@ class ProductList extends StatelessWidget {
               ? const EmptyState(
                   icon: Icons.production_quantity_limits_outlined,
                   title: "No products found",
-                  subtitle: "Please try again later",
+                  subtitle: "Please try again later. ",
                 )
               : ListView.separated(
                   padding: EdgeInsets.zero,

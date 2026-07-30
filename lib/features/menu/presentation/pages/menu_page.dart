@@ -56,13 +56,18 @@ class MenuView extends StatelessWidget {
             return state.when(
               initial: () => const SizedBox.shrink(),
               loading: () => AppLoading(),
-              loaded: (products, allCategories, categoryFilter) => ProductList(
-                products: products.productsByStore(storeId: storeId, preferredStoreId: storeId),
-                allCategories: allCategories.sorted((a, b) => (a.order?.compareTo(b.order ?? 0.0) ?? 0).toInt()),
-                isRoot: true,
-                categoryFilter: categoryFilter,
-                storeId: storeId,
-              ),
+              loaded: (products, allCategories, categoryFilter) {
+                if (user?.store == null) {
+                  return AppError(title: "Store not found", subtitle: "Please select a store first");
+                }
+                return ProductList(
+                  products: products.productsByStore(storeId: storeId, preferredStoreId: storeId),
+                  allCategories: allCategories.sorted((a, b) => (a.order?.compareTo(b.order ?? 0.0) ?? 0).toInt()),
+                  isRoot: true,
+                  categoryFilter: categoryFilter,
+                  storeId: storeId,
+                );
+              },
               error: (message) => AppError(title: "Failed getting products", subtitle: message),
             );
           },

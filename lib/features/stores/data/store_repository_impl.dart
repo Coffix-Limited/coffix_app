@@ -26,9 +26,15 @@ class StoreRepositoryImpl implements StoreRepository {
   }
 
   @override
-  Stream<Store> getPreferredStore({required String storeId}) {
+  Stream<Store?> getPreferredStore({required String storeId}) {
     return _firestore.collection('stores').doc(storeId).snapshots().map((event) {
-      return event.exists ? Store.fromJson(event.data() ?? {}) : throw Exception('Store not found');
+      if (event.exists) {
+        final store = Store.fromJson(event.data() ?? {});
+        if (store.isDeleted == true) return null;
+        return store;
+      } else {
+        return null;
+      }
     });
   }
 
@@ -41,7 +47,7 @@ class StoreRepositoryImpl implements StoreRepository {
         return Stream.value(AppUserWithStore(user: user!, store: null));
       }
 
-      return Rx.combineLatest2<AppUser, Store, AppUserWithStore>(
+      return Rx.combineLatest2<AppUser, Store?, AppUserWithStore>(
         Stream.value(user!),
         getPreferredStore(storeId: storeId),
         (user, stores) {

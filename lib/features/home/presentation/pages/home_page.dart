@@ -79,10 +79,7 @@ class _HomeViewState extends State<HomeView> {
 
   @override
   Widget build(BuildContext context) {
-    final user = context.watch<AuthCubit>().state.maybeWhen(
-      authenticated: (user) => user.user,
-      orElse: () => null,
-    );
+    final user = context.watch<AuthCubit>().state.maybeWhen(authenticated: (user) => user.user, orElse: () => null);
     final bool isAuthenticated = user != null;
 
     return BlocListener<NetworkCubit, NetworkState>(
@@ -105,9 +102,7 @@ class _HomeViewState extends State<HomeView> {
       },
       child: AppChecker(
         child: Scaffold(
-          backgroundColor: AppColors.black.withValues(
-            alpha: isAuthenticated ? 1 : 0.7,
-          ),
+          backgroundColor: AppColors.black.withValues(alpha: isAuthenticated ? 1 : 0.7),
           body: FormBuilder(
             key: formKey,
             onChanged: () {
@@ -120,29 +115,20 @@ class _HomeViewState extends State<HomeView> {
                 builder: (context, constraints) {
                   return SingleChildScrollView(
                     child: ConstrainedBox(
-                      constraints: BoxConstraints(
-                        minHeight: constraints.maxHeight,
-                      ),
+                      constraints: BoxConstraints(minHeight: constraints.maxHeight),
                       child: IntrinsicHeight(
                         child: Padding(
                           padding: AppSizes.defaultPadding,
                           child: BlocListener<OtpCubit, OtpState>(
                             listenWhen: (prev, curr) => curr.maybeWhen(
-                              verified: () => !prev.maybeWhen(
-                                verified: () => true,
-                                orElse: () => false,
-                              ),
+                              verified: () => !prev.maybeWhen(verified: () => true, orElse: () => false),
                               orElse: () => false,
                             ),
                             listener: (context, _) {
-                              context.goNamed(
-                                PersonalInfoPage.route,
-                                extra: {"canBack": true},
-                              );
+                              context.goNamed(PersonalInfoPage.route, extra: {"canBack": true});
                             },
                             child: BlocConsumer<AuthCubit, AuthState>(
-                              listenWhen: (previous, current) =>
-                                  previous != current,
+                              listenWhen: (previous, current) => previous != current,
                               listener: (context, state) {
                                 state.whenOrNull(
                                   authenticated: (userWithStore) async {
@@ -150,14 +136,9 @@ class _HomeViewState extends State<HomeView> {
                                     context.read<ProductCubit>().getProducts();
                                     context.read<DraftCubit>().getDrafts();
                                     context.read<OrderCubit>().getOrders();
-                                    if (userWithStore.user.emailVerified ==
-                                            true &&
-                                        userWithStore.user.finishedOnboarding !=
-                                            true) {
-                                      context.goNamed(
-                                        PersonalInfoPage.route,
-                                        extra: {"canBack": false},
-                                      );
+                                    if (userWithStore.user.emailVerified == true &&
+                                        userWithStore.user.finishedOnboarding != true) {
+                                      context.goNamed(PersonalInfoPage.route, extra: {"canBack": false});
                                     }
                                   },
                                   passwordResetEmailSent: (message) {
@@ -166,41 +147,29 @@ class _HomeViewState extends State<HomeView> {
                                   unauthenticated: () {
                                     context.goNamed(HomePage.route);
                                   },
-                                  error: (message) =>
-                                      AppNotification.error(context, message),
+                                  error: (message) => AppNotification.error(context, message),
                                 );
                               },
                               builder: (context, state) {
                                 final Widget mainContent = state.when(
-                                  emailNotVerified: () =>
-                                      EmailVerificationForm(),
-                                  hasAccount: (hasAccount) =>
-                                      LoginForm(formKey: formKey),
-                                  otpSent: (email) =>
-                                      LoginForm(formKey: formKey),
+                                  hasAccount: (hasAccount) => LoginForm(formKey: formKey),
+                                  otpSent: (email) => LoginForm(formKey: formKey),
                                   forgotPassword: () => ForgotPassword(),
-                                  passwordResetEmailSent: (message) =>
-                                      EmailForgotPasswordSent(message: message),
+                                  passwordResetEmailSent: (message) => EmailForgotPasswordSent(message: message),
                                   initial: () => AppLoading(),
-                                  loading: () =>
-                                      const Center(child: AppLoading()),
-                                  authenticated: (userWithStore) =>
-                                      userWithStore.user.emailVerified == true
+                                  loading: () => const Center(child: AppLoading()),
+                                  authenticated: (userWithStore) => userWithStore.user.emailVerified == true
                                       ? _HomeContent(user: userWithStore)
                                       : EmailVerificationForm(),
-                                  unauthenticated: () =>
-                                      LoginForm(formKey: formKey),
-                                  linkRequired: (email, provider) =>
-                                      LoginForm(formKey: formKey),
-                                  error: (message) =>
-                                      LoginForm(formKey: formKey),
+                                  unauthenticated: () => LoginForm(formKey: formKey),
+                                  linkRequired: (email, provider) => LoginForm(formKey: formKey),
+                                  error: (message) => LoginForm(formKey: formKey),
                                 );
 
                                 return state == AuthState.loading()
                                     ? const Center(child: AppLoading())
                                     : Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.stretch,
+                                        crossAxisAlignment: CrossAxisAlignment.stretch,
                                         children: [
                                           Stack(
                                             alignment: Alignment.center,
@@ -208,19 +177,14 @@ class _HomeViewState extends State<HomeView> {
                                               Column(
                                                 children: [
                                                   Opacity(
-                                                    opacity: isAuthenticated
-                                                        ? 1
-                                                        : 0.3,
+                                                    opacity: isAuthenticated ? 1 : 0.3,
                                                     child: SvgPicture.asset(
                                                       AppImages.nameLogo,
                                                       width: 124.0,
                                                       height: 64.0,
                                                     ),
                                                   ),
-                                                  if (isAuthenticated)
-                                                    const AppLocation(
-                                                      color: AppColors.white,
-                                                    ),
+                                                  if (isAuthenticated) const AppLocation(color: AppColors.white),
                                                 ],
                                               ),
                                               if (isAuthenticated)
@@ -229,19 +193,14 @@ class _HomeViewState extends State<HomeView> {
                                                   right: 0,
                                                   child: IconButton(
                                                     onPressed: () {
-                                                      if (isAuthenticated &&
-                                                          user.emailVerified ==
-                                                              true) {
-                                                        context.goNamed(
-                                                          ProfilePage.route,
-                                                        );
+                                                      if (isAuthenticated && user.emailVerified == true) {
+                                                        context.goNamed(ProfilePage.route);
                                                       }
                                                     },
                                                     icon: Icon(
                                                       Icons.settings,
                                                       color: Colors.white,
-                                                      size: AppSizes
-                                                          .iconSizeLarge,
+                                                      size: AppSizes.iconSizeLarge,
                                                     ),
                                                   ),
                                                 ),
@@ -258,52 +217,33 @@ class _HomeViewState extends State<HomeView> {
                                                 AppButton.primary(
                                                   color: AppColors.lightGrey,
                                                   onPressed: () {
-                                                    context
-                                                        .read<ProductCubit>()
-                                                        .initDefaultCategory();
-                                                    context.goNamed(
-                                                      MenuPage.route,
-                                                    );
+                                                    context.read<ProductCubit>().initDefaultCategory();
+                                                    context.goNamed(MenuPage.route);
                                                   },
                                                   label: "New Order",
-                                                  disabled:
-                                                      isAuthenticated &&
-                                                          user.emailVerified ==
-                                                              true
+                                                  disabled: isAuthenticated && user.emailVerified == true
                                                       ? false
                                                       : true,
                                                 ),
-                                                const SizedBox(
-                                                  height: AppSizes.md,
-                                                ),
+                                                const SizedBox(height: AppSizes.md),
                                                 Row(
                                                   children: [
                                                     Expanded(
                                                       child: AppButton.primary(
                                                         onPressed: () async {
-                                                          if (isAuthenticated &&
-                                                              user.emailVerified ==
-                                                                  true) {
-                                                            context.pushNamed(
-                                                              OrderPage.route,
-                                                            );
+                                                          if (isAuthenticated && user.emailVerified == true) {
+                                                            context.pushNamed(OrderPage.route);
                                                           }
                                                         },
                                                         label: "ReOrder",
                                                       ),
                                                     ),
-                                                    const SizedBox(
-                                                      width: AppSizes.md,
-                                                    ),
+                                                    const SizedBox(width: AppSizes.md),
                                                     Expanded(
                                                       child: AppButton.primary(
                                                         onPressed: () {
-                                                          if (isAuthenticated &&
-                                                              user.emailVerified ==
-                                                                  true) {
-                                                            context.pushNamed(
-                                                              DraftsPage.route,
-                                                            );
+                                                          if (isAuthenticated && user.emailVerified == true) {
+                                                            context.pushNamed(DraftsPage.route);
                                                           }
                                                         },
                                                         label: "My Drafts",
@@ -342,8 +282,7 @@ class _HomeContent extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final screenHeight = MediaQuery.of(context).size.height;
-    String displayName =
-        user.user.nickName ?? user.user.firstName?.toUpperCase() ?? "";
+    String displayName = user.user.nickName ?? user.user.firstName?.toUpperCase() ?? "";
 
     if (displayName.length > 15) {
       displayName = '${displayName.substring(0, 15)}...';
@@ -356,10 +295,7 @@ class _HomeContent extends StatelessWidget {
         Text(
           "Welcome $displayName",
           textAlign: TextAlign.center,
-          style: theme.textTheme.titleLarge!.copyWith(
-            fontWeight: FontWeight.bold,
-            color: AppColors.white,
-          ),
+          style: theme.textTheme.titleLarge!.copyWith(fontWeight: FontWeight.bold, color: AppColors.white),
         ),
         AppIcon.withSvgPath(AppImages.logo, size: AppSizes.iconSizeXXLarge),
       ],
