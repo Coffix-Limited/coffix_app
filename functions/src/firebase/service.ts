@@ -235,13 +235,9 @@ class FirebaseService {
     const paidAt = new Date();
     const now = new Date();
 
-    const [globalDoc, orderSnap] = await Promise.all([
-      this.getGlobal(),
-      firestore.collection("orders").doc(orderId).get(),
-    ]);
-    const gst = (globalDoc.GST ?? 0) as number;
-    const gstNumber = (orderSnap.data()?.storeGst as string) ?? "";
-    const gstAmount = amount - amount / (1 + gst / 100);
+    // const gst = (globalDoc.GST ?? 0) as number;
+    // const gstNumber = (orderSnap.data()?.storeGst as string) ?? "";
+    // const gstAmount = amount - amount / (1 + gst / 100);
 
     // Fetch eligible coupons outside the transaction (reads before transaction opens)
     const couponSnap = await firestore
@@ -349,9 +345,9 @@ class FirebaseService {
         orderNumber,
         transactionNumber,
         type: "order",
-        gst,
-        gstNumber,
-        gstAmount,
+        // gst,
+        // gstNumber,
+        // gstAmount,
         storeId: storeId ?? "",
       });
 

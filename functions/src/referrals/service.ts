@@ -4,6 +4,7 @@ import { logger } from "firebase-functions/v1";
 import { endOfDayNZ } from "../utils/nz_time";
 import { generateTransactionNumber } from "../utils/generate_order_number";
 import { TransactionStatus } from "../transaction/interface";
+import FirebaseService from "../firebase/service";
 
 export class ReferralService {
   async createReferral({
@@ -27,19 +28,46 @@ export class ReferralService {
       `Creating referral for referrer: ${referrerUid} and referee: ${referee.email}`,
     );
 
-    const referralRef = firestore.collection("referrals").doc();
-    await referralRef.set({
-      docId: referralRef.id,
+    const referrerDocRef = firestore.collection("referrals").doc();
+    const refereeDocRef = firestore.collection("referrals").doc();
+    const groupId = referrerDocRef.id;
+    const refereeEmail = referee.email.toLowerCase();
+
+    const batch = firestore.batch();
+
+    batch.set(referrerDocRef, {
+      docId: referrerDocRef.id,
+      groupId,
+      role: "referrer",
+      ownerUid: referrerUid,
+      counterpartUid: null,
       referralTime,
       referrer: referrerUid,
-      referee: referee.email.toLowerCase(),
+      referee: refereeEmail,
       refereeUid: null,
       signupTime: null,
       validTime,
       couponId: null,
-      refereeCouponId: null,
       status: "pending",
     });
+
+    batch.set(refereeDocRef, {
+      docId: refereeDocRef.id,
+      groupId,
+      role: "referee",
+      ownerUid: null,
+      counterpartUid: referrerUid,
+      referralTime,
+      referrer: referrerUid,
+      referee: refereeEmail,
+      refereeUid: null,
+      signupTime: null,
+      validTime,
+      couponId: null,
+      status: "pending",
+    });
+
+    await batch.commit();
 
     logger.info(
       `Referral created for referrer: ${referrerUid} and referee: ${referee.email}`,
@@ -51,6 +79,7 @@ export class ReferralService {
       .collection("referrals")
       .where("referee", "==", email.toLowerCase())
       .where("status", "==", "pending")
+      .where("role", "==", "referee")
       .limit(1)
       .get();
 
@@ -59,23 +88,52 @@ export class ReferralService {
       return;
     }
 
-    const referralDoc = snap.docs[0];
+    const refereeDoc = snap.docs[0];
+    const refereeData = refereeDoc.data();
+
+    const referrerDocSnap = await firestore
+      .collection("referrals")
+      .doc(refereeData.groupId)
+      .get();
+
+    if (
+      !referrerDocSnap.exists ||
+      referrerDocSnap.data()?.status !== "pending"
+    ) {
+      logger.info(
+        `Referrer referral doc missing or inconsistent for referee: ${refereeUid}`,
+      );
+      return;
+    }
+
     const signupTime = new Date();
 
     const validTime: Date =
-      referralDoc.data().validTime?.toDate?.() ?? referralDoc.data().validTime;
+      refereeData.validTime?.toDate?.() ?? refereeData.validTime;
 
     if (signupTime > validTime) {
-      await referralDoc.ref.update({ status: "expired" });
+      const batch = firestore.batch();
+      batch.update(refereeDoc.ref, { status: "expired" });
+      batch.update(referrerDocSnap.ref, { status: "expired" });
+      await batch.commit();
       logger.info(`Referral expired for referee: ${refereeUid}`);
       return;
     }
 
-    await referralDoc.ref.update({
+    const batch = firestore.batch();
+    batch.update(refereeDoc.ref, {
+      ownerUid: refereeUid,
       refereeUid,
       signupTime,
       status: "active",
     });
+    batch.update(referrerDocSnap.ref, {
+      counterpartUid: refereeUid,
+      refereeUid,
+      signupTime,
+      status: "active",
+    });
+    await batch.commit();
 
     logger.info(`Referral activated for referee: ${refereeUid}`);
   }
@@ -92,13 +150,29 @@ export class ReferralService {
       .collection("referrals")
       .where("refereeUid", "==", customerId)
       .where("status", "==", "active")
+      .where("role", "==", "referee")
       .limit(1)
       .get();
 
     if (referralSnap.empty) return;
 
-    const referralDoc = referralSnap.docs[0];
-    const referral = referralDoc.data();
+    const refereeDoc = referralSnap.docs[0];
+    const referral = refereeDoc.data();
+
+    const referrerDocSnap = await firestore
+      .collection("referrals")
+      .doc(referral.groupId)
+      .get();
+
+    if (
+      !referrerDocSnap.exists ||
+      referrerDocSnap.data()?.status !== "active"
+    ) {
+      logger.info(
+        `Referrer referral doc missing or inconsistent for referee: ${customerId}`,
+      );
+      return;
+    }
 
     // 2. Ensure this is the first approved topup
     const topupSnap = await firestore
@@ -111,7 +185,18 @@ export class ReferralService {
 
     if (topupSnap.size > 1) return;
 
-    // 3. Read coupon config from globals
+    // 3. Fetch referrer/referee profiles for personalized notes
+    const firebaseService = new FirebaseService();
+    const [referrerUser, refereeUser] = await Promise.all([
+      firebaseService.findUserByCustomerId(referral.referrer),
+      firebaseService.findUserByCustomerId(customerId),
+    ]);
+    const referrerFullName =
+      `${referrerUser?.firstName ?? ""} ${referrerUser?.lastName ?? ""}`.trim();
+    const refereeFullName =
+      `${refereeUser?.firstName ?? ""} ${refereeUser?.lastName ?? ""}`.trim();
+
+    // 4. Read coupon config from globals
     const globalSnap = await firestore
       .collection("global")
       .doc(GLOBAL_COLLECTION_ID)
@@ -121,7 +206,7 @@ export class ReferralService {
     const couponExpiryDays = (globalSnap.data()?.couponExpiryDays ??
       30) as number;
 
-    // 4. Prepare coupon docs
+    // 5. Prepare coupon docs
     const now = new Date();
     const couponExpiry = new Date(
       now.getTime() + couponExpiryDays * 24 * 60 * 60 * 1000,
@@ -134,14 +219,14 @@ export class ReferralService {
       createdAt: now,
       type: "fixed",
       amount: couponAmount,
-      referralId: referralDoc.id,
+      referralId: referral.groupId,
       isUsed: false,
       expiryDate: couponExpiry,
       storeId: null,
       notes: `Referral reward - $${couponAmount} off your next order`,
     };
 
-    // 5. Transaction ledger entries + logs, mirroring CouponService.createCoupon
+    // 6. Transaction ledger entries + logs, mirroring CouponService.createCoupon
     const referrerTxRef = firestore.collection("transactions").doc();
     const refereeTxRef = firestore.collection("transactions").doc();
     const referrerLogRef = firestore.collection("logs").doc();
@@ -150,7 +235,7 @@ export class ReferralService {
     const referrerTxNumber = await generateTransactionNumber();
     const refereeTxNumber = await generateTransactionNumber();
 
-    // 6. Batch write both coupons + txns + logs + referral update atomically
+    // 7. Batch write both coupons + txns + logs + referral update atomically
     const batch = firestore.batch();
 
     batch.set(referrerCouponRef, {
@@ -174,7 +259,7 @@ export class ReferralService {
       transactionNumber: referrerTxNumber,
       status: TransactionStatus.Approved,
       createdAt: now,
-      notes: `Referral coupon issued - $${couponAmount}`,
+      notes: `Thank you for Referring ${refereeFullName} (${refereeUser?.email ?? ""})`,
       storeId: null,
     });
 
@@ -187,7 +272,7 @@ export class ReferralService {
       transactionNumber: refereeTxNumber,
       status: TransactionStatus.Approved,
       createdAt: now,
-      notes: `Referral coupon issued - $${couponAmount}`,
+      notes: `Referral Coupon from ${referrerFullName} (${referrerUser?.email ?? ""})`,
       storeId: null,
     });
 
@@ -211,10 +296,14 @@ export class ReferralService {
       time: now,
     });
 
-    batch.update(referralDoc.ref, {
+    batch.update(refereeDoc.ref, {
+      status: "rewarded",
+      couponId: refereeCouponRef.id,
+    });
+
+    batch.update(referrerDocSnap.ref, {
       status: "rewarded",
       couponId: referrerCouponRef.id,
-      refereeCouponId: refereeCouponRef.id,
     });
 
     await batch.commit();

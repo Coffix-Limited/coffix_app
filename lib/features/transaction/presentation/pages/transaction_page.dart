@@ -6,6 +6,7 @@ import 'package:coffix_app/features/products/logic/product_cubit.dart';
 import 'package:coffix_app/features/stores/logic/store_cubit.dart';
 import 'package:coffix_app/features/transaction/data/model/transaction.dart';
 import 'package:coffix_app/features/transaction/logic/transaction_cubit.dart';
+import 'package:coffix_app/features/transaction/presentation/widgets/coupon_transaction.dart';
 import 'package:coffix_app/features/transaction/presentation/widgets/expired_transaction.dart';
 import 'package:coffix_app/features/transaction/presentation/widgets/gift_transaction.dart';
 import 'package:coffix_app/features/transaction/presentation/widgets/order_transaction.dart';
@@ -83,8 +84,7 @@ class _TransactionViewState extends State<TransactionView> {
                   );
                 }
                 return ListView.separated(
-                  separatorBuilder: (context, index) =>
-                      const SizedBox(height: AppSizes.sm),
+                  separatorBuilder: (context, index) => const SizedBox(height: AppSizes.sm),
                   padding: AppSizes.defaultPadding,
                   itemCount: transactions.length,
                   itemBuilder: (context, index) {
@@ -99,6 +99,8 @@ class _TransactionViewState extends State<TransactionView> {
                       return ExpiredTransaction(transaction: transaction);
                     } else if (transaction.type == "refund") {
                       return RefundTransaction(transaction: transaction);
+                    } else if (transaction.type == "coupon") {
+                      return CouponTransaction(transaction: transaction);
                     }
                     return OrderTransaction(transaction: transaction);
                   },

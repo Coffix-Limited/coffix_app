@@ -6,6 +6,7 @@ import 'package:coffix_app/core/constants/images.dart';
 import 'package:coffix_app/core/constants/sizes.dart';
 import 'package:coffix_app/core/di/service_locator.dart';
 import 'package:coffix_app/core/theme/typography.dart';
+import 'package:coffix_app/features/app/logic/app_cubit.dart';
 import 'package:coffix_app/features/auth/logic/auth_cubit.dart';
 import 'package:coffix_app/features/auth/presentation/pages/create_account_page.dart';
 import 'package:coffix_app/features/wrapper/presentation/pages/wrapper_page.dart';
@@ -29,8 +30,11 @@ class LoginPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider.value(
-      value: getIt<AuthCubit>(),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider.value(value: getIt<AuthCubit>()),
+        BlocProvider.value(value: getIt<AppCubit>()),
+      ],
       child: const LoginView(),
     );
   }
@@ -81,11 +85,7 @@ class _LoginViewState extends State<LoginView> {
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    SvgPicture.asset(
-                      AppImages.nameLogo,
-                      height: 100,
-                      width: 100,
-                    ),
+                    SvgPicture.asset(AppImages.nameLogo, height: 100, width: 100),
                     const SizedBox(height: AppSizes.xxl),
                     AppField<String>(
                       name: 'email',
@@ -120,27 +120,12 @@ class _LoginViewState extends State<LoginView> {
                     const SizedBox(height: AppSizes.xxxxl),
                     Row(
                       children: [
-                        Expanded(
-                          child: Divider(
-                            color: AppColors.borderColor,
-                            thickness: 1,
-                          ),
-                        ),
+                        Expanded(child: Divider(color: AppColors.borderColor, thickness: 1)),
                         Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: AppSizes.sm,
-                          ),
-                          child: Text(
-                            "or continue with",
-                            style: AppTypography.body2XS,
-                          ),
+                          padding: const EdgeInsets.symmetric(horizontal: AppSizes.sm),
+                          child: Text("or continue with", style: AppTypography.body2XS),
                         ),
-                        Expanded(
-                          child: Divider(
-                            color: AppColors.borderColor,
-                            thickness: 1,
-                          ),
-                        ),
+                        Expanded(child: Divider(color: AppColors.borderColor, thickness: 1)),
                       ],
                     ),
                     const SizedBox(height: AppSizes.md),
@@ -181,9 +166,7 @@ class _LoginViewState extends State<LoginView> {
                           children: [
                             TextSpan(
                               text: "Don't have an account? ",
-                              style: AppTypography.bodyXS.copyWith(
-                                color: AppColors.black,
-                              ),
+                              style: AppTypography.bodyXS.copyWith(color: AppColors.black),
                             ),
                             TextSpan(
                               text: 'Create an account',

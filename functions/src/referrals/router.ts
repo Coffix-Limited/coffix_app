@@ -63,6 +63,7 @@ referralsRouter.post(
             .collection("referrals")
             .where("referee", "==", email)
             .where("status", "in", ["pending", "active"])
+            .where("role", "==", "referee")
             .limit(1)
             .get(),
         ),

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:bloc/bloc.dart';
 import 'package:coffix_app/core/extensions/location_extensions.dart';
+import 'package:coffix_app/core/utils/stream_disposable.dart';
 import 'package:coffix_app/data/repositories/store_repository.dart';
 import 'package:coffix_app/features/stores/data/model/store.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
@@ -10,7 +11,7 @@ import 'package:geolocator/geolocator.dart';
 part 'store_state.dart';
 part 'store_cubit.freezed.dart';
 
-class StoreCubit extends Cubit<StoreState> {
+class StoreCubit extends Cubit<StoreState> implements StreamDisposable {
   final StoreRepository _storeRepository;
   StreamSubscription<List<Store>>? _storesSubscription;
   List<Store> _allStores = [];
@@ -118,4 +119,9 @@ class StoreCubit extends Cubit<StoreState> {
   }
 
   String _cityKey(String? city) => (city ?? '').trim().toLowerCase();
+
+  @override
+  void cancelSubscriptions() {
+    _storesSubscription?.cancel();
+  }
 }

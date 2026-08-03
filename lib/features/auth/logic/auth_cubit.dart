@@ -1,8 +1,10 @@
 import 'dart:async';
 
 import 'package:bloc/bloc.dart';
+import 'package:coffix_app/core/di/stream_disposable_registry.dart';
 import 'package:coffix_app/core/errors/auth_exceptions.dart';
 import 'package:coffix_app/core/exceptions/auth_exceptions.dart';
+import 'package:coffix_app/core/utils/stream_disposable.dart';
 import 'package:coffix_app/data/repositories/auth_repository.dart';
 import 'package:coffix_app/data/repositories/store_repository.dart';
 import 'package:coffix_app/features/auth/data/model/user_with_store.dart';
@@ -15,16 +17,21 @@ import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 part 'auth_state.dart';
 part 'auth_cubit.freezed.dart';
 
-class AuthCubit extends Cubit<AuthState> {
+class AuthCubit extends Cubit<AuthState> implements StreamDisposable {
   final AuthRepository _authRepository;
   final StoreRepository _storeRepository;
+  final StreamDisposableRegistry _streamDisposableRegistry;
   StreamSubscription<AppUserWithStore?>? _userWithStoreSubscription;
   StreamSubscription<User?>? _userSubscription;
 
-  AuthCubit({required AuthRepository authRepository, required StoreRepository storeRepository})
-    : _authRepository = authRepository,
-      _storeRepository = storeRepository,
-      super(AuthState.initial());
+  AuthCubit({
+    required AuthRepository authRepository,
+    required StoreRepository storeRepository,
+    required StreamDisposableRegistry streamDisposableRegistry,
+  }) : _authRepository = authRepository,
+       _storeRepository = storeRepository,
+       _streamDisposableRegistry = streamDisposableRegistry,
+       super(AuthState.initial());
 
   void listenToUser() {
     _userSubscription?.cancel();
@@ -34,9 +41,14 @@ class AuthCubit extends Cubit<AuthState> {
         _authRepository.updateFcmToken();
       } else {
         emit(AuthState.unauthenticated());
-        _userWithStoreSubscription?.cancel();
+        _streamDisposableRegistry.cancelAll();
       }
     });
+  }
+
+  @override
+  void cancelSubscriptions() {
+    _userWithStoreSubscription?.cancel();
   }
 
   /// Case 1 copy: the email is registered only via SSO. Routes the user to the

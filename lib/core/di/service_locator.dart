@@ -1,3 +1,4 @@
+import 'package:coffix_app/core/di/stream_disposable_registry.dart';
 import 'package:coffix_app/data/internet_connection_service.dart';
 import 'package:coffix_app/data/repositories/app_repository.dart';
 import 'package:coffix_app/data/repositories/auth_repository.dart';
@@ -52,6 +53,10 @@ final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 // Initializes all singleton services for the app.
 Future<void> setupServiceLocator() async {
+  getIt.registerLazySingleton<StreamDisposableRegistry>(
+    () => StreamDisposableRegistry(),
+  );
+
   getIt.registerLazySingleton<InternetConnectionService>(
     () => InternetConnectionService(),
   );
@@ -89,6 +94,7 @@ Future<void> setupServiceLocator() async {
   getIt.registerLazySingleton<CouponCubit>(
     () => CouponCubit(couponRepository: getIt<CouponRepository>()),
   );
+  getIt<StreamDisposableRegistry>().register(getIt<CouponCubit>());
   getIt.registerLazySingleton<LogService>(() => LogService());
   // App Cubit
   getIt.registerLazySingleton<AppCubit>(
@@ -99,8 +105,10 @@ Future<void> setupServiceLocator() async {
     () => AuthCubit(
       authRepository: getIt<AuthRepository>(),
       storeRepository: getIt<StoreRepository>(),
+      streamDisposableRegistry: getIt<StreamDisposableRegistry>(),
     ),
   );
+  getIt<StreamDisposableRegistry>().register(getIt<AuthCubit>());
 
   // Cart Cubit
   getIt.registerLazySingleton<CartCubit>(() => CartCubit());
@@ -114,6 +122,7 @@ Future<void> setupServiceLocator() async {
   getIt.registerLazySingleton<OrderCubit>(
     () => OrderCubit(orderRepository: getIt<OrderRepository>()),
   );
+  getIt<StreamDisposableRegistry>().register(getIt<OrderCubit>());
 
   // Otp Cubit
   getIt.registerLazySingleton<OtpCubit>(
@@ -127,6 +136,7 @@ Future<void> setupServiceLocator() async {
   getIt.registerLazySingleton<DraftCubit>(
     () => DraftCubit(draftRepository: getIt<DraftRepository>()),
   );
+  getIt<StreamDisposableRegistry>().register(getIt<DraftCubit>());
 
   // Payment Cubit
   getIt.registerLazySingleton<PaymentCubit>(
@@ -161,9 +171,11 @@ Future<void> setupServiceLocator() async {
   getIt.registerLazySingleton<ProductCubit>(
     () => ProductCubit(productRepository: getIt<ProductRepository>()),
   );
+  getIt<StreamDisposableRegistry>().register(getIt<ProductCubit>());
 
   // Store Cubit
   getIt.registerLazySingleton<StoreCubit>(
     () => StoreCubit(storeRepository: getIt<StoreRepository>()),
   );
+  getIt<StreamDisposableRegistry>().register(getIt<StoreCubit>());
 }

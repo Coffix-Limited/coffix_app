@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:coffix_app/core/services/log_service.dart';
 import 'package:coffix_app/core/utils/time_utils.dart';
 import 'package:coffix_app/data/repositories/auth_repository.dart';
 import 'package:coffix_app/data/repositories/store_repository.dart';
@@ -44,6 +45,7 @@ class StoreRepositoryImpl implements StoreRepository {
     return userStream.switchMap((user) {
       final String? storeId = user?.preferredStoreId;
       if (storeId == null || storeId.isEmpty) {
+        LogService().storeNotFound();
         return Stream.value(AppUserWithStore(user: user!, store: null));
       }
 

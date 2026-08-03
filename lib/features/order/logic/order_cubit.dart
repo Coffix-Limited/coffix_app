@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:bloc/bloc.dart';
+import 'package:coffix_app/core/utils/stream_disposable.dart';
 import 'package:coffix_app/data/repositories/order_repository.dart';
 import 'package:coffix_app/features/order/data/model/order.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
@@ -8,7 +9,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 part 'order_state.dart';
 part 'order_cubit.freezed.dart';
 
-class OrderCubit extends Cubit<OrderState> {
+class OrderCubit extends Cubit<OrderState> implements StreamDisposable {
   final OrderRepository _orderRepository;
   StreamSubscription<List<Order>>? _ordersSubscription;
 
@@ -60,8 +61,13 @@ class OrderCubit extends Cubit<OrderState> {
   }
 
   @override
-  Future<void> close() {
+  void cancelSubscriptions() {
     _ordersSubscription?.cancel();
+  }
+
+  @override
+  Future<void> close() {
+    cancelSubscriptions();
     return super.close();
   }
 }

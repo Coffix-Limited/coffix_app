@@ -46,7 +46,7 @@ api.use(express.json());
 api.use(globalLimiter);
 
 api.use("/health", (request, response) => {
-  response.send("OKKKK!!");
+  response.send("OKKKKK!!");
 });
 
 // Mount routers

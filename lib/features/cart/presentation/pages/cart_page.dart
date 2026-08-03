@@ -53,7 +53,7 @@ class _CartViewState extends State<CartView> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final store = context.watch<AuthCubit>().state.maybeWhen(authenticated: (user) => user.store, orElse: () => null);
-    final storeIsOpen = (store?.isOpenAt() ?? false) || (store?.isDeleted == true);
+    final storeIsOpen = ((store?.isOpenAt() ?? false) || (store?.isDeleted == true)) && store?.disable != true;
     final productCubit = context.watch<ProductCubit>();
     final products = productCubit.allProducts;
 

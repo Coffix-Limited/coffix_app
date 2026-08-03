@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:bloc/bloc.dart';
+import 'package:coffix_app/core/utils/stream_disposable.dart';
 import 'package:coffix_app/data/repositories/product_repository.dart';
 import 'package:coffix_app/features/products/data/model/product_category.dart';
 import 'package:coffix_app/features/products/data/model/product_with_category.dart';
@@ -9,7 +10,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 part 'product_state.dart';
 part 'product_cubit.freezed.dart';
 
-class ProductCubit extends Cubit<ProductState> {
+class ProductCubit extends Cubit<ProductState> implements StreamDisposable {
   final ProductRepository _productRepository;
   StreamSubscription<List<ProductWithCategory>>? _productsSubscription;
   List<ProductWithCategory> _allProducts = [];
@@ -102,5 +103,10 @@ class ProductCubit extends Cubit<ProductState> {
         allCategories: _categories,
       ),
     );
+  }
+
+  @override
+  void cancelSubscriptions() {
+    _productsSubscription?.cancel();
   }
 }

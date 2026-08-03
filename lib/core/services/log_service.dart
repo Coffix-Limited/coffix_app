@@ -372,4 +372,16 @@ class LogService extends ApiClient {
       ),
     );
   }
+
+  Future<void> storeNotFound() async {
+    write(
+      Log(
+        page: "store_page",
+        category: "AppError",
+        severityLevel: 3,
+        action: "Store not found.",
+        notes: "Store not found.",
+      ),
+    );
+  }
 }
