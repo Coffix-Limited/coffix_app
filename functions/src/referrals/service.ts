@@ -219,6 +219,7 @@ export class ReferralService {
       createdAt: now,
       type: "fixed",
       amount: couponAmount,
+      remainingAmount: couponAmount,
       referralId: referral.groupId,
       isUsed: false,
       expiryDate: couponExpiry,

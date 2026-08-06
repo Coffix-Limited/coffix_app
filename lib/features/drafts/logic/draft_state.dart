@@ -9,6 +9,8 @@ abstract class DraftState with _$DraftState {
   const factory DraftState.success({@Default([]) List<Draft> drafts}) =
       _Success;
   const factory DraftState.loaded({@Default([]) List<Draft> drafts}) = _Loaded;
+  const factory DraftState.deleted({@Default([]) List<Draft> drafts}) =
+      _Deleted;
   const factory DraftState.error({
     required String message,
     @Default([]) List<Draft> drafts,

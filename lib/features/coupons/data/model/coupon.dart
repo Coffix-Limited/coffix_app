@@ -16,6 +16,7 @@ class Coupon {
   final String? type; // admin | referral
   final String? notes;
   final String? userId;
+  final double? remainingAmount;
 
   Coupon({
     this.docId,
@@ -27,6 +28,7 @@ class Coupon {
     this.type,
     this.notes,
     this.userId,
+    this.remainingAmount,
   });
 
   factory Coupon.fromJson(Map<String, dynamic> json) => _$CouponFromJson(json);

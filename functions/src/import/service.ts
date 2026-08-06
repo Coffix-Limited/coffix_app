@@ -1,13 +1,15 @@
 import { logger } from "firebase-functions";
 import { firestore } from "../config/firebaseAdmin";
 import { collectionToCsv, formatBytes } from "../utils/csv";
+import { nextSequentialIds } from "../utils/generateId";
 import { bucketName, signedDownloadUrl, storageClient } from "../utils/storage";
 import {
   CollectionSchema,
   DOC_ID_PROPERTY,
-  FieldType,
   getImportSchema,
+  ID_PREFIXES,
   systemIdField,
+  unflattenRow,
 } from "./importSchemas";
 
 const FIRESTORE_BATCH_LIMIT = 500;
@@ -97,8 +99,9 @@ export interface ImportResult {
   requestId: string;
   collection: string;
   received: number;
-  written: number;
-  skipped: SkippedRow[];
+  created: number;
+  updated: number;
+  skipped: number;
 }
 
 // One row prepared for writing: a target ref plus the payload to set.
@@ -108,12 +111,19 @@ interface PreparedWrite {
   merge: boolean;
 }
 
-// Result of preparing one row: either a write, or an error reason for skipping.
+// A validated/coerced row awaiting only its document id.
+interface CoercedRow {
+  rawId: string;
+  merge: boolean;
+  data: Record<string, unknown>;
+}
+
+// Result of coercing one row: either a coerced row, or an error reason for skipping.
 // Kept as a single shape (not a discriminated union) because strictNullChecks is
 // off in this project, which disables literal-boolean union narrowing.
-interface BuildResult {
+interface CoerceRowResult {
   ok: boolean;
-  write?: PreparedWrite;
+  row?: CoercedRow;
   error?: string;
 }
 
@@ -121,7 +131,8 @@ export class ImportService {
   /**
    * Validate and coerce CSV rows against the collection's import schema, then
    * upsert the valid ones into Firestore. Rows that fail validation (missing
-   * required field, bad type coercion) are skipped and returned with a reason.
+   * required field, bad type coercion) are skipped; the result reports how many
+   * rows were created, updated and skipped, with skip reasons written to the log.
    * A row with a non-empty system id (`id`) upserts into that document (merging,
    * preserving the original `createdAt`, stamping `updatedAt`); a row without one
    * inserts a new document with a generated id and schema-defined `createdAt`.
@@ -135,92 +146,138 @@ export class ImportService {
     const idField = systemIdField(schema);
 
     const skipped: SkippedRow[] = [];
-    const prepared: PreparedWrite[] = [];
+    const coercedRows: CoercedRow[] = [];
 
     for (let i = 0; i < rows.length; i++) {
-      const built = this.buildDoc(collection, schema, idField, rows[i]);
+      const built = this.coerceRow(schema, idField, rows[i]);
       if (built.ok) {
-        prepared.push(built.write);
+        coercedRows.push(built.row);
       } else {
         skipped.push({ rowIndex: i, reason: built.error });
       }
     }
 
+    const prepared = await this.resolveRefs(collection, coercedRows);
+
     await this.commitInBatches(prepared);
+
+    // A row carrying a document id upserts (counted as an update); a row without
+    // one always inserts a freshly generated id (counted as a create).
+    const updated = prepared.filter((p) => p.merge).length;
+    const created = prepared.length - updated;
 
     const requestId = await this.recordRequest(
       collection,
-      prepared.length,
+      created,
+      updated,
       skipped.length,
     );
 
     logger.info(
       `[import/import] ${collection}: received ${rows.length}, ` +
-        `written ${prepared.length}, skipped ${skipped.length}`,
+        `created ${created}, updated ${updated}, skipped ${skipped.length}`,
     );
+
+    // The response reports counts only, so surface the per-row reasons here.
+    if (skipped.length > 0) {
+      logger.warn(
+        `[import/import] ${collection} skipped rows: ` +
+          skipped.map((s) => `row ${s.rowIndex}: ${s.reason}`).join("; "),
+      );
+    }
 
     return {
       requestId,
       collection,
       received: rows.length,
-      written: prepared.length,
-      skipped,
+      created,
+      updated,
+      skipped: skipped.length,
     };
   }
 
-  // Validate + coerce a single row into a prepared write, or return an error
-  // describing why the row was skipped.
-  private buildDoc(
-    collection: string,
+  // Validate + coerce a single row's fields, or return an error describing why
+  // the row was skipped. Document id resolution happens separately in
+  // resolveRefs, since generating a sequential id requires a transaction.
+  private coerceRow(
     schema: CollectionSchema,
     idField: string,
     row: Record<string, string>,
-  ): BuildResult {
+  ): CoerceRowResult {
     // Resolve the document id: present in CSV -> upsert; absent -> generate.
-    const rawId = (row[idField] ?? "").trim();
+    // Falls back to `docId` (DOC_ID_PROPERTY) so CSVs exported/hand-built with
+    // that header — rather than the schema's own id field name — still upsert.
+    const rawId = (row[idField] || row[DOC_ID_PROPERTY] || "").trim();
     const merge = rawId !== "";
-    const ref = merge
-      ? firestore.collection(collection).doc(rawId)
-      : firestore.collection(collection).doc();
-    const docId = ref.id;
 
-    const data: Record<string, unknown> = {};
+    const candidate = unflattenRow(row, idField);
 
-    for (const [name, def] of Object.entries(schema.fields)) {
-      // The system id field is handled via the ref + docId mirror, not the body.
-      if (def.system) continue;
-      // On upsert, don't re-stamp createdAt — preserve the original.
-      if (name === "createdAt" && merge) continue;
-
-      const raw = row[name];
-      const present = raw !== undefined && raw.trim() !== "";
-
-      if (!present) {
-        if (def.required) {
-          return { ok: false, error: `Missing required field: ${name}` };
-        }
-        if ("default" in def) {
-          setNested(data, name, resolveDefault(def.default));
-        }
-        // optional + no default -> omit
-        continue;
-      }
-
-      const coerced = coerceValue(def.type ?? "string", raw);
-      if (coerced.ok) {
-        setNested(data, name, coerced.value);
-      } else {
-        return { ok: false, error: `${name}: ${coerced.error}` };
-      }
+    const result = schema.shape.safeParse(candidate);
+    if (!result.success) {
+      const issue = result.error.issues[0];
+      const path = issue.path.join(".") || "(row)";
+      return { ok: false, error: `${path}: ${issue.message}` };
     }
 
-    // Mirror the document id into the body and stamp write metadata.
-    data[DOC_ID_PROPERTY] = docId;
+    const data = result.data as Record<string, unknown>;
+
+    // On upsert, don't re-stamp createdAt — preserve the original.
     if (merge) {
+      delete data.createdAt;
       data.updatedAt = new Date();
     }
 
-    return { ok: true, write: { ref, data, merge } };
+    return { ok: true, row: { rawId, merge, data } };
+  }
+
+  // Resolve each coerced row's document ref: an upsert reuses the CSV-supplied
+  // id; a new row gets a prefixed sequential id (see utils/generateId.ts).
+  // All rows share one transaction across the whole import so concurrent
+  // imports of the same collection don't collide. The counter doc is read
+  // once up front and written once at the end (all reads before all writes)
+  // rather than per row, since Firestore transactions disallow interleaving
+  // reads after writes. Mirrors the resolved id into the body under `docId`.
+  private async resolveRefs(
+    collection: string,
+    rows: CoercedRow[],
+  ): Promise<PreparedWrite[]> {
+    const prefix = ID_PREFIXES[collection as keyof typeof ID_PREFIXES];
+    const numGenerated = rows.filter((r) => !r.merge).length;
+
+    return firestore.runTransaction(async (tx) => {
+      let ids: string[] = [];
+      let nextCount: number | undefined;
+      const counterRef = firestore.collection("counters").doc(collection);
+
+      if (prefix && numGenerated > 0) {
+        const snap = await tx.get(counterRef);
+        const startCount = (snap.data()?.nextNumber as number | undefined) ?? 1;
+        const reserved = nextSequentialIds(startCount, numGenerated, prefix);
+        ids = reserved.ids;
+        nextCount = reserved.nextCount;
+      }
+
+      const prepared: PreparedWrite[] = [];
+      let idIndex = 0;
+      for (const { rawId, merge, data } of rows) {
+        let ref: FirebaseFirestore.DocumentReference;
+        if (merge) {
+          ref = firestore.collection(collection).doc(rawId);
+        } else if (prefix) {
+          ref = firestore.collection(collection).doc(ids[idIndex++]);
+        } else {
+          ref = firestore.collection(collection).doc();
+        }
+        data[DOC_ID_PROPERTY] = ref.id;
+        prepared.push({ ref, data, merge });
+      }
+
+      if (nextCount !== undefined) {
+        tx.set(counterRef, { nextNumber: nextCount }, { merge: true });
+      }
+
+      return prepared;
+    });
   }
 
   // Commit prepared writes in chunks that respect the 500-op batch limit.
@@ -238,7 +295,8 @@ export class ImportService {
   // Record the completed import in the `requests` collection. Returns the doc id.
   private async recordRequest(
     collection: string,
-    written: number,
+    created: number,
+    updated: number,
     skipped: number,
   ): Promise<string> {
     const ref = await firestore.collection("requests").add({
@@ -246,115 +304,10 @@ export class ImportService {
       status: "completed",
       createdAt: new Date(),
       collection,
-      written,
+      created,
+      updated,
       skipped,
     });
     return ref.id;
   }
-}
-
-// Resolve a field default: call it if it's a factory function, else use it as-is
-// (null is a valid default and is written).
-function resolveDefault(def: unknown): unknown {
-  return typeof def === "function" ? (def as () => unknown)() : def;
-}
-
-interface CoerceResult {
-  ok: boolean;
-  value?: unknown;
-  error?: string;
-}
-
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-// Coerce a raw CSV string cell to the target type, or return an error message.
-function coerceValue(type: FieldType, raw: string): CoerceResult {
-  const value = raw.trim();
-
-  switch (type) {
-    case "number": {
-      const n = Number(value);
-      if (Number.isNaN(n)) {
-        return { ok: false, error: `expected number, got "${raw}"` };
-      }
-      return { ok: true, value: n };
-    }
-    case "boolean": {
-      const v = value.toLowerCase();
-      if (["true", "1", "yes"].includes(v)) return { ok: true, value: true };
-      if (["false", "0", "no"].includes(v)) return { ok: true, value: false };
-      return { ok: false, error: `expected boolean, got "${raw}"` };
-    }
-    case "email": {
-      if (!EMAIL_RE.test(value)) {
-        return { ok: false, error: `invalid email "${raw}"` };
-      }
-      return { ok: true, value };
-    }
-    case "timestamp": {
-      const d = new Date(value);
-      if (Number.isNaN(d.getTime())) {
-        return { ok: false, error: `invalid timestamp "${raw}"` };
-      }
-      return { ok: true, value: d };
-    }
-    // Arrays and maps are exported as JSON (see flatten() in utils/csv.ts), so
-    // parse them back strictly — a cell that isn't well-formed JSON of the right
-    // shape skips the row rather than writing a wrong-typed value.
-    case "array": {
-      let parsed: unknown;
-      try {
-        parsed = JSON.parse(value);
-      } catch {
-        return { ok: false, error: `expected JSON array, got "${raw}"` };
-      }
-      if (!Array.isArray(parsed)) {
-        return { ok: false, error: `expected JSON array, got "${raw}"` };
-      }
-      return { ok: true, value: parsed };
-    }
-    case "map": {
-      let parsed: unknown;
-      try {
-        parsed = JSON.parse(value);
-      } catch {
-        return { ok: false, error: `expected JSON object, got "${raw}"` };
-      }
-      if (
-        typeof parsed !== "object" ||
-        parsed === null ||
-        Array.isArray(parsed)
-      ) {
-        return { ok: false, error: `expected JSON object, got "${raw}"` };
-      }
-      return { ok: true, value: parsed };
-    }
-    case "string":
-    default:
-      return { ok: true, value };
-  }
-}
-
-// Assign `value` into `target` at a dotted `path`, creating intermediate maps so
-// e.g. "template.body" becomes { template: { body: value } }. Reverses the CSV
-// export flatten().
-function setNested(
-  target: Record<string, unknown>,
-  path: string,
-  value: unknown,
-): void {
-  const parts = path.split(".");
-  let node = target;
-  for (let i = 0; i < parts.length - 1; i++) {
-    const key = parts[i];
-    if (
-      typeof node[key] !== "object" ||
-      node[key] === null ||
-      Array.isArray(node[key])
-    ) {
-      node[key] = {};
-    }
-    node = node[key] as Record<string, unknown>;
-  }
-  node[parts[parts.length - 1]] = value;
 }

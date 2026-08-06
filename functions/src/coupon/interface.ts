@@ -10,4 +10,5 @@ export interface Coupon {
   userId?: string;
   referralId?: string;
   isUsed?: boolean;
+  remainingAmount?: number;
 }

@@ -28,6 +28,8 @@ class CouponRepositoryImpl implements CouponRepository {
   }
 
   bool _isEligible(Coupon coupon, DateTime now) {
-    return coupon.expiryDate == null || coupon.expiryDate!.isAfter(now);
+    final notExpired = coupon.expiryDate == null || coupon.expiryDate!.isAfter(now);
+    final hasBalance = coupon.remainingAmount == null || coupon.remainingAmount! > 0;
+    return notExpired && hasBalance;
   }
 }

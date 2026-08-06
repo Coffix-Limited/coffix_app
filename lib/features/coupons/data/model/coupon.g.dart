@@ -16,6 +16,7 @@ Coupon _$CouponFromJson(Map<String, dynamic> json) => Coupon(
   type: json['type'] as String?,
   notes: json['notes'] as String?,
   userId: json['userId'] as String?,
+  remainingAmount: (json['remainingAmount'] as num?)?.toDouble(),
 );
 
 Map<String, dynamic> _$CouponToJson(Coupon instance) => <String, dynamic>{
@@ -28,4 +29,5 @@ Map<String, dynamic> _$CouponToJson(Coupon instance) => <String, dynamic>{
   'type': instance.type,
   'notes': instance.notes,
   'userId': instance.userId,
+  'remainingAmount': instance.remainingAmount,
 };

@@ -50,8 +50,9 @@ importRouter.post(
 
 // Import a CSV into a Firestore collection. Accepts multipart/form-data with a
 // `collection` text field and a `file` (the CSV). Rows with a `docId` upsert;
-// rows without one insert with a generated id. Invalid rows are skipped and
-// returned in the response.
+// rows without one insert with a generated id. Invalid rows are skipped. The
+// response reports how many rows were created, updated and skipped; the reason
+// each row was skipped is written to the function log.
 importRouter.post(
   "/import",
   requirePost,

@@ -7,7 +7,7 @@ import { createOrderBodySchema, CreateOrderBodySchema } from "./schema";
 import { InsufficientCreditError } from "../coffixCredit/errors";
 import { scheduledAtNZ } from "../utils/nz_time";
 import * as admin from "firebase-admin";
-import { FieldValue, Timestamp } from "firebase-admin/firestore";
+import { Timestamp } from "firebase-admin/firestore";
 import { AppUser } from "../user/interface";
 import { GLOBAL_COLLECTION_ID } from "../constant/constant";
 import { logger } from "firebase-functions";
@@ -239,6 +239,11 @@ class FirebaseService {
     // const gstNumber = (orderSnap.data()?.storeGst as string) ?? "";
     // const gstAmount = amount - amount / (1 + gst / 100);
 
+    // Spendable balance of a coupon. Coupons issued before remainingAmount
+    // existed only carry amount, so fall back to it for those.
+    const couponBalance = (c: Record<string, any>): number =>
+      (c.remainingAmount ?? c.amount ?? 0) as number;
+
     // Fetch eligible coupons outside the transaction (reads before transaction opens)
     const couponSnap = await firestore
       .collection("coupons")
@@ -251,8 +256,7 @@ class FirebaseService {
         const notExpired =
           !c.expiryDate ||
           (c.expiryDate as admin.firestore.Timestamp).toDate() > now;
-        const hasAmount = (c.amount ?? 0) > 0;
-        return notExpired && hasAmount;
+        return notExpired && couponBalance(c) > 0;
       })
       .sort((a, b) => {
         const aExpiry = a.data().expiryDate
@@ -288,6 +292,7 @@ class FirebaseService {
         ref: admin.firestore.DocumentReference;
         couponId: string;
         amountUsed: number;
+        balanceBefore: number;
       }> = [];
 
       for (const snap of couponSnaps) {
@@ -297,16 +302,16 @@ class FirebaseService {
         const notExpired =
           !cd.expiryDate ||
           (cd.expiryDate as admin.firestore.Timestamp).toDate() > now;
-        const hasAmount = (cd.amount ?? 0) > 0;
-        if (!notExpired || !hasAmount) continue;
+        const balanceBefore = couponBalance(cd);
+        if (!notExpired || balanceBefore <= 0) continue;
 
-        const couponAmount = (cd.amount ?? 0) as number;
-        const amountUsed = Math.min(couponAmount, remaining);
+        const amountUsed = Math.min(balanceBefore, remaining);
         remaining -= amountUsed;
         couponsToConsume.push({
           ref: snap.ref,
           couponId: snap.id,
           amountUsed,
+          balanceBefore,
         });
       }
 
@@ -318,9 +323,15 @@ class FirebaseService {
       }
 
       // WRITE phase
-      // Deduct used amount from each consumed coupon (amount hits 0 when fully spent)
+      // Draw down remainingAmount and leave amount (the issued face value)
+      // untouched. Written explicitly rather than via increment because legacy
+      // coupons may not have the field yet.
       for (const c of couponsToConsume) {
-        tx.update(c.ref, { amount: FieldValue.increment(-c.amountUsed) });
+        const newRemaining = c.balanceBefore - c.amountUsed;
+        tx.update(c.ref, {
+          remainingAmount: newRemaining,
+          ...(newRemaining <= 0 ? { isUsed: true } : {}),
+        });
       }
 
       // Deduct remaining from creditAvailable (may be 0 if coupons covered it all)

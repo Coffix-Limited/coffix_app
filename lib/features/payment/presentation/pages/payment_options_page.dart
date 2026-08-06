@@ -22,6 +22,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+// Half a cent tolerance to avoid float-rounding false negatives when
+// credit + coupons should exactly cover the total.
+const _balanceEpsilon = 0.005;
+
 class PaymentOptionsPage extends StatelessWidget {
   static String route = 'payment_options_route';
   const PaymentOptionsPage({super.key});
@@ -59,26 +63,20 @@ class _PaymentOptionsPageViewState extends State<PaymentOptionsPageView> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final total =
-        context.watch<CartCubit>().state.cart?.items?.fold(
-          0.0,
-          (sum, item) => sum + item.lineTotal,
-        ) ??
-        0.0;
+    final total = context.watch<CartCubit>().state.cart?.items?.fold(0.0, (sum, item) => sum + item.lineTotal) ?? 0.0;
     final cart = context.watch<CartCubit>().state.cart;
     final paymentMethod = context.watch<CartCubit>().state.cart?.paymentMethod;
     final creditAvailable = context.watch<AuthCubit>().state.maybeWhen(
       authenticated: (u) => u.user.creditAvailable ?? 0,
       orElse: () => 0.0,
     );
-    final coupons = context.watch<CouponCubit>().state.maybeWhen(
-      loaded: (coupons) => coupons,
-      orElse: () => <Coupon>[],
-    );
-    final totalCoupon = coupons.fold(0.0, (sum, c) => sum + (c.amount ?? 0.0));
+    final couponState = context.watch<CouponCubit>().state;
+    final coupons = couponState.maybeWhen(loaded: (coupons) => coupons, orElse: () => <Coupon>[]);
+    final couponsReady = couponState.maybeWhen(loaded: (_) => true, orElse: () => false);
+    final totalCoupon = coupons.fold(0.0, (sum, c) => sum + (c.remainingAmount ?? 0.0));
     final totalBalance = creditAvailable + totalCoupon;
     final insufficientCredit =
-        paymentMethod == PaymentMethod.coffixCredit && totalBalance < total;
+        paymentMethod == PaymentMethod.coffixCredit && couponsReady && totalBalance < total - _balanceEpsilon;
     final coffixCreditAvailable = context.watch<AuthCubit>().state.maybeWhen(
       authenticated: (u) => u.user.coffixCreditAvailable ?? true,
       orElse: () => false,
@@ -94,10 +92,7 @@ class _PaymentOptionsPageViewState extends State<PaymentOptionsPageView> {
                 success: (order) {
                   context.goNamed(
                     PaymentSuccessfulPage.route,
-                    extra: {
-                      "pickupAt": order.scheduledAt,
-                      "orderNumber": order.transactionNumber,
-                    },
+                    extra: {"pickupAt": order.scheduledAt, "orderNumber": order.transactionNumber},
                   );
                   context.read<CartCubit>().resetCart();
                 },
@@ -109,12 +104,7 @@ class _PaymentOptionsPageViewState extends State<PaymentOptionsPageView> {
             builder: (context, state) {
               if (state == PaymentState.loading()) {
                 return Expanded(
-                  child: Center(
-                    child: Text(
-                      "Processing your payment...",
-                      style: AppTypography.bodyXS.copyWith(),
-                    ),
-                  ),
+                  child: Center(child: Text("Processing your payment...", style: AppTypography.bodyXS.copyWith())),
                 );
               }
               return Expanded(
@@ -128,40 +118,23 @@ class _PaymentOptionsPageViewState extends State<PaymentOptionsPageView> {
                           children: [
                             AppCard(
                               color: AppColors.primaryLight,
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: AppSizes.lg,
-                                vertical: AppSizes.md,
-                              ),
+                              padding: const EdgeInsets.symmetric(horizontal: AppSizes.lg, vertical: AppSizes.md),
                               child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Text(
-                                    'You are paying',
-                                    style: theme.textTheme.bodyLarge,
-                                  ),
-                                  Text.rich(
-                                    total.toCurrencySuperscript(
-                                      style: AppTypography.labelL,
-                                    ),
-                                  ),
+                                  Text('You are paying', style: theme.textTheme.bodyLarge),
+                                  Text.rich(total.toCurrencySuperscript(style: AppTypography.labelL)),
                                 ],
                               ),
                             ),
                             const SizedBox(height: AppSizes.xxl),
-                            Text(
-                              'Select payment method',
-                              style: theme.textTheme.titleMedium,
-                            ),
+                            Text('Select payment method', style: theme.textTheme.titleMedium),
                             const SizedBox(height: AppSizes.lg),
                             if (coffixCreditAvailable) ...[
                               PaymentOption(
-                                selected:
-                                    paymentMethod == PaymentMethod.coffixCredit,
+                                selected: paymentMethod == PaymentMethod.coffixCredit,
                                 onTap: () {
-                                  context.read<CartCubit>().setPaymentMethod(
-                                    PaymentMethod.coffixCredit,
-                                  );
+                                  context.read<CartCubit>().setPaymentMethod(PaymentMethod.coffixCredit);
                                 },
                                 icon: Icons.account_balance_wallet_outlined,
                                 title: 'Coffix Credit',
@@ -169,15 +142,9 @@ class _PaymentOptionsPageViewState extends State<PaymentOptionsPageView> {
                                 trailing: Column(
                                   crossAxisAlignment: CrossAxisAlignment.end,
                                   children: [
-                                    Text.rich(
-                                      totalBalance.toCurrencySuperscript(
-                                        style: AppTypography.labelM,
-                                      ),
-                                    ),
+                                    Text.rich(totalBalance.toCurrencySuperscript(style: AppTypography.labelM)),
                                     AppButton(
-                                      textStyle: AppTypography.labelS.copyWith(
-                                        color: AppColors.white,
-                                      ),
+                                      textStyle: AppTypography.labelS.copyWith(color: AppColors.white),
                                       padding: const EdgeInsets.symmetric(
                                         horizontal: AppSizes.md,
                                         vertical: AppSizes.xs,
@@ -193,16 +160,12 @@ class _PaymentOptionsPageViewState extends State<PaymentOptionsPageView> {
                             ],
                             if (insufficientCredit)
                               Padding(
-                                padding: const EdgeInsets.only(
-                                  top: AppSizes.sm,
-                                  left: AppSizes.md,
-                                ),
+                                padding: const EdgeInsets.only(top: AppSizes.sm, left: AppSizes.md),
                                 child: Row(
                                   children: [
                                     Text(
                                       'Insufficient balance. ',
-                                      style: theme.textTheme.bodySmall
-                                          ?.copyWith(color: AppColors.error),
+                                      style: theme.textTheme.bodySmall?.copyWith(color: AppColors.error),
                                     ),
                                   ],
                                 ),
@@ -211,14 +174,11 @@ class _PaymentOptionsPageViewState extends State<PaymentOptionsPageView> {
                             PaymentOption(
                               selected: paymentMethod == PaymentMethod.card,
                               onTap: () {
-                                context.read<CartCubit>().setPaymentMethod(
-                                  PaymentMethod.card,
-                                );
+                                context.read<CartCubit>().setPaymentMethod(PaymentMethod.card);
                               },
                               icon: Icons.credit_card,
                               title: 'Debit/Credit Card',
-                              subtitle:
-                                  'Pay with card, Apple Pay, or Google Pay',
+                              subtitle: 'Pay with card, Apple Pay, or Google Pay',
                             ),
                           ],
                         ),
@@ -229,10 +189,7 @@ class _PaymentOptionsPageViewState extends State<PaymentOptionsPageView> {
                       child: Padding(
                         padding: AppSizes.defaultPadding,
                         child: AppButton.primary(
-                          disabled:
-                              cart == null ||
-                              paymentMethod == null ||
-                              insufficientCredit,
+                          disabled: cart == null || paymentMethod == null || insufficientCredit,
                           onPressed: () {
                             if (cart == null) return;
                             final request = PaymentRequest(
@@ -243,27 +200,19 @@ class _PaymentOptionsPageViewState extends State<PaymentOptionsPageView> {
                                         (item) => PaymentItem(
                                           productId: item.productId ?? '',
                                           quantity: item.quantity ?? 0,
-                                          selectedModifiers:
-                                              item.selectedByGroup,
+                                          selectedModifiers: item.selectedByGroup,
                                         ),
                                       )
                                       .toList() ??
                                   [],
                               duration: cart.duration ?? 0,
-                              paymentMethod:
-                                  cart.paymentMethod ??
-                                  PaymentMethod.coffixCredit,
+                              paymentMethod: cart.paymentMethod ?? PaymentMethod.coffixCredit,
                             );
                             if (paymentMethod == PaymentMethod.coffixCredit) {
-                              context.read<PaymentCubit>().createPayment(
-                                request: request,
-                              );
+                              context.read<PaymentCubit>().createPayment(request: request);
                             } else {
                               LogService().payUsingCoffixCredit();
-                              context.pushNamed(
-                                PaymentPage.route,
-                                extra: {"paymentRequest": request},
-                              );
+                              context.pushNamed(PaymentPage.route, extra: {"paymentRequest": request});
                             }
                           },
                           label: paymentMethod == PaymentMethod.coffixCredit

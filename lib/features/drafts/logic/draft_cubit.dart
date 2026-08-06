@@ -45,7 +45,7 @@ class DraftCubit extends Cubit<DraftState> implements StreamDisposable {
     emit(DraftState.loading(drafts: state.drafts));
     try {
       await _draftRepository.deleteDraft(draftId: draftId);
-      emit(DraftState.success(drafts: state.drafts));
+      emit(DraftState.deleted(drafts: state.drafts));
     } catch (e) {
       emit(DraftState.error(message: e.toString(), drafts: state.drafts));
     }

@@ -16,6 +16,7 @@ import 'package:coffix_app/presentation/atoms/app_icon.dart';
 import 'package:coffix_app/presentation/atoms/app_notification.dart';
 import 'package:coffix_app/presentation/atoms/app_field.dart';
 import 'package:coffix_app/presentation/molecules/app_guest_bottom_sheet.dart';
+import 'package:coffix_app/presentation/molecules/empty_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:geolocator/geolocator.dart';
@@ -44,10 +45,7 @@ class StoreList extends StatelessWidget {
           loaded: (products, _, _) => products,
           orElse: () => <ProductWithCategory>[],
         );
-        final removed = context.read<CartCubit>().reconcileForStore(
-          newStoreId: storeId,
-          catalog: catalog,
-        );
+        final removed = context.read<CartCubit>().reconcileForStore(newStoreId: storeId, catalog: catalog);
 
         LogService().updateStore(storeName: storeName);
         await context.read<StoreCubit>().updatePreferredStore(storeId: storeId);
@@ -55,9 +53,7 @@ class StoreList extends StatelessWidget {
           context.goNamed(HomePage.route);
           AppNotification.show(
             context,
-            removed > 0
-                ? "Some items were removed — not available at this store"
-                : "Preferred store updated",
+            removed > 0 ? "Some items were removed — not available at this store" : "Preferred store updated",
           );
         }
       } catch (e) {
@@ -111,15 +107,10 @@ class StoreList extends StatelessWidget {
                   try {
                     final position = await getCurrentLocation();
                     if (!context.mounted) return;
-                    await context.read<StoreCubit>().sortStoresByDistance(
-                      position: position,
-                    );
+                    await context.read<StoreCubit>().sortStoresByDistance(position: position);
                   } catch (e) {
                     if (!context.mounted) return;
-                    AppNotification.show(
-                      context,
-                      "Enable location access to sort stores by distance",
-                    );
+                    AppNotification.show(context, "Enable location access to sort stores by distance");
                   }
                 },
                 child: Image.asset(AppImages.target),
@@ -129,95 +120,79 @@ class StoreList extends StatelessWidget {
           const SizedBox(height: AppSizes.md),
           Text("Please select your preferred location:"),
           const SizedBox(height: AppSizes.lg),
-          ListView.separated(
-            padding: EdgeInsets.zero,
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemBuilder: (context, index) {
-              final store = stores[index];
+          stores.isEmpty
+              ? EmptyState(title: "No stores found", subtitle: "Please try again later", icon: Icons.search)
+              : ListView.separated(
+                  padding: EdgeInsets.zero,
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemBuilder: (context, index) {
+                    final store = stores[index];
 
-              final isOpen = store.isOpenAt();
-              // final isOpen = true;
-              return AppClickable(
-                showSplash: false,
-                onPressed: () {
-                  if (!isAuthenticated) {
-                    AppGuestBottomSheet.show(
-                      context,
-                      message: "Please sign in to continue",
-                      isAuthenticated: isAuthenticated,
-                      isFinishedOnboarding: isFinishedOnboarding,
-                    );
-                  } else if (!isFinishedOnboarding) {
-                    AppGuestBottomSheet.show(
-                      context,
-                      message: "Please finish first setting up your profile.",
-                      isAuthenticated: isAuthenticated,
-                      isFinishedOnboarding: isFinishedOnboarding,
-                    );
-                  } else if (isOpen) {
-                    updateStore(store.docId, store.name ?? "");
-                  }
-                },
-                child: Row(
-                  children: [
-                    CircleAvatar(
-                      backgroundColor: Colors.transparent,
-                      radius: AppSizes.iconSizeLarge,
-                      child: ClipOval(
-                        child: AppCachedNetworkImage(
-                          imageUrl: store.imageUrl ?? "",
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: AppSizes.md),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                    final isOpen = store.isOpenAt();
+                    // final isOpen = true;
+                    return AppClickable(
+                      showSplash: false,
+                      onPressed: () {
+                        if (!isAuthenticated) {
+                          AppGuestBottomSheet.show(
+                            context,
+                            message: "Please sign in to continue",
+                            isAuthenticated: isAuthenticated,
+                            isFinishedOnboarding: isFinishedOnboarding,
+                          );
+                        } else if (!isFinishedOnboarding) {
+                          AppGuestBottomSheet.show(
+                            context,
+                            message: "Please finish first setting up your profile.",
+                            isAuthenticated: isAuthenticated,
+                            isFinishedOnboarding: isFinishedOnboarding,
+                          );
+                        } else if (isOpen) {
+                          updateStore(store.docId, store.name ?? "");
+                        }
+                      },
+                      child: Row(
                         children: [
-                          Row(
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  store.name ?? "",
-                                  style: AppTypography.labelM,
+                          CircleAvatar(
+                            backgroundColor: Colors.transparent,
+                            radius: AppSizes.iconSizeLarge,
+                            child: ClipOval(child: AppCachedNetworkImage(imageUrl: store.imageUrl ?? "")),
+                          ),
+                          const SizedBox(width: AppSizes.md),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [Expanded(child: Text(store.name ?? "", style: AppTypography.labelM))],
                                 ),
-                              ),
-                            ],
-                          ),
-                          Text(
-                            store.address ?? "",
-                            style: AppTypography.bodyXS.copyWith(
-                              color: AppColors.black,
+                                Text(store.address ?? "", style: AppTypography.bodyXS.copyWith(color: AppColors.black)),
+                                Text(
+                                  isOpen
+                                      ? "Closes at ${store.todayCloseFormatted() ?? ''}"
+                                      : () {
+                                          final next = store.nextOpeningFormatted();
+                                          return next != null
+                                              ? "Closed. Opens on ${next.day} ${next.time}"
+                                              : "MON-SUN is closed";
+                                        }(),
+                                  style: AppTypography.body2XS.copyWith(
+                                    color: isOpen ? AppColors.success : AppColors.error,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                          Text(
-                            isOpen
-                                ? "Closes at ${store.todayCloseFormatted() ?? ''}"
-                                : () {
-                                    final next = store.nextOpeningFormatted();
-                                    return next != null
-                                        ? "Closed. Opens on ${next.day} ${next.time}"
-                                        : "MON-SUN is closed";
-                                  }(),
-                            style: AppTypography.body2XS.copyWith(
-                              color: isOpen
-                                  ? AppColors.success
-                                  : AppColors.error,
-                            ),
-                          ),
+                          const SizedBox(width: AppSizes.md),
+                          if (isOpen) AppIcon.withIconData(Icons.arrow_forward_ios),
                         ],
                       ),
-                    ),
-                    const SizedBox(width: AppSizes.md),
-                    if (isOpen) AppIcon.withIconData(Icons.arrow_forward_ios),
-                  ],
+                    );
+                  },
+                  separatorBuilder: (_, _) => const Divider(),
+                  itemCount: stores.length,
                 ),
-              );
-            },
-            separatorBuilder: (_, _) => const Divider(),
-            itemCount: stores.length,
-          ),
         ],
       ),
     );

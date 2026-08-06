@@ -1,330 +1,188 @@
 // Per-collection field contracts for the CSV import API. The client validates
 // columns before uploading; the server re-validates and coerces each row
-// defensively.
+// defensively using Zod.
 //
-// Each field declares whether it's `required`, its `type` (for coercion), an
-// optional `default` (a static value or a factory function invoked at write
-// time), and whether it's a `system` field. The single `system` field is the
-// Firestore document id: when present in the CSV the row upserts into that
-// document; when absent a new id is generated. The id is also mirrored into the
-// document body under `docId`.
+// Each collection is a Zod object schema built from small "csv*" primitives
+// below, each of which trims a raw CSV cell string and coerces/validates it to
+// the target type. Fields are `.optional()` and/or `.default(...)` to express
+// the old required/default semantics. Nested/dotted CSV columns (e.g.
+// "openingHours.monday.close") are unflattened into real nested objects by
+// `unflattenRow` before validation, so they get a proper shape instead of a
+// generic untyped map.
 //
-// Any CSV column not declared in `fields` is dropped (not imported).
-export type FieldType =
-  | "string"
-  | "number"
-  | "boolean"
-  | "email"
-  | "timestamp"
-  | "array"
-  | "map";
+// The single system field is the Firestore document id: when present in the
+// CSV the row upserts into that document; when absent a new id is generated.
+// The id is also mirrored into the document body under `docId`.
+//
+// Any CSV column not declared in a collection's schema is dropped (not
+// imported).
+import { z, ZodObject, ZodRawShape } from "zod";
 
-export interface FieldDef {
-  required?: boolean;
-  type?: FieldType; // defaults to "string"
-  default?: unknown | (() => unknown); // static value or factory
-  system?: boolean; // true = the document id field
-}
+// ---- CSV cell primitives ---------------------------------------------------
+// Each accepts a raw (already-trimmed) CSV cell string and coerces/validates
+// it, mirroring the previous coerceValue() behavior.
+
+
+export const csvNumber = z.string().trim().pipe(
+  z.coerce.number({ error: "expected a number" }),
+);
+
+export const csvBoolean = z
+  .string()
+  .trim()
+  .transform((v, ctx) => {
+    const lower = v.toLowerCase();
+    if (["true", "1", "yes"].includes(lower)) return true;
+    if (["false", "0", "no"].includes(lower)) return false;
+    ctx.addIssue({ code: "custom", message: `expected boolean, got "${v}"` });
+    return z.NEVER;
+  });
+
+export const csvEmail = z.email().trim();
+
+export const csvTimestamp = z
+  .string()
+  .trim()
+  .transform((v, ctx) => {
+    const d = new Date(v);
+    if (Number.isNaN(d.getTime())) {
+      ctx.addIssue({ code: "custom", message: `invalid timestamp "${v}"` });
+      return z.NEVER;
+    }
+    return d;
+  });
+
+// Arrays are exported as JSON (see flatten() in utils/csv.ts), so parse them
+// back strictly — a cell that isn't well-formed JSON of the right shape fails
+// validation rather than writing a wrong-typed value.
+export const csvJsonArray = z
+  .string()
+  .trim()
+  .transform((v, ctx) => {
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(v);
+    } catch {
+      ctx.addIssue({ code: "custom", message: `expected JSON array, got "${v}"` });
+      return z.NEVER;
+    }
+    if (!Array.isArray(parsed)) {
+      ctx.addIssue({ code: "custom", message: `expected JSON array, got "${v}"` });
+      return z.NEVER;
+    }
+    return parsed;
+  });
+
+// ---- Schema plumbing --------------------------------------------------------
 
 export interface CollectionSchema {
-  fields: Record<string, FieldDef>;
+  // The Zod object schema the unflattened row body is validated/coerced against
+  // (excludes the system id field, which is handled out-of-band).
+  shape: ZodObject<ZodRawShape>;
+  // Name of the system (document id) field, e.g. "id".
+  systemIdField: string;
 }
 
 // The document-id field name (system) and the body property it's mirrored to.
 export const SYSTEM_ID_FIELD = "id";
 export const DOC_ID_PROPERTY = "docId";
 
+// Prefixes for human-readable sequential document IDs (see utils/generateId.ts).
+// Extend as other collections adopt the helper.
+export const ID_PREFIXES = {
+  products: "PRD",
+  productCategories: "CAT",
+  modifierGroups: "MODGRP",
+  modifiers: "MOD",
+  stores: "STR",
+} as const;
+
+// A day's opening-hours block, e.g. "openingHours.monday.{open,close,isOpen}".
+const openingHoursDay = z.object({
+  open: z.optional(z.string().trim()),
+  close: z.optional(z.string().trim()),
+  isOpen: z.optional(csvBoolean).default(true),
+});
+
+const openingHours = z.object({
+  monday: z.optional(openingHoursDay),
+  tuesday: z.optional(openingHoursDay),
+  wednesday: z.optional(openingHoursDay),
+  thursday: z.optional(openingHoursDay),
+  friday: z.optional(openingHoursDay),
+  saturday: z.optional(openingHoursDay),
+  sunday: z.optional(openingHoursDay),
+});
+
+// Only catalog-type collections are importable via CSV.
 export const importSchemas: Record<string, CollectionSchema> = {
-  campaigns: {
-    fields: {
-      channels: { required: true },
-      createdBy: { required: true, type: "string" },
-      name: { required: true, type: "string" },
-      "schedule.mode": { required: true, type: "string" },
-      status: { required: true, type: "string" },
-      "template.body": { required: true, type: "string" },
-      "template.title": { required: true, type: "string" },
-      "audience.storeIds": { required: false },
-      audience: { required: false },
-      id: { required: false, system: true },
-      createdAt: { default: () => new Date() },
-    },
-  },
-  customers: {
-    fields: {
-      id: { required: false, system: true },
-      allowCoffeeForHome: { required: false, type: "boolean", default: false },
-      allowNotifications: { required: false, type: "boolean", default: false },
-      allowWinACoffee: { required: false, type: "boolean", default: false },
-      allowWithdrawBalance: {
-        required: false,
-        type: "boolean",
-        default: false,
-      },
-      appVersion: { required: false, type: "string" },
-      birthday: { required: false, type: "timestamp" },
-      country: { required: false, type: "string" },
-      coffixCreditAvailable: { required: false, type: "boolean" },
-      createdAt: { default: () => new Date() },
-      creditAvailable: { required: false, type: "number", default: 0 },
-      creditExpiry: { required: false, type: "timestamp" },
-      disabled: { required: false, type: "boolean", default: false },
-      email: { required: true, type: "email" },
-      emailVerified: { required: false, type: "boolean", default: false },
-      fcmToken: { required: false, type: "string" },
-      finishedOnboarding: { required: false, type: "boolean", default: false },
-      firstName: { required: false, type: "string" },
-      getPromotions: { required: false, type: "boolean", default: false },
-      getPurchaseInfoByMail: {
-        required: false,
-        type: "boolean",
-        default: false,
-      },
-      invitedBy: { required: false, type: "timestamp" },
-      lastLoginAt: { required: false, type: "timestamp" },
-      lastName: { required: false, type: "string" },
-      mobileNumber: { required: false, type: "string" },
-      name: { required: false, type: "string" },
-      nickName: { required: false, type: "string" },
-      preferredStore: { required: false, type: "string" },
-      qrCode: { required: false, type: "string" },
-      referrerUid: { required: false, type: "string" },
-      scheduleOrder: { required: false, type: "boolean", default: false },
-      shareCredit: { required: false, type: "boolean", default: false },
-      status: { required: false, type: "string" },
-      suburb: { required: false, type: "string" },
-      updatedAt: { default: () => new Date() },
-      withdrawBalance: { required: false, type: "boolean", default: false },
-    },
-  },
-  coupons: {
-    fields: {
-      amount: { required: true, type: "number" },
-      customerEmail: { required: true, type: "email" },
-      expiryDate: { required: true, type: "timestamp" },
-      isUsed: { required: false, type: "boolean", default: false },
-      type: { required: true, type: "string" },
-      userId: { required: true, type: "string" },
-      notes: { required: false, default: "" },
-      referralId: { required: false, default: null },
-      source: { required: false, default: "manual_import" },
-      storeId: { required: false },
-      id: { required: false, system: true },
-      createdAt: { default: () => new Date() },
-    },
-  },
-  drafts: {
-    fields: {
-      id: { required: false, system: true },
-      "cart.items": { required: true, type: "array" },
-      "cart.storeId": { required: true, type: "string" },
-      createdAt: { default: () => new Date() },
-      updatedAt: { default: () => new Date() },
-      userId: { required: true, type: "string" },
-    },
-  },
-  emails: {
-    fields: {
-      id: { required: false, system: true },
-      content: { required: true, type: "string" },
-      name: { required: true, type: "string" },
-      notes: { required: false, default: "" },
-      subject: { required: true, type: "string" },
-      updatedAt: { default: () => new Date() },
-      variables: { required: false, type: "array" },
-    },
-  },
-  // global: {
-  //   fields: {
-  //     id: { required: false, system: true },
-  //     gst: { required: false, type: "number" },
-  //   }
-  // },
   modifierGroups: {
-    fields: {
-      id: { required: false, system: true },
-      modifier: { required: false, type: "string" },
-      modifierCount: { required: false, type: "array" },
-      modifierIds: { required: false, type: "array" },
-      name: { required: true, type: "string" },
-      required: { required: false, type: "boolean", default: false },
-      selectionType: { required: false, type: "string" },
-    },
+    systemIdField: SYSTEM_ID_FIELD,
+    shape: z.object({
+      modifier: z.optional(z.string().trim()),
+      modifierCount: z.optional(csvJsonArray),
+      modifierIds: z.optional(csvJsonArray),
+      name: z.string().trim(),
+      required: z.optional(csvBoolean).default(false),
+      selectionType: z.optional(z.string().trim()),
+    }),
   },
   modifiers: {
-    fields: {
-      id: { required: false, system: true },
-      cost: { required: false, type: "number" },
-      groupId: { required: true, type: "string" },
-      isDefault: { required: false, type: "boolean", default: false },
-      label: { required: true, type: "string" },
-      modifierCode: { required: false, type: "string" },
-      priceDelta: { required: false, type: "number" },
-    },
-  },
-  orders: {
-    fields: {
-      id: { required: false, system: true },
-      amount: { required: true, type: "number" },
-      createdAt: { default: () => new Date() },
-      customerEmail: { required: true, type: "email" },
-      duration: { required: false, type: "number" },
-      items: { required: true, type: "array" },
-      orderNumber: { required: true, type: "string" },
-      paidAt: { required: false, type: "timestamp" },
-      paymentMethod: { required: true, type: "string" },
-      scheduleId: { required: false, type: "string" },
-      status: { required: true, type: "string" },
-      storeAddress: { required: true, type: "string" },
-      storeGst: { required: true, type: "number" },
-      storeInvoiceText: { required: true, type: "string" },
-      storeName: { required: true, type: "string" },
-      transactionNumber: { required: false, type: "string" },
-      updatedAt: { default: () => new Date() },
-    },
+    systemIdField: SYSTEM_ID_FIELD,
+    shape: z.object({
+      cost: z.optional(csvNumber),
+      groupId: z.string().trim(),
+      isDefault: z.optional(csvBoolean).default(false),
+      label: z.string().trim(),
+      modifierCode: z.optional(z.string().trim()),
+      priceDelta: z.optional(csvNumber),
+    }),
   },
   productCategories: {
-    fields: {
-      id: { required: false, system: true },
-      docId: { required: false, type: "string" },
-      imageUrl: { required: false, type: "string" },
-      name: { required: true, type: "string" },
-      order: { required: false, type: "number" },
-    },
+    systemIdField: SYSTEM_ID_FIELD,
+    shape: z.object({
+      imageUrl: z.optional(z.string().trim()),
+      name: z.string().trim(),
+      order: z.optional(csvNumber),
+    }),
   },
   products: {
-    fields: {
-      id: { required: false, system: true },
-      availableToStores: { required: false, type: "array" },
-      categoryId: { required: true, type: "string" },
-      cost: { required: false, type: "number", default: 0 },
-      createdAt: { default: () => new Date() },
-      disabled: { required: false, type: "boolean", default: false },
-      disabledPermanently: { required: false, type: "boolean", default: false },
-      disabledStores: { required: false, type: "array" },
-      imageUrl: { required: false, type: "string" },
-      modifierGroupIds: { required: false, type: "array" },
-      name: { required: true, type: "string" },
-      order: { required: false, type: "number" },
-      price: { required: true, type: "number" },
-      updatedAt: { default: () => new Date() },
-    },
+    systemIdField: SYSTEM_ID_FIELD,
+    shape: z.object({
+      availableToStores: z.optional(csvJsonArray),
+      categoryId: z.string().trim(),
+      cost: z.optional(csvNumber).default(0),
+      createdAt: z.optional(csvTimestamp).default(() => new Date()),
+      disabled: z.optional(csvBoolean).default(false),
+      disabledPermanently: z.optional(csvBoolean).default(false),
+      disabledStores: z.optional(csvJsonArray),
+      imageUrl: z.optional(z.string().trim()),
+      modifierGroupIds: z.optional(csvJsonArray),
+      name: z.string().trim(),
+      order: z.optional(csvNumber),
+      price: csvNumber,
+      updatedAt: z.optional(csvTimestamp).default(() => new Date()),
+    }),
   },
   stores: {
-    fields: {
-      id: { required: false, system: true },
-      address: { required: true, type: "string" },
-      city: { required: true, type: "string" },
-      contactName: { required: false, type: "string" },
-      disable: { required: false, type: "boolean", default: false },
-      email: { required: false, type: "email" },
-      gstNumber: { required: false, type: "string" },
-      holidayHours: { required: false, type: "array" },
-      imageUrl: { required: false, type: "string" },
-      invoiceText: { required: false, type: "string" },
-      location: { required: false, type: "string" },
-      name: { required: true, type: "string" },
-      "openingHours.monday.close": { required: false, type: "string" },
-      "openingHours.monday.isOpen": {
-        required: false,
-        type: "boolean",
-        default: true,
-      },
-      "openingHours.monday.open": { required: false, type: "string" },
-      "openingHours.tuesday.close": { required: false, type: "string" },
-      "openingHours.tuesday.isOpen": {
-        required: false,
-        type: "boolean",
-        default: true,
-      },
-      "openingHours.tuesday.open": { required: false, type: "string" },
-      "openingHours.wednesday.close": { required: false, type: "string" },
-      "openingHours.wednesday.isOpen": {
-        required: false,
-        type: "boolean",
-        default: true,
-      },
-      "openingHours.wednesday.open": { required: false, type: "string" },
-      "openingHours.thursday.close": { required: false, type: "string" },
-      "openingHours.thursday.isOpen": {
-        required: false,
-        type: "boolean",
-        default: true,
-      },
-      "openingHours.thursday.open": { required: false, type: "string" },
-      "openingHours.friday.close": { required: false, type: "string" },
-      "openingHours.friday.isOpen": {
-        required: false,
-        type: "boolean",
-        default: true,
-      },
-      "openingHours.friday.open": { required: false, type: "string" },
-      "openingHours.saturday.close": { required: false, type: "string" },
-      "openingHours.saturday.isOpen": {
-        required: false,
-        type: "boolean",
-        default: true,
-      },
-      "openingHours.saturday.open": { required: false, type: "string" },
-      "openingHours.sunday.close": { required: false, type: "string" },
-      "openingHours.sunday.isOpen": {
-        required: false,
-        type: "boolean",
-        default: true,
-      },
-      "openingHours.sunday.open": { required: false, type: "string" },
-      printerId: { required: false, type: "string" },
-      storeCode: { required: false, type: "string" },
-      updatedAt: { default: () => new Date() },
-    },
-  },
-  transactions: {
-    fields: {
-      id: { required: false, system: true },
-      amount: { required: true, type: "number" },
-      "card.cardHolderName": { required: false, type: "string" },
-      "card.cardNumber": { required: false, type: "string" },
-      "card.dateExpiryMonth": { required: false, type: "string" },
-      "card.dateExpiryYear": { required: false, type: "string" },
-      "card.type": { required: false, type: "string" },
-      couponDiscount: { required: false, type: "number" },
-      couponIds: { required: false, type: "array" },
-      createdAt: { default: () => new Date() },
-      customerId: { required: true, type: "string" },
-      expiresAt: { required: false, type: "timestamp" },
-      gst: { required: false, type: "number", default: 0 },
-      gstAmount: { required: false, type: "number", default: 0 },
-      gstLabel: { required: false, type: "string" },
-      gstNumber: { required: false, type: "string" },
-      isManual: { required: false, type: "boolean", default: false },
-      notes: { required: false, type: "string", default: "" },
-      orderId: { required: false, type: "string" },
-      orderNumber: { required: false, type: "string" },
-      originalTransactionNumber: { required: false, type: "string" },
-      paymentId: { required: false, type: "string" },
-      paymentMethod: { required: true, type: "string" },
-      paymentTime: { required: false, type: "timestamp" },
-      printerId: { required: false, type: "string" },
-      recipientCustomerId: { required: false, type: "string" },
-      recipientEmail: { required: false, type: "email" },
-      recipientFirstName: { required: false, type: "string" },
-      recipientLastName: { required: false, type: "string" },
-      responseText: { required: false, type: "string" },
-      role: { required: false, type: "string" },
-      senderEmail: { required: false, type: "email" },
-      senderFirstName: { required: false, type: "string" },
-      senderFullName: { required: false, type: "string" },
-      senderId: { required: false, type: "string" },
-      senderLastName: { required: false, type: "string" },
-      sessionId: { required: false, type: "string" },
-      status: { required: true, type: "string" },
-      storeId: { required: false, type: "string" },
-      storeInvoiceText: { required: false, type: "string" },
-      totalAmount: { required: false, type: "number", default: 0 },
-      transactionNumber: { required: true, type: "string" },
-      type: { required: false, type: "string" },
-      updatedAt: { default: () => new Date() },
-    },
+    systemIdField: SYSTEM_ID_FIELD,
+    shape: z.object({
+      address: z.string().trim(),
+      city: z.string().trim(),
+      contactName: z.optional(z.string().trim()),
+      disable: z.optional(csvBoolean).default(false),
+      email: z.optional(csvEmail),
+      gstNumber: z.optional(z.string().trim()),
+      holidayHours: z.optional(csvJsonArray),
+      imageUrl: z.optional(z.string().trim()),
+      invoiceText: z.optional(z.string().trim()),
+      location: z.optional(z.string().trim()),
+      name: z.string().trim(),
+      openingHours: z.optional(openingHours),
+      printerId: z.optional(z.string().trim()),
+      storeCode: z.optional(z.string().trim()),
+      updatedAt: z.optional(csvTimestamp).default(() => new Date()),
+    }),
   },
 };
 
@@ -345,8 +203,48 @@ export function isImportableCollection(collection: string): boolean {
 
 // The name of the system (document id) field for a schema, defaulting to "id".
 export function systemIdField(schema: CollectionSchema): string {
-  for (const [name, def] of Object.entries(schema.fields)) {
-    if (def.system) return name;
+  return schema.systemIdField || SYSTEM_ID_FIELD;
+}
+
+// Assign `value` into `target` at a dotted `path`, creating intermediate maps so
+// e.g. "template.body" becomes { template: { body: value } }. Reverses the CSV
+// export flatten() in utils/csv.ts.
+function setNested(
+  target: Record<string, unknown>,
+  path: string,
+  value: unknown,
+): void {
+  const parts = path.split(".");
+  let node = target;
+  for (let i = 0; i < parts.length - 1; i++) {
+    const key = parts[i];
+    if (
+      typeof node[key] !== "object" ||
+      node[key] === null ||
+      Array.isArray(node[key])
+    ) {
+      node[key] = {};
+    }
+    node = node[key] as Record<string, unknown>;
   }
-  return SYSTEM_ID_FIELD;
+  node[parts[parts.length - 1]] = value;
+}
+
+// Turn a flat CSV row (dotted keys, string values, possibly the system id
+// field) into a nested object ready for Zod validation. Empty-string cells are
+// dropped entirely so `.optional()`/`.default()` treat them as absent, not as
+// an empty-string value. The system id field and `docId` (its export alias,
+// see DOC_ID_PROPERTY) are excluded — both are handled out-of-band via the
+// document ref, not part of the body schema.
+export function unflattenRow(
+  row: Record<string, string>,
+  idField: string,
+): Record<string, unknown> {
+  const out: Record<string, unknown> = {};
+  for (const [key, raw] of Object.entries(row)) {
+    if (key === idField || key === DOC_ID_PROPERTY) continue;
+    if (raw === undefined || raw.trim() === "") continue;
+    setNested(out, key, raw);
+  }
+  return out;
 }

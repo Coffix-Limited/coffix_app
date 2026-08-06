@@ -57,6 +57,7 @@ class _DraftsViewState extends State<DraftsView> {
             ),
             loaded: (data) => _DraftsContent(drafts: data.drafts),
             success: (data) => _DraftsContent(drafts: data.drafts),
+            deleted: (data) => _DraftsContent(drafts: data.drafts),
           );
         },
       ),

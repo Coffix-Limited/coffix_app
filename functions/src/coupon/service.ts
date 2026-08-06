@@ -36,6 +36,10 @@ export class CouponService {
     const coupon: Coupon = {
       docId: ref.id,
       amount,
+      // amount is the issued face value and stays fixed; spending draws down
+      // remainingAmount so the original worth is preserved as history.
+      remainingAmount: amount,
+      isUsed: false,
       expiryDate,
       createdAt: now,
       customerEmail: customerEmail.toLowerCase(),

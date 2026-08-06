@@ -122,7 +122,7 @@ class _ProfileViewState extends State<ProfileView> {
                               loaded: (coupons) => coupons,
                               orElse: () => <Coupon>[],
                             );
-                            final totalCoupon = coupons.fold(0.0, (sum, c) => sum + (c.amount ?? 0.0));
+                            final totalCoupon = coupons.fold(0.0, (sum, c) => sum + (c.remainingAmount ?? 0.0));
                             final DateTime? latestCouponExpiry = coupons
                                 .map((c) => c.expiryDate)
                                 .whereType<DateTime>()

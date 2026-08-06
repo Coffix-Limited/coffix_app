@@ -42,7 +42,6 @@ class _StoresViewState extends State<StoresView> {
             initial: () => const SizedBox.shrink(),
             loading: () => AppLoading(),
             loaded: (stores) {
-              print(stores.last.name);
               return StoreList(
                 stores: stores.where((store) {
                   final next = store.nextOpeningFormatted();

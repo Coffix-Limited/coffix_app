@@ -86,14 +86,15 @@ extension DraftStatePatterns on DraftState {
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( _Initial value)?  initial,TResult Function( _Loading value)?  loading,TResult Function( _Success value)?  success,TResult Function( _Loaded value)?  loaded,TResult Function( _Error value)?  error,required TResult orElse(),}){
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( _Initial value)?  initial,TResult Function( _Loading value)?  loading,TResult Function( _Success value)?  success,TResult Function( _Loaded value)?  loaded,TResult Function( _Deleted value)?  deleted,TResult Function( _Error value)?  error,required TResult orElse(),}){
 final _that = this;
 switch (_that) {
 case _Initial() when initial != null:
 return initial(_that);case _Loading() when loading != null:
 return loading(_that);case _Success() when success != null:
 return success(_that);case _Loaded() when loaded != null:
-return loaded(_that);case _Error() when error != null:
+return loaded(_that);case _Deleted() when deleted != null:
+return deleted(_that);case _Error() when error != null:
 return error(_that);case _:
   return orElse();
 
@@ -112,14 +113,15 @@ return error(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( _Initial value)  initial,required TResult Function( _Loading value)  loading,required TResult Function( _Success value)  success,required TResult Function( _Loaded value)  loaded,required TResult Function( _Error value)  error,}){
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( _Initial value)  initial,required TResult Function( _Loading value)  loading,required TResult Function( _Success value)  success,required TResult Function( _Loaded value)  loaded,required TResult Function( _Deleted value)  deleted,required TResult Function( _Error value)  error,}){
 final _that = this;
 switch (_that) {
 case _Initial():
 return initial(_that);case _Loading():
 return loading(_that);case _Success():
 return success(_that);case _Loaded():
-return loaded(_that);case _Error():
+return loaded(_that);case _Deleted():
+return deleted(_that);case _Error():
 return error(_that);case _:
   throw StateError('Unexpected subclass');
 
@@ -137,14 +139,15 @@ return error(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( _Initial value)?  initial,TResult? Function( _Loading value)?  loading,TResult? Function( _Success value)?  success,TResult? Function( _Loaded value)?  loaded,TResult? Function( _Error value)?  error,}){
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( _Initial value)?  initial,TResult? Function( _Loading value)?  loading,TResult? Function( _Success value)?  success,TResult? Function( _Loaded value)?  loaded,TResult? Function( _Deleted value)?  deleted,TResult? Function( _Error value)?  error,}){
 final _that = this;
 switch (_that) {
 case _Initial() when initial != null:
 return initial(_that);case _Loading() when loading != null:
 return loading(_that);case _Success() when success != null:
 return success(_that);case _Loaded() when loaded != null:
-return loaded(_that);case _Error() when error != null:
+return loaded(_that);case _Deleted() when deleted != null:
+return deleted(_that);case _Error() when error != null:
 return error(_that);case _:
   return null;
 
@@ -162,13 +165,14 @@ return error(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( List<Draft> drafts)?  initial,TResult Function( List<Draft> drafts)?  loading,TResult Function( List<Draft> drafts)?  success,TResult Function( List<Draft> drafts)?  loaded,TResult Function( String message,  List<Draft> drafts)?  error,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( List<Draft> drafts)?  initial,TResult Function( List<Draft> drafts)?  loading,TResult Function( List<Draft> drafts)?  success,TResult Function( List<Draft> drafts)?  loaded,TResult Function( List<Draft> drafts)?  deleted,TResult Function( String message,  List<Draft> drafts)?  error,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Initial() when initial != null:
 return initial(_that.drafts);case _Loading() when loading != null:
 return loading(_that.drafts);case _Success() when success != null:
 return success(_that.drafts);case _Loaded() when loaded != null:
-return loaded(_that.drafts);case _Error() when error != null:
+return loaded(_that.drafts);case _Deleted() when deleted != null:
+return deleted(_that.drafts);case _Error() when error != null:
 return error(_that.message,_that.drafts);case _:
   return orElse();
 
@@ -187,13 +191,14 @@ return error(_that.message,_that.drafts);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( List<Draft> drafts)  initial,required TResult Function( List<Draft> drafts)  loading,required TResult Function( List<Draft> drafts)  success,required TResult Function( List<Draft> drafts)  loaded,required TResult Function( String message,  List<Draft> drafts)  error,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( List<Draft> drafts)  initial,required TResult Function( List<Draft> drafts)  loading,required TResult Function( List<Draft> drafts)  success,required TResult Function( List<Draft> drafts)  loaded,required TResult Function( List<Draft> drafts)  deleted,required TResult Function( String message,  List<Draft> drafts)  error,}) {final _that = this;
 switch (_that) {
 case _Initial():
 return initial(_that.drafts);case _Loading():
 return loading(_that.drafts);case _Success():
 return success(_that.drafts);case _Loaded():
-return loaded(_that.drafts);case _Error():
+return loaded(_that.drafts);case _Deleted():
+return deleted(_that.drafts);case _Error():
 return error(_that.message,_that.drafts);case _:
   throw StateError('Unexpected subclass');
 
@@ -211,13 +216,14 @@ return error(_that.message,_that.drafts);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( List<Draft> drafts)?  initial,TResult? Function( List<Draft> drafts)?  loading,TResult? Function( List<Draft> drafts)?  success,TResult? Function( List<Draft> drafts)?  loaded,TResult? Function( String message,  List<Draft> drafts)?  error,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( List<Draft> drafts)?  initial,TResult? Function( List<Draft> drafts)?  loading,TResult? Function( List<Draft> drafts)?  success,TResult? Function( List<Draft> drafts)?  loaded,TResult? Function( List<Draft> drafts)?  deleted,TResult? Function( String message,  List<Draft> drafts)?  error,}) {final _that = this;
 switch (_that) {
 case _Initial() when initial != null:
 return initial(_that.drafts);case _Loading() when loading != null:
 return loading(_that.drafts);case _Success() when success != null:
 return success(_that.drafts);case _Loaded() when loaded != null:
-return loaded(_that.drafts);case _Error() when error != null:
+return loaded(_that.drafts);case _Deleted() when deleted != null:
+return deleted(_that.drafts);case _Error() when error != null:
 return error(_that.message,_that.drafts);case _:
   return null;
 
@@ -506,6 +512,78 @@ class __$LoadedCopyWithImpl<$Res>
 /// with the given fields replaced by the non-null parameter values.
 @override @pragma('vm:prefer-inline') $Res call({Object? drafts = null,}) {
   return _then(_Loaded(
+drafts: null == drafts ? _self._drafts : drafts // ignore: cast_nullable_to_non_nullable
+as List<Draft>,
+  ));
+}
+
+
+}
+
+/// @nodoc
+
+
+class _Deleted implements DraftState {
+  const _Deleted({final  List<Draft> drafts = const []}): _drafts = drafts;
+  
+
+ final  List<Draft> _drafts;
+@override@JsonKey() List<Draft> get drafts {
+  if (_drafts is EqualUnmodifiableListView) return _drafts;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_drafts);
+}
+
+
+/// Create a copy of DraftState
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$DeletedCopyWith<_Deleted> get copyWith => __$DeletedCopyWithImpl<_Deleted>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Deleted&&const DeepCollectionEquality().equals(other._drafts, _drafts));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_drafts));
+
+@override
+String toString() {
+  return 'DraftState.deleted(drafts: $drafts)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$DeletedCopyWith<$Res> implements $DraftStateCopyWith<$Res> {
+  factory _$DeletedCopyWith(_Deleted value, $Res Function(_Deleted) _then) = __$DeletedCopyWithImpl;
+@override @useResult
+$Res call({
+ List<Draft> drafts
+});
+
+
+
+
+}
+/// @nodoc
+class __$DeletedCopyWithImpl<$Res>
+    implements _$DeletedCopyWith<$Res> {
+  __$DeletedCopyWithImpl(this._self, this._then);
+
+  final _Deleted _self;
+  final $Res Function(_Deleted) _then;
+
+/// Create a copy of DraftState
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? drafts = null,}) {
+  return _then(_Deleted(
 drafts: null == drafts ? _self._drafts : drafts // ignore: cast_nullable_to_non_nullable
 as List<Draft>,
   ));

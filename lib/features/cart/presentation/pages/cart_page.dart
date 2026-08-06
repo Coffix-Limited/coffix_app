@@ -180,11 +180,17 @@ class _CartViewState extends State<CartView> {
 
                           BlocConsumer<DraftCubit, DraftState>(
                             listener: (context, draftState) {
-                              if (draftState.maybeWhen(success: (drafts) => true, orElse: () => false)) {
-                                AppNotification.show(context, 'Draft saved successfully');
-                                context.read<CartCubit>().resetCart();
-                                context.goNamed(DraftsPage.route);
-                              }
+                              draftState.maybeWhen(
+                                success: (drafts) {
+                                  AppNotification.show(context, 'Draft saved successfully');
+                                  context.read<CartCubit>().resetCart();
+                                  context.goNamed(DraftsPage.route);
+                                },
+                                deleted: (drafts) {
+                                  AppNotification.show(context, 'Draft deleted');
+                                },
+                                orElse: () => false,
+                              );
                             },
                             builder: (context, draftState) {
                               final isLoading = draftState.maybeWhen(loading: (drafts) => true, orElse: () => false);

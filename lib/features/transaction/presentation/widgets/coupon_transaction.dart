@@ -43,15 +43,6 @@ class CouponTransactionState extends State<CouponTransaction> {
       (order) => order.docId == widget.transaction.orderId,
     );
 
-    Color amountColor() {
-      if (widget.transaction.status == TransactionStatus.sent) {
-        return AppColors.error;
-      } else if (widget.transaction.status == TransactionStatus.claimed) {
-        return AppColors.success;
-      }
-      return AppColors.textBlackColor;
-    }
-
     return Container(
       padding: const EdgeInsets.all(AppSizes.md),
       decoration: BoxDecoration(
@@ -116,11 +107,10 @@ class CouponTransactionState extends State<CouponTransaction> {
                 children: [
                   Text.rich(
                     widget.transaction.amount?.toCurrencySuperscript(
-                          style: AppTypography.titleS.copyWith(color: amountColor()),
+                          style: AppTypography.titleS.copyWith(color: AppColors.success),
                         ) ??
                         0.00.toCurrencySuperscript(style: AppTypography.titleS),
                   ),
-
                   Text("Coffix Credit"),
                   StatusChip(label: statusLabel, color: statusColor),
                 ],
