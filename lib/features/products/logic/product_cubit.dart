@@ -47,12 +47,27 @@ class ProductCubit extends Cubit<ProductState> implements StreamDisposable {
               _initialized = true;
               initDefaultCategory();
             } else {
-              emit(
-                ProductState.loaded(
-                  products: products,
-                  allCategories: _categories,
-                ),
-              );
+              final currentFilter = state is _Loaded
+                  ? (state as _Loaded).categoryFilter
+                  : null;
+              final filterStillValid =
+                  currentFilter != null &&
+                  _categories.any(
+                    (c) => c.name?.toLowerCase() == currentFilter.toLowerCase(),
+                  );
+
+              if (currentFilter == null) {
+                emit(
+                  ProductState.loaded(
+                    products: products,
+                    allCategories: _categories,
+                  ),
+                );
+              } else if (filterStillValid) {
+                filterProductsByCategory(currentFilter);
+              } else {
+                initDefaultCategory();
+              }
             }
           }, onError: (e) => emit(ProductState.error(message: e.toString())));
     } catch (e) {

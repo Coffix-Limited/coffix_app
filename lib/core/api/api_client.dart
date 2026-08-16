@@ -55,10 +55,7 @@ abstract class ApiClient {
   Options options(String? token) => Options(
     headers: token == null
         ? {"Content-Type": "application/json"}
-        : {
-            "Authorization": "Bearer $token",
-            "Content-Type": "application/json",
-          },
+        : {"Authorization": "Bearer $token", "Content-Type": "application/json"},
   );
 
   Future<ApiResponse<T>> get<T>(
@@ -80,17 +77,10 @@ abstract class ApiClient {
         options: options ?? this.options(token),
         cancelToken: cancelToken,
       );
-      return ApiResponse<T>.fromJson(
-        response.data,
-        fromJsonT: (json) => json as T,
-        statusCode: response.statusCode,
-      );
+      return ApiResponse<T>.fromJson(response.data, fromJsonT: (json) => json as T, statusCode: response.statusCode);
     } on DioException catch (e) {
       if (e.type == DioExceptionType.cancel) {
-        throw ApiExceptions(
-          "Request cancelled",
-          statusCode: e.response?.statusCode,
-        );
+        throw ApiExceptions("Request cancelled", statusCode: e.response?.statusCode);
       }
       throw ApiExceptions.fromDioError(e);
     } catch (e) {
@@ -119,17 +109,10 @@ abstract class ApiClient {
         queryParameters: queryParameters,
         options: options ?? this.options(token),
       );
-      return ApiResponse<T>.fromJson(
-        response.data,
-        statusCode: response.statusCode,
-        fromJsonT: (json) => json as T,
-      );
+      return ApiResponse<T>.fromJson(response.data, statusCode: response.statusCode, fromJsonT: (json) => json as T);
     } on DioException catch (e) {
       if (e.type == DioExceptionType.cancel) {
-        throw ApiExceptions(
-          "Request cancelled",
-          statusCode: e.response?.statusCode,
-        );
+        throw ApiExceptions("Request cancelled", statusCode: e.response?.statusCode);
       }
       throw ApiExceptions.fromDioError(e);
     } catch (e) {
@@ -155,11 +138,7 @@ abstract class ApiClient {
         queryParameters: queryParameters,
         options: options ?? this.options(token),
       );
-      return ApiResponse<T>.fromJson(
-        response.data,
-        fromJsonT: (json) => json as T,
-        statusCode: response.statusCode,
-      );
+      return ApiResponse<T>.fromJson(response.data, fromJsonT: (json) => json as T, statusCode: response.statusCode);
     } on DioException catch (e) {
       throw ApiExceptions.fromDioError(e);
     } catch (e) {
@@ -184,11 +163,7 @@ abstract class ApiClient {
         queryParameters: queryParameters,
         options: options ?? this.options(token),
       );
-      return ApiResponse<T>.fromJson(
-        response.data,
-        statusCode: response.statusCode,
-        fromJsonT: (json) => json as T,
-      );
+      return ApiResponse<T>.fromJson(response.data, statusCode: response.statusCode, fromJsonT: (json) => json as T);
     } on DioException catch (e) {
       throw ApiExceptions.fromDioError(e);
     } catch (e) {
@@ -213,10 +188,7 @@ abstract class ApiClient {
         queryParameters: queryParameters,
         options: options ?? this.options(token),
       );
-      return ApiResponse<T>.fromJson(
-        response.data,
-        fromJsonT: (json) => json as T,
-      );
+      return ApiResponse<T>.fromJson(response.data, fromJsonT: (json) => json as T);
     } on DioException catch (e) {
       throw ApiExceptions.fromDioError(e);
     } catch (e) {

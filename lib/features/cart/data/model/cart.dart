@@ -24,9 +24,9 @@ class Cart {
   Map<String, dynamic> toJson() => _$CartToJson(this);
 
   double get subtotal =>
-      items?.fold(0.0, (sum, item) => sum ?? 0 + item.lineTotal) ?? 0.0;
+      items?.fold<double>(0.0, (sum, item) => sum + item.lineTotal) ?? 0.0;
   int get totalQuantity =>
-      items?.fold(0, (sum, item) => sum ?? 0 + (item.quantity ?? 0)) ?? 0;
+      items?.fold<int>(0, (sum, item) => sum + (item.quantity ?? 0)) ?? 0;
 
   Cart copyWith({
     String? storeId,

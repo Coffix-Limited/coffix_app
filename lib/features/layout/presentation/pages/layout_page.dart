@@ -148,7 +148,7 @@ class _LayoutViewState extends State<LayoutView> {
                             final currentVisualIndex = visibleTabs.indexWhere(
                               (tab) => LayoutPageTab.values.indexOf(tab) == widget.shell.currentIndex,
                             );
-                            final orderCount = context.watch<CartCubit>().state.cart?.items?.length ?? 0;
+                            final orderCount = context.watch<CartCubit>().state.cart?.totalQuantity ?? 0;
                             return BottomNavigationBar(
                               currentIndex: currentVisualIndex < 0 ? 0 : currentVisualIndex,
                               onTap: (visualIndex) {

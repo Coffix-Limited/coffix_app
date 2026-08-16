@@ -13,11 +13,11 @@ class ApiExceptions implements Exception {
   factory ApiExceptions.fromDioError(DioException dioError) {
     switch (dioError.type) {
       case DioExceptionType.connectionTimeout:
-        return ApiExceptions('Connection timeout with API server');
+        return ApiExceptions('Unable to connect. Please check your internet connection and try again.');
       case DioExceptionType.sendTimeout:
-        return ApiExceptions('Send timeout with API server');
+        return ApiExceptions('The request is taking too long. Please try again.');
       case DioExceptionType.receiveTimeout:
-        return ApiExceptions('Receive timeout with API server');
+        return ApiExceptions('The server is taking too long to respond. Please try again later.');
       case DioExceptionType.badCertificate:
         return ApiExceptions('Bad certificate');
       case DioExceptionType.badResponse:
@@ -27,12 +27,8 @@ class ApiExceptions implements Exception {
           return ApiExceptions("File too large for upload");
         } else if (statusCode == 502) {
           return ApiExceptions("Server is down. Please try again later.");
-        } else if (statusCode != null &&
-            statusCode >= 500 &&
-            statusCode < 600) {
-          return ApiExceptions(
-            "Server error ($statusCode). Please try again later.",
-          );
+        } else if (statusCode != null && statusCode >= 500 && statusCode < 600) {
+          return ApiExceptions("Server error ($statusCode). Please try again later.");
         }
 
         return _handleResponseError(dioError);
@@ -64,16 +60,11 @@ class ApiExceptions implements Exception {
       case 409:
         return ApiExceptions('$errorMessage', statusCode: statusCode);
       case 422:
-        final errorMessage =
-            dioError.response?.data["message"] as String? ??
-            "Something went wrong";
+        final errorMessage = dioError.response?.data["message"] as String? ?? "Something went wrong";
 
         return ApiExceptions(errorMessage, data: data, statusCode: statusCode);
       default:
-        return ApiExceptions(
-          'Oops something went wrong',
-          statusCode: statusCode,
-        );
+        return ApiExceptions('Oops something went wrong', statusCode: statusCode);
     }
   }
 }

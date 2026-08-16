@@ -82,9 +82,6 @@ router.post(
             (transaction.originalTransactionNumber as string) ?? "",
           amount: (transaction.amount as number) ?? 0,
           storeInvoiceText: transaction.storeInvoiceText as string | undefined,
-          gst: transaction.gst as number | undefined,
-          gstAmount: transaction.gstAmount as number | undefined,
-          gstNumber: transaction.gstNumber as string | undefined,
           isCoffixCredit:
             (transaction.paymentMethod as string) === "coffixCredit",
         });
@@ -251,9 +248,6 @@ router.post(
           originalTransactionNumber,
           amount,
           storeInvoiceText: transaction.storeInvoiceText as string | undefined,
-          gst: transaction.gst as number | undefined,
-          gstAmount: transaction.gstAmount as number | undefined,
-          gstNumber: transaction.gstNumber as string | undefined,
           storeId: transaction.storeId as string | undefined,
           transactionNumber: refundTransactionNumber,
         },
@@ -266,9 +260,6 @@ router.post(
         originalTransactionNumber,
         amount,
         storeInvoiceText: transaction.storeInvoiceText as string | undefined,
-        gst: transaction.gst as number | undefined,
-        gstAmount: transaction.gstAmount as number | undefined,
-        gstNumber: transaction.gstNumber as string | undefined,
         isCoffixCredit:
           (transaction.paymentMethod as string) === "coffixCredit",
       });

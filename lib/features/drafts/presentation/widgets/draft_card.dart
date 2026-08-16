@@ -85,7 +85,7 @@ class _DraftCardState extends State<DraftCard> {
     }
 
     if (result.skippedItems > 0 || result.droppedModifiers > 0) {
-      AppNotification.error(context, 'Some items are no longer available');
+      AppNotification.error(context, 'Some items or options have changed and are no longer available');
     }
 
     context.goNamed(CartPage.route);

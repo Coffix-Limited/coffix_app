@@ -542,6 +542,20 @@ class FirebaseService {
     return storeRef.data();
   }
 
+  async findActiveStoreByStoreId(storeId: string) {
+    const storeRef = await firestore
+      .collection("stores")
+      .where("disable", "==", false)
+      .where("isDeleted", "==", false)
+      .where("docId", "==", storeId)
+      .limit(1)
+      .get();
+    if (storeRef.empty) {
+      return null;
+    }
+    return storeRef.docs[0].data();
+  }
+
   async findUserByCustomerId(customerId: string): Promise<AppUser | null> {
     const userRef = await firestore
       .collection("customers")
@@ -694,9 +708,6 @@ class FirebaseService {
     originalTransactionNumber,
     amount,
     storeInvoiceText,
-    gst,
-    gstAmount,
-    gstNumber,
     storeId,
     transactionNumber,
   }: {
@@ -704,9 +715,6 @@ class FirebaseService {
     originalTransactionNumber: string;
     amount: number;
     storeInvoiceText?: string;
-    gst?: number;
-    gstAmount?: number;
-    gstNumber?: string;
     storeId?: string;
     transactionNumber: string;
   }): Promise<string> {
@@ -733,9 +741,6 @@ class FirebaseService {
         createdAt: now,
         transactionNumber,
         storeInvoiceText: storeInvoiceText ?? "",
-        gst: gst ?? 0,
-        gstAmount: gstAmount ?? 0,
-        gstNumber: gstNumber ?? "",
         storeId: storeId ?? "",
       });
     });

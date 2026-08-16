@@ -41,6 +41,7 @@ router.post(
 
     try {
       const validation = createPaymentSessionBodySchema.safeParse(request.body);
+
       if (!validation.success) {
         const errors = validation.error.issues
           .map((i) => `${i.path.join(".")}: ${i.message}`)
@@ -60,7 +61,7 @@ router.post(
           items: validation.data.items,
         });
 
-      const storeDoc = await firebaseService.findStoreByStoreId(
+      const storeDoc = await firebaseService.findActiveStoreByStoreId(
         validation.data.storeId,
       );
       if (!storeDoc) {

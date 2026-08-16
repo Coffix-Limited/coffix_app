@@ -10,6 +10,7 @@ import 'package:coffix_app/features/payment/logic/payment_cubit.dart';
 import 'package:coffix_app/features/stores/data/model/store.dart';
 import 'package:coffix_app/features/stores/logic/store_cubit.dart';
 import 'package:coffix_app/presentation/atoms/app_button.dart';
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
@@ -19,11 +20,7 @@ import 'package:timezone/timezone.dart' as tz;
 
 class PaymentSuccessfulPage extends StatelessWidget {
   static String route = 'payment_successful_route';
-  const PaymentSuccessfulPage({
-    super.key,
-    required this.pickupAt,
-    this.orderNumber,
-  });
+  const PaymentSuccessfulPage({super.key, required this.pickupAt, this.orderNumber});
 
   final DateTime pickupAt;
   final String? orderNumber;
@@ -56,8 +53,7 @@ class PaymentSuccessfulView extends StatelessWidget {
     );
     final Store? store = orderCreated?.storeId != null
         ? context.watch<StoreCubit>().state.maybeWhen(
-            loaded: (stores) =>
-                stores.firstWhere((s) => s.docId == orderCreated?.storeId),
+            loaded: (stores) => stores.firstWhereOrNull((s) => s.docId == orderCreated?.storeId),
             orElse: () => null,
           )
         : null;
@@ -74,27 +70,18 @@ class PaymentSuccessfulView extends StatelessWidget {
               Center(
                 child: Container(
                   padding: AppSizes.defaultPadding,
-                  decoration: BoxDecoration(
-                    color: AppColors.beige,
-                    borderRadius: BorderRadius.circular(12.0),
-                  ),
+                  decoration: BoxDecoration(color: AppColors.beige, borderRadius: BorderRadius.circular(12.0)),
                   child: BlocBuilder<PaymentCubit, PaymentState>(
                     builder: (context, state) {
                       return Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Text(
-                            'THANK YOU!',
-                            style: AppTypography.headlineXl,
-                            textAlign: TextAlign.center,
-                          ),
+                          Text('THANK YOU!', style: AppTypography.headlineXl, textAlign: TextAlign.center),
                           const SizedBox(height: AppSizes.lg),
                           RichText(
                             textAlign: TextAlign.center,
                             text: TextSpan(
-                              style: AppTypography.bodyM.copyWith(
-                                color: AppColors.textBlackColor,
-                              ),
+                              style: AppTypography.bodyM.copyWith(color: AppColors.textBlackColor),
                               children: [
                                 TextSpan(
                                   text:
@@ -113,20 +100,12 @@ class PaymentSuccessfulView extends StatelessWidget {
                           ),
                           const SizedBox(height: AppSizes.sm),
                           Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: AppSizes.xl,
-                              vertical: AppSizes.md,
-                            ),
+                            padding: const EdgeInsets.symmetric(horizontal: AppSizes.xl, vertical: AppSizes.md),
                             decoration: BoxDecoration(
                               color: AppColors.primary,
                               borderRadius: BorderRadius.circular(AppSizes.md),
                             ),
-                            child: Text(
-                              timeText,
-                              style: AppTypography.titleM.copyWith(
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
+                            child: Text(timeText, style: AppTypography.titleM.copyWith(fontWeight: FontWeight.bold)),
                           ),
                           const SizedBox(height: AppSizes.xl),
                           AppButton.primary(
@@ -147,29 +126,16 @@ class PaymentSuccessfulView extends StatelessWidget {
                 opacity: 0.6,
                 child: Column(
                   children: [
-                    AppButton.primary(
-                      color: AppColors.lightGrey,
-                      onPressed: () {},
-                      label: "New Order",
-                      disabled: true,
-                    ),
+                    AppButton.primary(color: AppColors.lightGrey, onPressed: () {}, label: "New Order", disabled: true),
                     const SizedBox(height: AppSizes.md),
                     Row(
                       children: [
                         Expanded(
-                          child: AppButton.primary(
-                            disabled: true,
-                            onPressed: () async {},
-                            label: "ReOrder",
-                          ),
+                          child: AppButton.primary(disabled: true, onPressed: () async {}, label: "ReOrder"),
                         ),
                         const SizedBox(width: AppSizes.md),
                         Expanded(
-                          child: AppButton.primary(
-                            disabled: true,
-                            onPressed: () {},
-                            label: "My Drafts",
-                          ),
+                          child: AppButton.primary(disabled: true, onPressed: () {}, label: "My Drafts"),
                         ),
                       ],
                     ),
