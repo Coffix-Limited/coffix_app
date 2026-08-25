@@ -68,6 +68,7 @@ class _LoginViewState extends State<LoginView> {
           padding: AppSizes.defaultPadding,
           child: FormBuilder(
             key: _formKey,
+            autovalidateMode: AutovalidateMode.onUserInteractionIfError,
             child: BlocConsumer<AuthCubit, AuthState>(
               listener: (context, state) {
                 state.whenOrNull(

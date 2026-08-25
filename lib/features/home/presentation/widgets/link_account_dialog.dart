@@ -59,6 +59,7 @@ class _LinkAccountDialogState extends State<LinkAccountDialog> {
       child: Padding(
         padding: AppSizes.defaultPadding,
         child: FormBuilder(
+          autovalidateMode: AutovalidateMode.onUserInteractionIfError,
           key: _formKey,
           child: Column(
             mainAxisSize: MainAxisSize.min,

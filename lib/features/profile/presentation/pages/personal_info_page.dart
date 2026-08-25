@@ -228,6 +228,7 @@ class _PersonalInfoViewState extends State<PersonalInfoView> {
         body: SingleChildScrollView(
           padding: AppSizes.defaultPadding,
           child: FormBuilder(
+            autovalidateMode: AutovalidateMode.onUserInteractionIfError,
             initialValue: {
               'email': user?.email,
               "firstName": user?.firstName,

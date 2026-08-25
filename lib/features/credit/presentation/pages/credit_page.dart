@@ -104,6 +104,7 @@ class _CreditViewState extends State<CreditView> {
 
       body: FormBuilder(
         key: formKey,
+        autovalidateMode: AutovalidateMode.onUserInteractionIfError,
         initialValue: {"amount": minTopUp},
         onChanged: () {
           setState(() {

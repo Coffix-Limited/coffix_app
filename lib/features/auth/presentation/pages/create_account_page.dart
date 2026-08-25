@@ -57,6 +57,7 @@ class _CreateAccountViewState extends State<CreateAccountView> {
       appBar: AppBar(),
       body: AppLayoutBody(
         child: FormBuilder(
+          autovalidateMode: AutovalidateMode.onUserInteractionIfError,
           key: _formKey,
           child: BlocConsumer<AuthCubit, AuthState>(
             listener: (context, state) {

@@ -546,11 +546,10 @@ class FirebaseService {
     const storeRef = await firestore
       .collection("stores")
       .where("disable", "==", false)
-      .where("isDeleted", "==", false)
       .where("docId", "==", storeId)
       .limit(1)
       .get();
-    if (storeRef.empty) {
+    if (storeRef.empty || storeRef.docs[0].data().isDeleted) {
       return null;
     }
     return storeRef.docs[0].data();

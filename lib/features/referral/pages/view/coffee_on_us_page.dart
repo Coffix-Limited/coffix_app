@@ -168,6 +168,7 @@ class _CoffeeOnUsViewState extends State<CoffeeOnUsView> {
           );
         },
         child: FormBuilder(
+          autovalidateMode: AutovalidateMode.onUserInteractionIfError,
           key: _formKey,
           child: SingleChildScrollView(
             padding: AppSizes.defaultPadding,

@@ -48,10 +48,7 @@ class _ShareYourBalanceViewState extends State<ShareYourBalanceView> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isLoading = context.watch<ProfileCubit>().state.maybeWhen(
-      loading: () => true,
-      orElse: () => false,
-    );
+    final isLoading = context.watch<ProfileCubit>().state.maybeWhen(loading: () => true, orElse: () => false);
     final global = context.watch<AppCubit>().state.maybeWhen(
       loaded: (global, appVersion) => global,
       orElse: () => null,
@@ -73,16 +70,14 @@ class _ShareYourBalanceViewState extends State<ShareYourBalanceView> {
         },
         child: BlocBuilder<AuthCubit, AuthState>(
           builder: (context, state) {
-            final balance = state.maybeWhen(
-              authenticated: (u) => u.user.creditAvailable ?? 0,
-              orElse: () => 0.0,
-            );
+            final balance = state.maybeWhen(authenticated: (u) => u.user.creditAvailable ?? 0, orElse: () => 0.0);
 
             return SafeArea(
               child: Padding(
                 padding: AppSizes.defaultPadding,
 
                 child: FormBuilder(
+                  autovalidateMode: AutovalidateMode.onUserInteractionIfError,
                   key: _formKey,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -95,23 +90,17 @@ class _ShareYourBalanceViewState extends State<ShareYourBalanceView> {
                               AppCard(
                                 color: AppColors.primaryLight,
                                 child: Column(
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.stretch,
+                                  crossAxisAlignment: CrossAxisAlignment.stretch,
                                   children: [
                                     const SizedBox(height: AppSizes.xs),
                                     Text.rich(
                                       textAlign: TextAlign.center,
-                                      style: AppTypography.bodyM.copyWith(
-                                        fontWeight: FontWeight.w600,
-                                      ),
+                                      style: AppTypography.bodyM.copyWith(fontWeight: FontWeight.w600),
                                       TextSpan(
                                         children: [
                                           TextSpan(text: 'You have '),
                                           balance.toCurrencySuperscript(
-                                            style: AppTypography.headlineM
-                                                .copyWith(
-                                                  fontWeight: FontWeight.w600,
-                                                ),
+                                            style: AppTypography.headlineM.copyWith(fontWeight: FontWeight.w600),
                                           ),
                                           TextSpan(text: ' in Coffix Credit'),
                                         ],
@@ -136,11 +125,7 @@ class _ShareYourBalanceViewState extends State<ShareYourBalanceView> {
                                 label: 'Recipient first name',
                                 hintText: 'First name',
                                 isRequired: true,
-                                validators: [
-                                  (v) => (v ?? '').trim().isEmpty
-                                      ? 'Required'
-                                      : null,
-                                ],
+                                validators: [(v) => (v ?? '').trim().isEmpty ? 'Required' : null],
                                 isHorizontalAlign: true,
                               ),
                               const SizedBox(height: AppSizes.md),
@@ -149,11 +134,7 @@ class _ShareYourBalanceViewState extends State<ShareYourBalanceView> {
                                 label: 'Recipient last name',
                                 hintText: 'Last name',
                                 isRequired: true,
-                                validators: [
-                                  (v) => (v ?? '').trim().isEmpty
-                                      ? 'Required'
-                                      : null,
-                                ],
+                                validators: [(v) => (v ?? '').trim().isEmpty ? 'Required' : null],
                                 isHorizontalAlign: true,
                               ),
                               const SizedBox(height: AppSizes.md),
@@ -174,15 +155,8 @@ class _ShareYourBalanceViewState extends State<ShareYourBalanceView> {
                                 label: 'Amount to gift',
                                 hintText: '0.00',
                                 isRequired: true,
-                                keyboardType:
-                                    const TextInputType.numberWithOptions(
-                                      decimal: true,
-                                    ),
-                                inputFormatters: [
-                                  FilteringTextInputFormatter.allow(
-                                    RegExp(r'^\d*\.?\d{0,2}'),
-                                  ),
-                                ],
+                                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                                inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}'))],
                                 validators: [
                                   (v) {
                                     final n = double.tryParse(v ?? '');
@@ -206,11 +180,9 @@ class _ShareYourBalanceViewState extends State<ShareYourBalanceView> {
                                     TextSpan(
                                       children: [
                                         TextSpan(text: 'Minimum of '),
-                                        global?.minCreditToShare
-                                                ?.toCurrencySuperscript(
-                                                  style: AppTypography.bodyXS
-                                                      .copyWith(),
-                                                ) ??
+                                        global?.minCreditToShare?.toCurrencySuperscript(
+                                              style: AppTypography.bodyXS.copyWith(),
+                                            ) ??
                                             TextSpan(text: ''),
                                       ],
                                     ),
@@ -231,24 +203,13 @@ class _ShareYourBalanceViewState extends State<ShareYourBalanceView> {
                       AppButton.primary(
                         disabled: isLoading,
                         onPressed: () {
-                          if (_formKey.currentState?.saveAndValidate() ??
-                              false) {
-                            final recipientEmail =
-                                _formKey.currentState!.value['email'] ?? '';
-                            final amount = double.parse(
-                              _formKey.currentState!.value['amount'] ?? '0',
-                            );
-                            LogService().giftCoffixCredit(
-                              recipientEmail: recipientEmail,
-                              amount: amount,
-                            );
+                          if (_formKey.currentState?.saveAndValidate() ?? false) {
+                            final recipientEmail = _formKey.currentState!.value['email'] ?? '';
+                            final amount = double.parse(_formKey.currentState!.value['amount'] ?? '0');
+                            LogService().giftCoffixCredit(recipientEmail: recipientEmail, amount: amount);
                             context.read<ProfileCubit>().sendGift(
-                              recipientFirstName:
-                                  _formKey.currentState!.value['firstName'] ??
-                                  '',
-                              recipientLastName:
-                                  _formKey.currentState!.value['lastName'] ??
-                                  '',
+                              recipientFirstName: _formKey.currentState!.value['firstName'] ?? '',
+                              recipientLastName: _formKey.currentState!.value['lastName'] ?? '',
                               recipientEmail: recipientEmail,
                               amount: amount,
                             );

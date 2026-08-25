@@ -8,13 +8,7 @@ import 'package:form_builder_validators/form_builder_validators.dart';
 
 class AppMoneyField extends StatelessWidget {
   final String name;
-  const AppMoneyField({
-    super.key,
-    required this.name,
-    this.validators,
-    this.initialValue,
-    this.maxLength,
-  });
+  const AppMoneyField({super.key, required this.name, this.validators, this.initialValue, this.maxLength});
   final List<FormFieldValidator<String>>? validators;
 
   final String? initialValue;
@@ -37,22 +31,16 @@ class AppMoneyField extends StatelessWidget {
             keyboardType: TextInputType.number,
             decoration: InputDecoration(
               counterText: maxLength != null ? '' : null,
-              hintStyle: AppTypography.headlineXxl.copyWith(
-                color: AppColors.lightGrey.withValues(alpha: 0.3),
-              ),
+              hintStyle: AppTypography.headlineXxl.copyWith(color: AppColors.lightGrey.withValues(alpha: 0.3)),
               hintText: '0.00',
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(AppSizes.md),
-              ),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppSizes.md)),
             ),
             style: AppTypography.headlineXxl,
-            inputFormatters: [
-              FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}')),
-            ],
+            inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}'))],
             validator: FormBuilderValidators.compose([
               FormBuilderValidators.required(),
               FormBuilderValidators.min(0),
-              if (validators != null) ...validators!,
+              ...?validators,
             ]),
           ),
         ),

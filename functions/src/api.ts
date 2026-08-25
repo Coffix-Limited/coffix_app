@@ -17,7 +17,6 @@ import couponRouter from "./coupon/router";
 import staffsRouter from "./staffs/router";
 import importRouter from "./import/router";
 import { globalLimiter } from "./middleware/rateLimiter";
-import { app } from "firebase-functions";
 
 export const api = express();
 

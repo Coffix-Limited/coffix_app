@@ -43,6 +43,7 @@ class AppDropdown<T, V> extends StatelessWidget {
         if (isRequired) (value) => value == null ? 'Required' : null,
         ...?validators,
       ]),
+      autovalidateMode: AutovalidateMode.onUserInteractionIfError,
       builder: (state) {
         final borderRadius = BorderRadius.circular(AppSizes.sm);
 

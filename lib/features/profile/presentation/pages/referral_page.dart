@@ -35,6 +35,7 @@ class _ReferralViewState extends State<ReferralView> {
         child: SingleChildScrollView(
           padding: AppSizes.defaultPadding,
           child: FormBuilder(
+            autovalidateMode: AutovalidateMode.onUserInteractionIfError,
             key: _formKey,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
