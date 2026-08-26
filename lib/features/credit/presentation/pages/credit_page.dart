@@ -30,10 +30,7 @@ class CreditPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider.value(
-      value: getIt<CreditCubit>(),
-      child: const CreditView(),
-    );
+    return BlocProvider.value(value: getIt<CreditCubit>(), child: const CreditView());
   }
 }
 
@@ -77,12 +74,10 @@ class _CreditViewState extends State<CreditView> {
         formKey.currentState?.fields['amount']?.didChange(minTopUp);
       });
     }
-    final amount =
-        formKey.currentState?.fields['amount']?.value ?? minTopUp ?? '0';
+    final amount = formKey.currentState?.fields['amount']?.value ?? minTopUp ?? '0';
     final parsedAmount = double.tryParse(amount) ?? 0;
 
-    final bool minTopUpNotReached =
-        parsedAmount < double.parse(minTopUp ?? '0');
+    final bool minTopUpNotReached = parsedAmount < double.parse(minTopUp ?? '0');
     final isAuthenticated = context.watch<AuthCubit>().state.maybeWhen(
       authenticated: (user) => user.user.emailVerified == true,
       orElse: () => false,
@@ -140,33 +135,23 @@ class _CreditViewState extends State<CreditView> {
                   error: (_, v) => v,
                   orElse: () => false,
                 );
-                if (state.maybeWhen(
-                  loading: (_) => true,
-                  orElse: () => false,
-                )) {
+                if (state.maybeWhen(loading: (_) => true, orElse: () => false)) {
                   return const Center(child: AppLoading());
                 }
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppSizes.lg,
-                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: AppSizes.lg),
                       child: RichText(
                         textAlign: TextAlign.center,
                         text: TextSpan(
                           text: "PAY BY COFFIX CREDIT AND",
-                          style: AppTypography.headlineL.copyWith(
-                            color: AppColors.black,
-                          ),
+                          style: AppTypography.headlineL.copyWith(color: AppColors.black),
                           children: [
                             TextSpan(
-                              text:
-                                  " \nSAVE ${global?.basicDiscount?.toInt()}%- ${global?.discountLevel3?.toInt()}%",
-                              style: AppTypography.headlineL.copyWith(
-                                color: AppColors.primary,
-                              ),
+                              text: " \nSAVE ${global?.basicDiscount?.toInt()}%- ${global?.discountLevel3?.toInt()}%",
+                              style: AppTypography.headlineL.copyWith(color: AppColors.primary),
                             ),
                           ],
                         ),
@@ -178,15 +163,9 @@ class _CreditViewState extends State<CreditView> {
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            InfoCard(
-                              text: 'TopUp your Coffix Credit account',
-                              image: AppImages.card,
-                            ),
+                            InfoCard(text: 'TopUp your Coffix Credit account', image: AppImages.card),
                             const SizedBox(width: AppSizes.sm),
-                            InfoCard(
-                              text: 'Order in your App',
-                              image: AppImages.menuGray,
-                            ),
+                            InfoCard(text: 'Order in your App', image: AppImages.menuGray),
                             const SizedBox(width: AppSizes.sm),
                             InfoCard(
                               text:
@@ -198,32 +177,23 @@ class _CreditViewState extends State<CreditView> {
                       ),
                     const SizedBox(height: AppSizes.xl),
                     Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppSizes.lg,
-                        vertical: AppSizes.md,
-                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: AppSizes.lg, vertical: AppSizes.md),
                       decoration: BoxDecoration(border: Border.all()),
                       child: Column(
                         children: [
                           const SizedBox(height: AppSizes.lg),
                           TierCard(
-                            amount: double.parse(
-                              global?.topupLevel1?.toString() ?? '0',
-                            ),
+                            amount: double.parse(global?.topupLevel1?.toString() ?? '0'),
                             percent: '${global?.basicDiscount?.toInt()}%',
                           ),
                           const SizedBox(height: AppSizes.sm),
                           TierCard(
-                            amount: double.parse(
-                              global?.topupLevel2?.toString() ?? '0',
-                            ),
+                            amount: double.parse(global?.topupLevel2?.toString() ?? '0'),
                             percent: '${global?.discountLevel2?.toInt()}%',
                           ),
                           const SizedBox(height: AppSizes.sm),
                           TierCard(
-                            amount: double.parse(
-                              global?.topupLevel3?.toString() ?? '0',
-                            ),
+                            amount: double.parse(global?.topupLevel3?.toString() ?? '0'),
                             percent: '${global?.discountLevel3?.toInt()}%',
                           ),
                         ],
@@ -243,9 +213,7 @@ class _CreditViewState extends State<CreditView> {
                               name: 'amount',
                               validators: [
                                 FormBuilderValidators.required(),
-                                FormBuilderValidators.min(
-                                  global?.minTopUp ?? 0,
-                                ),
+                                FormBuilderValidators.min(global?.minTopUp ?? 0),
                               ],
                               maxLength: 5,
                             ),
@@ -274,39 +242,30 @@ class _CreditViewState extends State<CreditView> {
                     SizedBox(height: AppSizes.xl),
                     Spacer(),
                     AppButton(
-                      disabled:
-                          (showTopUpField &&
-                          (amount.isEmpty ||
-                              parsedAmount < (global?.minTopUp ?? 0))),
+                      disabled: (showTopUpField && (amount.isEmpty || parsedAmount < (global?.minTopUp ?? 0))),
                       onPressed: () {
                         if (!isAuthenticated) {
                           AppGuestBottomSheet.show(
                             context,
-                            message: "Please sign in to continue",
+                            message: "Please complete your profile to continue",
                             isAuthenticated: isAuthenticated,
                             isFinishedOnboarding: isFinishedOnboarding,
                           );
                         } else if (!isFinishedOnboarding) {
                           AppGuestBottomSheet.show(
                             context,
-                            message:
-                                "Please finish first setting up your profile.",
+                            message: "Please finish first setting up your profile.",
                             isAuthenticated: isAuthenticated,
                             isFinishedOnboarding: isFinishedOnboarding,
                           );
-                        } else if (showTopUpField &&
-                            formKey.currentState!.validate()) {
+                        } else if (showTopUpField && formKey.currentState!.validate()) {
                           LogService().topUp(amount: parsedAmount);
-                          context.read<CreditCubit>().topup(
-                            amount: parsedAmount,
-                          );
+                          context.read<CreditCubit>().topup(amount: parsedAmount);
                         } else {
                           context.read<CreditCubit>().showTopUpField(true);
                         }
                       },
-                      label: showTopUpField
-                          ? "TopUp"
-                          : "TopUp Your Coffix Credit",
+                      label: showTopUpField ? "TopUp" : "TopUp Your Coffix Credit",
                     ),
                     SizedBox(height: AppSizes.xl),
                   ],

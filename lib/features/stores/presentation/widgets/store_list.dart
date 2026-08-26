@@ -137,7 +137,7 @@ class StoreList extends StatelessWidget {
                         if (!isAuthenticated) {
                           AppGuestBottomSheet.show(
                             context,
-                            message: "Please sign in to continue",
+                            message: "Please complete your profile to continue",
                             isAuthenticated: isAuthenticated,
                             isFinishedOnboarding: isFinishedOnboarding,
                           );

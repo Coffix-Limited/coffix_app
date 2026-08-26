@@ -18,7 +18,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
-class ProductList extends StatelessWidget {
+class ProductList extends StatefulWidget {
   const ProductList({
     super.key,
     required this.products,
@@ -33,6 +33,19 @@ class ProductList extends StatelessWidget {
   final bool isRoot;
   final String? categoryFilter;
   final String storeId;
+
+  @override
+  State<ProductList> createState() => _ProductListState();
+}
+
+class _ProductListState extends State<ProductList> {
+  // Bumped to rebuild the search field with an empty value when a category
+  // is tapped, since AppField has no controller.
+  int _searchFieldKey = 0;
+
+  void _clearSearch() {
+    setState(() => _searchFieldKey++);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -54,6 +67,7 @@ class ProductList extends StatelessWidget {
             children: [
               Expanded(
                 child: AppField(
+                  key: ValueKey(_searchFieldKey),
                   onChanged: (val) {
                     context.read<ProductCubit>().searchProducts(val ?? "");
                   },
@@ -67,12 +81,13 @@ class ProductList extends StatelessWidget {
 
           // product categories
           _CategoryList(
-            allCategories: allCategories,
-            categoryFilter: categoryFilter,
+            allCategories: widget.allCategories,
+            categoryFilter: widget.categoryFilter,
+            onCategorySelected: _clearSearch,
           ),
           const SizedBox(height: AppSizes.md),
           const SizedBox(height: AppSizes.lg),
-          products.isEmpty
+          widget.products.isEmpty
               ? const EmptyState(
                   icon: Icons.production_quantity_limits_outlined,
                   title: "No products found",
@@ -83,14 +98,14 @@ class ProductList extends StatelessWidget {
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
                   itemBuilder: (context, index) {
-                    final product = products[index];
+                    final product = widget.products[index];
                     return AppClickable(
                       showSplash: false,
                       onPressed: () {
                         if (!isAuthenticated) {
                           AppGuestBottomSheet.show(
                             context,
-                            message: "Please sign in to continue",
+                            message: "Please complete your profile to continue",
                             isAuthenticated: isAuthenticated,
                             isFinishedOnboarding: isFinishedOnboarding,
                           );
@@ -108,7 +123,7 @@ class ProductList extends StatelessWidget {
                             AddProductPage.route,
                             extra: {
                               "product": product.product,
-                              "storeId": storeId,
+                              "storeId": widget.storeId,
                             },
                           );
                         }
@@ -148,7 +163,7 @@ class ProductList extends StatelessWidget {
                     );
                   },
                   separatorBuilder: (_, _) => const Divider(),
-                  itemCount: products.length,
+                  itemCount: widget.products.length,
                 ),
         ],
       ),
@@ -160,10 +175,12 @@ class _CategoryList extends StatefulWidget {
   const _CategoryList({
     required this.allCategories,
     required this.categoryFilter,
+    required this.onCategorySelected,
   });
 
   final List<ProductCategory> allCategories;
   final String? categoryFilter;
+  final VoidCallback onCategorySelected;
 
   @override
   State<_CategoryList> createState() => _CategoryListState();
@@ -214,6 +231,7 @@ class _CategoryListState extends State<_CategoryList> {
               return AppClickable(
                 showSplash: false,
                 onPressed: () {
+                  widget.onCategorySelected();
                   context.read<ProductCubit>().filterProductsByCategory(
                     category.name!,
                   );

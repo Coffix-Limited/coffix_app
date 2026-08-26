@@ -269,10 +269,6 @@ export class EmailService {
       originalTransactionNumber,
       amount,
       storeInvoiceText,
-      isCoffixCredit,
-      gst,
-      gstAmount,
-      gstNumber,
     } = params;
 
     const itemsHtml = `<div class="item-row">
@@ -282,22 +278,15 @@ export class EmailService {
             <div class="item-right">$${amount.toFixed(2)}</div>
           </div>`;
 
-    const gstNumberLine = isCoffixCredit
-      ? ""
-      : `<p class="store-gst">GST: ${gstNumber ?? ""}</p>`;
-    const gstLineSection = isCoffixCredit
-      ? ""
-      : `<span class="gst-text">${gst ?? 15}% GST Included in the total: $${(gstAmount ?? 0).toFixed(2)}</span>`;
-
     const r = (s: string) => () => s;
     const invoice = invoiceEmailTemplate
       .replace("{{invoiceText}}", r(storeInvoiceText ?? ""))
       .replace("{{invoiceLabel}}", r("Refund"))
-      .replace("{{gstNumberLine}}", r(gstNumberLine))
+      .replace("{{gstNumberLine}}", r(""))
       .replace("{{transactionNumber}}", r(transactionNumber))
       .replace("{{items}}", r(itemsHtml))
       .replace("{{total}}", r(`$${amount.toFixed(2)}`))
-      .replace("{{gstLineSection}}", r(gstLineSection))
+      .replace("{{gstLineSection}}", r(""))
       .replace("{{paymentMethod}}", r("Coffix Credit"))
       .replace("{{createdAt}}", r(nowNZ()))
       .replace("{{serviceTimeLine}}", r(""));

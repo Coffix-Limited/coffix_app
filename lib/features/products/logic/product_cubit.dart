@@ -26,7 +26,10 @@ class ProductCubit extends Cubit<ProductState> implements StreamDisposable {
   List<ProductWithCategory> get allProducts => List.from(_allProducts);
 
   void initDefaultCategory() {
-    if (_categories.isEmpty) return;
+    if (_categories.isEmpty) {
+      clearFilter();
+      return;
+    }
     final coffee = _categories.firstWhere(
       (c) => c.name?.toLowerCase() == 'coffee',
       orElse: () => _categories.first,
@@ -77,12 +80,9 @@ class ProductCubit extends Cubit<ProductState> implements StreamDisposable {
 
   void searchProducts(String query) {
     if (query.isEmpty) {
-      emit(
-        ProductState.loaded(
-          products: List.from(_allProducts),
-          allCategories: _categories,
-        ),
-      );
+      // Clearing the search falls back to the default category rather than
+      // leaving no category highlighted.
+      initDefaultCategory();
       return;
     }
     final lower = query.toLowerCase();
