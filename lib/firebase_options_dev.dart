@@ -58,7 +58,7 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyBxqMVJ4LWb9oSp8apHxCLYVeeE_5pmnGc',
-    appId: '1:659645318299:android:57e7148f7de0c4fa11323e',
+    appId: '1:659645318299:android:f3fda55702f3caac11323e',
     messagingSenderId: '659645318299',
     projectId: 'coffix-app-dev',
     storageBucket: 'coffix-app-dev.firebasestorage.app',
@@ -66,10 +66,10 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyAM7u28RaKQIFhjuQ_fhDEuu864mviDlTM',
-    appId: '1:659645318299:ios:42dcd84c6a557c0111323e',
+    appId: '1:659645318299:ios:d872234ddb3b983c11323e',
     messagingSenderId: '659645318299',
     projectId: 'coffix-app-dev',
     storageBucket: 'coffix-app-dev.firebasestorage.app',
-    iosBundleId: 'com.example.coffixApp',
+    iosBundleId: 'com.coffix.dev',
   );
 }

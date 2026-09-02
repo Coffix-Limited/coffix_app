@@ -20,8 +20,8 @@
         "lib/firebase_options_dev.dart": {
           "projectId": "coffix-app-dev",
           "configurations": {
-            "android": "1:659645318299:android:57e7148f7de0c4fa11323e",
-            "ios": "1:659645318299:ios:42dcd84c6a557c0111323e",
+            "android": "1:659645318299:android:f3fda55702f3caac11323e",
+            "ios": "1:659645318299:ios:d872234ddb3b983c11323e",
             "web": "1:659645318299:web:b84bb7f22b6e83a211323e"
           }
         },
