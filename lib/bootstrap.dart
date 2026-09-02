@@ -80,7 +80,6 @@ Future<void> bootstrap(Widget Function() builder) async {
   debugPrint('Firebase apps: ${Firebase.apps.map((e) => e.name).toList()}');
   debugPrint('Current flavor: ${FlavorConfig.instance.name}');
   debugPrint('Firebase projectId: ${Firebase.app().options.projectId}');
-  debugPrint('Firebase apiKey: ${Firebase.app().options.apiKey}');
 
   runApp(builder());
 }

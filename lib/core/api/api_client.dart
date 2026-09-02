@@ -101,8 +101,6 @@ abstract class ApiClient {
     try {
       final token = secretKey ?? await _auth.currentUser?.getIdToken();
 
-      log("token: $token");
-
       final response = await _dio.post<T>(
         "${baseUrl ?? ApiEndpoints.v1}$path",
         data: isJson ? jsonEncode(data) : data,

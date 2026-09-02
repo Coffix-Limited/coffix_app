@@ -1,3 +1,4 @@
+import 'package:coffix_app/core/api/model/log_sanitizer.dart';
 import 'package:dio/dio.dart';
 import 'package:logger/logger.dart';
 
@@ -15,8 +16,8 @@ class ApiInterceptors extends InterceptorsWrapper {
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
     _logger.i("Request: ${options.method} ${options.uri}");
-    _logger.i("Headers: ${options.headers}");
-    _logger.i("Body: ${options.data}");
+    _logger.i("Headers: ${sanitizeHeadersForLogging(options.headers)}");
+    _logger.i("Body: ${sanitizeBodyForLogging(options.data)}");
     return handler.next(options);
   }
 
@@ -25,7 +26,7 @@ class ApiInterceptors extends InterceptorsWrapper {
     _logger.i(
       "Response: ${response.statusCode} ${response.requestOptions.uri}",
     );
-    _logger.i("Data: ${response.data}");
+    _logger.i("Data: ${sanitizeBodyForLogging(response.data)}");
     return handler.next(response);
   }
 
